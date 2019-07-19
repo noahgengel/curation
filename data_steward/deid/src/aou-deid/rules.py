@@ -380,8 +380,7 @@ class deid (Rules):
                               
                     result['apply'] = ' '.join(['CAST(',result['apply'].replace(suffix,''),'AS STRING ) ',suffix])
                 out.append(result)                
-                
-                break
+              
         else:
             
             key_fields = args['key_field']
