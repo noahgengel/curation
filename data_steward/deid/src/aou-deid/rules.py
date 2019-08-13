@@ -23,13 +23,13 @@ from parser import Parse
 import logging
 import json
 class Rules :
-    COMPUTE={
-        "year":"EXTRACT (YEAR FROM :FIELD) AS :FIELD",
-        "month":"EXTRACT (MONTH FROM :FIELD) AS :FIELD",
-        "day":"EXTRACT (DAY FROM :FIELD) AS :FIELD",
-        "id":"SELECT :FIELD FROM :table where :key_field = :key_value"
-    }
-    def __init__(self):
+    # COMPUTE={
+    #     "year":"EXTRACT (YEAR FROM :FIELD) AS :FIELD",
+    #     "month":"EXTRACT (MONTH FROM :FIELD) AS :FIELD",
+    #     "day":"EXTRACT (DAY FROM :FIELD) AS :FIELD",
+    #     "id":"SELECT :FIELD FROM :table where :key_field = :key_value"
+    # }
+    def __init__(self,**args):
         self.cache = {}
         self.store_syntax = {
 
@@ -50,7 +50,10 @@ class Rules :
                 "random":"(random() * 364) + 1 :: int"
             }
         }
-        self.cache['compute'] = Rules.COMPUTE
+        # self.cache['compute'] = Rules.COMPUTE
+        self.pipeline   = args['pipeline']
+        self.cache      = args['rules']
+        self.parent     = args['parent']
         #--
         
     def set(self,key, id, **args) :
@@ -96,8 +99,12 @@ class Rules :
                 #
                 # assuming we are dealing with a list of strings applied
                 # and dealign with self contained rules
+                
                 q.append(1)
                 # r.append(row['apply'])
+            else:
+                if 'on' in row and 'values' in row and 'qualifier' in row :
+                    q.append(1)
        
         q = sum(q) == len(q)
         
@@ -110,8 +117,8 @@ class deid (Rules):
         - a field can have several rules applied to it:
 
     """
-    def __init__(self):
-        Rules.__init__(self)
+    def __init__(self,**args):
+        Rules.__init__(self,**args)
 
     def validate(self,id,info):
         payload = None
@@ -125,9 +132,10 @@ class deid (Rules):
                 
                 #
                 # @TODO: Insure that an error is thrown if the rule associated is not found
-
+                
                 p = getattr(Parse,id)(row,self.cache) 
-                payload['args'] += [p]    
+                payload['args'] += [p]   
+        
              
         return payload
     def aggregate(self,sql,**args):
@@ -191,6 +199,7 @@ class deid (Rules):
                             # regex = regex.replace(':TABLE',args['table']).replace(':KEY',args['key_field']).replace(':VALUE',args['value_field'])
                             
                             if 'on' in rule and 'key_row' in args :
+                                
                                 if 'qualifier' in rule :                                    
                                     regex += ' AND '+args['key_row'] +  " IN ('"+"','".join(rule['on'])+"')"
                                 else:
@@ -208,9 +217,10 @@ class deid (Rules):
                     # _into = "".join(["'",rule['into'],"'"])       
                     _into = rule['into'] if 'into' not in args else args['into']
                     
-                    if not _into.isnumeric() :
-                        
+                    if type(_into) == str :                         
                         _into = "'"+_into+"'"                    
+                    else:
+                        _into = str(_into)
                     regex = "".join(regex)
                     cond += [ " ".join([SYNTAX['IF'],SYNTAX['OPEN'],regex,SYNTAX['THEN'],_into]) ]
                     # cond += [ " ".join([SYNTAX['IF'],regex])+SYNTAX['OPEN'],SYNTAX['THEN'],_into]
@@ -231,13 +241,21 @@ class deid (Rules):
                     key_field = args['key_field'] if 'key_field' in args else name
                     filter = args['filter'] if 'filter' in args else name
                     qualifier = rule['qualifier']
-                    values = "('" + "','".join(rule['values']) +"')"                    
+                    if not type(rule['values']) == str :
+                        values = [str(value) for value in rule['values']]
+                        values = '(' + ','.join(values)+')'
+                    else:
+                        values = "('" + "','".join(rule['values']) +"')"                    
+                    
+                        
                     statement = " ".join([key_field,qualifier, values])
                     _into = rule['into'] if 'into' not in args else args['into']
                     # common = set("0123456789.") & set(_into)
                     regex = " ".join([filter,qualifier,values])
-                    if not _into.isnumeric() :
+                    if type(_into) == str :
                         _into = "'"+_into+"'"
+                    else:
+                        _into = str(_into)
                     cond += [ " ".join([SYNTAX['IF'],SYNTAX['OPEN'],regex,SYNTAX['THEN'],_into]) ]
                     # cond += [ " ".join([SYNTAX['IF'],regex])+SYNTAX['OPEN'],SYNTAX['THEN'],_into]
                     
@@ -318,11 +336,33 @@ class deid (Rules):
             #   - filter    as the key field to match the filter
             #   - The values of the filter are provided by the rule
             #
-            # self.log(module='suppress',label=label.split('.')[1],on='*',type='rows')
-            
+            # self.log(module='suppress',label=label.split('.')[1],on='*',type='rows'labellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabellabel)
+            APPLY= {'IN':'NOT IN','=':'<>','NOT IN':'IN','<>':'=','':'IS FALSE','TRUE':'IS FALSE'}
+            if not rules:
+                #
+                # A row suppression rule has been provided in the form of an SQL filter
+                # For now we assume a simple scenario on="field qualifier ..."
+                # The qualifier needs to be flipped ...
+                #
+                if ' in ' in args['on'] or ' IN ' in args :
+                    filter = args['on'].replace(' IN ',' NOT IN ').replace(' in ',' NOT IN ')
+                elif ' not in ' in args['on'] or ' NOT IN ' in args :
+                    filter = args['on'].replace(' NOT IN ',' IN ').repleace(' not in ',' IN ')
+                elif ' = ' in args['on']  :
+                    filter = args['on'].replace(' = ',' <> ')
+                elif ' <> ' in args['on']  :
+                    filter = args['on'].replace(' <> ',' = ')
+                filter = {"filter":filter,"label":"suppress.ROWS"}
+                found = [ 1*(filter == row) for row in self.cache['suppress']['FILTERS'] ]
+                if np.sum(found) == 0:
+                    
+                    self.cache['suppress']['FILTERS']               +=  [filter]                
+                    self.parent.deid_rules['suppress']['FILTERS']   =   self.cache['suppress']['FILTERS']
+                return [] #{"filter":filter,"label":"suppress.FILTERS"}]
+                
             for rule in rules :
                 qualifier = args['qualifier'] if 'qualifier' in args else ''
-                APPLY= {'IN':'NOT IN','=':'<>','NOT IN':'IN','<>':'=','':'IS FALSE','TRUE':'IS FALSE'}
+                
                 
                 if 'apply' in rule and rule['apply'] in APPLY_FN :
                     
@@ -337,8 +377,13 @@ class deid (Rules):
                     # we have a basic SQL statement here 
                     qualifier = 'IN' if qualifier == '' else qualifier
                     qualifier = APPLY[qualifier]
-                    expression   = " ".join([args['on'],qualifier,"('"+ "','".join(rule['values'])+"')"])
-                    # print expression
+                    if 'values' in rule :
+                        
+                        expression   = " ".join([args['on'],qualifier,"('"+ "','".join(rule['values'])+"')"])
+                    else:
+                        
+                        expression = args['on']
+                    
                     self.cache['suppress']['FILTERS'].append({"filter": expression ,"label":label})
                     # out.append({"filter": expression +' '+ APPLY[qualifier],"label":label})
                     # self.cache['suppress']['FILTERS'].append({"filter": expression +' '+ APPLY[qualifier],"label":label})
@@ -435,15 +480,16 @@ class deid (Rules):
         out = []
         r = {}
         ismeta = info['info']['type'] if 'info' in info and 'type' in info['info'] else False
-        for id in ['generalize','compute','suppress','shift'] :
+        
+        for id in self.pipeline: #['generalize','compute','suppress','shift'] :
             
             if id in info :
                 r =  self.validate(id,info[id])
+                
                 if r :
                     r = dict(r,**{'ismeta':ismeta})
                     pointer = r['pointer']
                     tmp = [pointer(** dict(args,**{"store":store_id})) for args in r['args']]
-                    
                     if tmp :
                         for _item in tmp :
                             if _item :
@@ -451,10 +497,13 @@ class deid (Rules):
                                     out.append(_item)
                                 else:
                                     out += _item
+                #
+                #
                         
         #
         # we should try to consolidate here
-       
+
+        
         return out
 # handler = deid()
 # handler.set('generalize','race',values=['Native','Middle-Eastern'],into='Other',apply='REGEXP')
