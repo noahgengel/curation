@@ -10,7 +10,7 @@
 
 			},
 			{
-				"comment":"multi racial generalization rule",
+				"comment":"multi racial generalization rule, the values the count is limited to is provided by the 'on' key",
                 "apply":"COUNT",
 				"into":2000000008,
 				"qualifier":"> 1",
