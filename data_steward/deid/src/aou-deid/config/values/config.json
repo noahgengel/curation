@@ -11,7 +11,8 @@
 			{
 				"apply":"COUNT",
 				"into":"MULTIRACIAL",
-				"qualifier":"> 1"
+				"qualifier":"> 1",
+				"on":["WhatRaceEthnicity_AIAN","WhatRaceEthnicity_NHPI","WhatRaceEthnicity_MENA","WhatRaceEthnicity_RaceEthnicityNoneOfThese"]
 			}
 		],
 		"ETHNICITY":[{"apply":"REGEXP","values":["hispanic","latin"],"into":"NON HISPANIC", "qualifier":"IS FALSE"}],

@@ -197,13 +197,15 @@ class deid (Rules):
                             regex = regex.replace(':TABLE',args['table']).replace(':KEY',args['key_field']).replace(':VALUE',args['value_field'])
                             # regex = regex.replace(':TABLE',args['table']).replace(':KEY',args['key_field']).replace(':VALUE',args['value_field'])
                             
-                            if 'on' in args and 'key_row' in args :
+                            if 'on' in rule and 'key_row' in args :
                                 
                                 if 'qualifier' in rule :                                    
-                                    regex += ' AND ' #+args['key_row']  +   " IN ('"+"','".join(args['on'])+"')"
+                                    regex += ' AND ' +args['key_row']  +   " IN ('"+"','".join(args['on'])+"')"
                                 else:
-                                    regex += ' WHERE '#+args['key_row'] #+  " IN ('"+"','".join(args['on'])+"')"
-                                regex += args['on']
+                                    regex += ' WHERE '+args['key_row'] #+  " IN ('"+"','".join(args['on'])+"')"
+                                
+                            if 'on' in args :
+                                regex += ' AND ' + args['on']
                             regex = ' '.join(['(',regex,')',qualifier])
                         else:
                             regex = ' '.join([regex,qualifier])
