@@ -14,22 +14,42 @@
                 "apply":"COUNT",
 				"into":2000000008,
 				"qualifier":"> 1",
-				"on":[1586142,1586143,1586146]
+				"on":[1586141, 1586142, 1586143, 1586144, 1586145, 1586146, 1586147, 1586148]
 			}
 		],
 		"SEXUAL-ORIENTATION":[
 			{
+                "comment": "generalize any answer that is not straight",
 				"qualifier":"IN",
 				"values":[903096, 903079, 1585901, 1585902, 1585903, 1585904],
 				"into":2000000003
-			}
+			},
+            {
+                "comment": "generalize straight values to same concept id",
+                "qualifier": "IN",
+                "values": [1585900],
+                "into": 4069091
+            }
 		],
 		"SEX-AT-BIRTH":[
 			{
+                "comment": "generalizing not male and not female responses",
 				"qualifier":"IN",
 				"values":[903096, 903079, 1585848, 1585849],
 				"into":2000000009
-			}
+			},
+            {
+                "comment": "generalizing female responses",
+                "qualifier": "IN",
+                "values": [1585847],
+                "into": 45878463
+            },
+            {
+                "comment": "generalizing male responses",
+                "qualifier": "IN",
+                "values": [1585846],
+                "into": 45880669
+            }
 		],
 		"GENDER":[
 			{
@@ -57,14 +77,14 @@
 			{
                 "comment":"this will generalize values to unemployed or not employed",
 				"qualifier":"IN",
-				"values":[1585959, 1585958, 1585960, 1585957, 1585955, 1585956],
+				"values":[1585955, 1585956, 1585957, 1585958, 1585959, 1585960],
 				"into":2000000005
 			},
             {
                 "comment":"generalizing to currently employed",
                 "qualifier":"IN",
-                "values":[1585954,1585953],
-                "into":2000000005
+                "values":[1585953, 1585954],
+                "into":2000000004
             }
 		]
 		
