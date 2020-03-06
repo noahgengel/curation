@@ -518,7 +518,7 @@ sites_measurement = pd.merge(sites_measurement,
                              site_df,
                              how='outer',
                              on='src_hpo_id')
-sites_measurement = sites_measurement.fillna("No Data")
+sites_measurement = sites_measurement.fillna(0)
 
 sites_measurement
 

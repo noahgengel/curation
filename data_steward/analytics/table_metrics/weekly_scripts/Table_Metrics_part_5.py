@@ -248,6 +248,8 @@ all_drugs = diuretics + ccb + vaccine + oralhypoglycemics + opioids + antibiotic
 
 # ## Diuretics
 
+print(len(all_drugs))
+
 len(diuretics)
 
 len(set(diuretics))
@@ -695,7 +697,7 @@ sites_drug_success = pd.merge(sites_drug_success,
                               how='outer',
                               on='src_hpo_id')
 
-sites_drug_success = sites_drug_success.fillna("No Data")
+sites_drug_success = sites_drug_success.fillna(0)
 sites_drug_success
 
 sites_drug_success[["ace_inhibitors","painnsaids","msknsaids","statins","antibiotics","opioids","oralhypoglycemics","vaccine","ccb","diuretics","all_drugs"]]\
@@ -706,7 +708,7 @@ sites_drug_success = pd.merge(sites_drug_success,
                               site_df,
                               how='outer',
                               on='src_hpo_id')
-sites_drug_success = sites_drug_success.fillna("No Data")
+sites_drug_success = sites_drug_success.fillna(0)
 
 sites_drug_success
 
