@@ -713,7 +713,6 @@ foreign_key_df.head()
 
 # ## Sites combined
 
-# +
 sites_success = pd.merge(visit_occurrence,
                          condition_occurrence,
                          how='outer',
@@ -739,7 +738,6 @@ sites_success = pd.merge(sites_success,
                          how='outer',
                          on='src_hpo_id')
 
-# -
 
 sites_success = sites_success.fillna(0)
 sites_success[["visit_occurrence", "condition_occurrence", "drug_exposure", "measurement", "procedure_occurrence",
@@ -1191,7 +1189,7 @@ master_df
 
 source = pd.merge(master_df, site_df, how='outer', on='src_hpo_id')
 source = source.fillna("No Data")
-source.to_csv("data\\source.csv")
+source.to_csv("data\\source_concept_success_rate.csv")
 
 # # 16.Dataframe (row for each hpo_id) Condition_occurrence table, condition_concept_id field
 
