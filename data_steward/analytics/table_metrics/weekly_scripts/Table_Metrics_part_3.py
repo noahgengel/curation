@@ -1019,8 +1019,8 @@ diabetics = num_persons_w_diabetes['num_with_diab'][0]
 print("There are {diabetics} persons with diabetes in the total dataset".format(diabetics = diabetics))
 # -
 
-create_table_with_substantiating_t2d_drug_concept_ids = """
-CREATE TABLE `{DATASET}.substantiating_t2diabetes_drug_concept_ids`
+create_table_with_substantiating_diabetic_drug_concept_ids = """
+CREATE TABLE `{DATASET}.substantiating_diabetic_drug_concept_ids`
 OPTIONS (
 expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 MINUTE)
 ) AS
@@ -1039,7 +1039,7 @@ ca.ancestor_concept_id  IN
 1525215,1516766,1547504,1580747,1502809,1515249)
 """.format(DATASET = DATASET)
 
-substantiating_t2d_drug_concept_ids = pd.io.gbq.read_gbq(create_table_with_substantiating_t2d_drug_concept_ids, dialect = 'standard')
+substantiating_diabetic_drug_concept_ids = pd.io.gbq.read_gbq(create_table_with_substantiating_diabetic_drug_concept_ids, dialect = 'standard')
 
 # ## Drug
 
@@ -1059,7 +1059,7 @@ RIGHT JOIN
 ON
 p.person_id = de.person_id
 RIGHT JOIN
-`{DATASET}.substantiating_t2diabetes_drug_concept_ids` t2drugs  -- only focus on the drugs that substantiate diabetes
+`{DATASET}.substantiating_diabetic_drug_concept_ids` t2drugs  -- only focus on the drugs that substantiate diabetes
 ON
 de.drug_concept_id = t2drugs.descendant_concept_id 
 """.format(DATASET = DATASET)
@@ -1181,49 +1181,6 @@ a1c.shape
 # -
 
 a1c.head()
-
-# ## t1d_condition
-
-# +
-
-######################################
-print('Getting the data from the database...')
-######################################
-
-t1d_condition = pd.io.gbq.read_gbq('''
-    SELECT
-            DISTINCT
-            src_hpo_id,
-            person_id,
-            1 as t1d
-        FROM
-            `{}.concept` t1 
-        INNER JOIN
-            `{}.unioned_ehr_condition_occurrence` AS t2
-        ON
-            t1.concept_id=t2.condition_concept_id
-        INNER JOIN
-            (SELECT
-                DISTINCT * 
-            FROM 
-                `{}._mapping_condition_occurrence`)  AS t3
-        ON
-            t3.condition_occurrence_id=t2.condition_occurrence_id
-        WHERE concept_id  in (36715571,4143857,45769891,45763585,45773688,45773576,45769901,45771075,45769902,45769903,45769837,
-        45757674,37016767,4225656,45769832,43531565,373999,4227210,45757074,435216,37016353,45769904,45757507,45769892,37017429,
-        45771068,37016348,45757432,443592,45757393,45771067,45769876,4228112,45757362,4047906,4102018,36717215,439770,4224254,
-        45757535,37016179,43530660,37016180,4225055,4224709,45769829,377821,45769830,45763583,45769834,36713094,318712,37018566,
-        4222687,4222553,37017431,4063042,43531008,43531009,45763584,45757604,200687,45757266,45757073,45771533,45773567,
-        45769833,46269764,4143689,45769873,201254,4099215,40484648,4152858,4096668,201531,4151281,443412,4295011,4099214,
-        45766051,45770902) 
-        and (invalid_reason is null or invalid_reason='')
-
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                                   dialect='standard')
-t1d_condition.shape
-# -
-
-t1d_condition.head()
 
 # ## insulin
 
