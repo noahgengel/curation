@@ -876,7 +876,7 @@ print('Getting the data from the database...')
 birth_df = pd.io.gbq.read_gbq('''
     SELECT
         COUNT(*) AS total,
-        sum(case when (DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR)<18) then 1 else 0 end) as wrong_death_date
+        sum(case when (DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR)<18) then 1 else 0 end) as minors_in_dataset
          
     FROM
        `{}.unioned_ehr_person` AS t1
@@ -915,7 +915,7 @@ print('Getting the data from the database...')
 birth_df = pd.io.gbq.read_gbq('''
     SELECT
         COUNT(*) AS total,
-        sum(case when (DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR)>120) then 1 else 0 end) as wrong_death_date
+        sum(case when (DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR)>120) then 1 else 0 end) as over_120_in_dataset
          
     FROM
        `{}.unioned_ehr_person` AS t1
