@@ -1019,6 +1019,8 @@ diabetics = num_persons_w_diabetes['num_with_diab'][0]
 print("There are {diabetics} persons with diabetes in the total dataset".format(diabetics = diabetics))
 # -
 
+# ## Drug
+
 create_table_with_substantiating_diabetic_drug_concept_ids = """
 CREATE TABLE `{DATASET}.substantiating_diabetic_drug_concept_ids`
 OPTIONS (
@@ -1044,8 +1046,6 @@ C.invalid_reason = '')
 """.format(DATASET = DATASET)
 
 substantiating_diabetic_drug_concept_ids = pd.io.gbq.read_gbq(create_table_with_substantiating_diabetic_drug_concept_ids, dialect = 'standard')
-
-# ## Drug
 
 # +
 ######################################
@@ -1094,6 +1094,10 @@ ON
 c.concept_id = ca.descendant_concept_id
 WHERE
 ca.ancestor_concept_id IN (40795740)
+AND
+c.invalid_reason IS NULL
+OR
+c.invalid_reason = ''
 """.format(DATASET = DATASET)
 
 valid_glucose_measurements = pd.io.gbq.read_gbq(valid_glucose_measurements_query, dialect='standard')
@@ -1118,40 +1122,48 @@ vgl.concept_id = m.measurement_concept_id -- only get those with the substantiat
 
 diabetics_with_glucose_measurement = pd.io.gbq.read_gbq(diabetics_with_glucose_measurement_query, dialect='standard')
 
+diabetics_with_glucose_measurement.shape
+
 # ## a1c
 
+hemoglobin_a1c_desc_query = """
+CREATE TABLE `{DATASET}.a1c_descendants`
+OPTIONS (
+expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 MINUTE)
+)
+AS
+SELECT
+DISTINCT
+ca.descendant_concept_id as concept_id
+FROM
+`{DATASET}.concept_ancestor` ca
+WHERE
+ca.ancestor_concept_id IN (40789263)
+""".format(DATASET = DATASET)
+
+hemoglobin_a1c_desc = pd.io.gbq.read_gbq(hemoglobin_a1c_desc_query, dialect='standard')
+
+diabetics_with_a1c_measurement_query = """
+SELECT
+DISTINCT
+p.person_id, p.src_hpo_id  
+FROM
+`{DATASET}.persons_with_diabetes_according_to_condition_table` p
+RIGHT JOIN
+`{DATASET}.unioned_ehr_measurement` m
+ON
+p.person_id = m.person_id -- get the persons with measurements
+RIGHT JOIN
+`{DATASET}.a1c_descendants` a1c
+ON
+a1c.concept_id = m.measurement_concept_id -- only get those with the substantiating labs
+""".format(DATASET = DATASET)
+
 # +
-######################################
-print('Getting the data from the database...')
-######################################
+diabetics_with_a1c_measurement = pd.io.gbq.read_gbq(diabetics_with_a1c_measurement_query, dialect='standard')
 
-a1c = pd.io.gbq.read_gbq('''
-    SELECT
-            DISTINCT
-            src_hpo_id,
-            person_id,
-            1 as drug
-        FROM
-            `{}.concept`  as t1
-        INNER JOIN
-            `{}.unioned_ehr_measurement` AS t2
-        ON
-            t1.concept_id=t2.measurement_concept_id
-        INNER JOIN
-            (SELECT
-                DISTINCT * 
-            FROM
-                 `{}._mapping_measurement`)  AS t3
-        ON
-            t2.measurement_id=t3.measurement_id
-        WHERE concept_id  in (3004410,3007263,3003309,3005673) and (invalid_reason is null or invalid_reason='')
-
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                         dialect='standard')
-a1c.shape
+diabetics_with_a1c_measurement.shape
 # -
-
-a1c.head()
 
 # ## insulin
 
@@ -1160,57 +1172,28 @@ a1c.head()
 print('Getting the data from the database...')
 ######################################
 
-insulin = pd.io.gbq.read_gbq('''
-    SELECT
-            DISTINCT
-            src_hpo_id,
-            person_id,
-            1 as insulin
-        FROM
-            `{}.concept`  AS t1
-        INNER JOIN
-            `{}.unioned_ehr_drug_exposure` AS t2
-        ON
-            t1.concept_id=t2.drug_concept_id
-        INNER JOIN
-            (SELECT
-                DISTINCT * 
-            FROM
-                 `{}._mapping_drug_exposure`)  AS t3
-        ON
-            t3.drug_exposure_id=t2.drug_exposure_id
-        WHERE t1.concept_id in (19122121,1567198,1531601,1516976,1502905,1544838,1550023,1513876,1517998) 
-        and (t1.invalid_reason is null or t1.invalid_reason='')
-    UNION DISTINCT 
-        SELECT 
-            DISTINCT
-            src_hpo_id,
-            person_id,
-            1 as drug
-                FROM
-                    `{}.concept`  AS t4
-                INNER JOIN 
-                    `{}.concept_ancestor` AS t5
-                ON 
-                    t4.concept_id = t5.descendant_concept_id
-                INNER JOIN
-                    `{}.unioned_ehr_drug_exposure` AS t6
-                ON
-                    t4.concept_id=t6.drug_concept_id
-                INNER JOIN
-                    (SELECT
-                        DISTINCT * 
-                    FROM
-                         `{}._mapping_drug_exposure`)  AS t7
-                ON
-                    t7.drug_exposure_id=t6.drug_exposure_id
-          and t5.ancestor_concept_id in (19122121,1567198,1531601,1516976,1502905,1544838,1550023,1513876,1517998)
-          and (t4.invalid_reason is null or t4.invalid_reason='')
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET),
-                             dialect='standard')
-insulin.shape
+persons_with_insulin_query = """
+SELECT
+DISTINCT
+p.person_id, p.src_hpo_id  
+FROM
+`{DATASET}.persons_with_diabetes_according_to_condition_table` p
+RIGHT JOIN
+`{DATASET}.unioned_ehr_drug_exposure` de
+ON
+de.person_id = p.person_id -- get the persons with measurements
+RIGHT JOIN
+`{DATASET}.concept` c
+ON
+de.drug_concept_id = c.concept_id
+WHERE
+LOWER(c.concept_name) LIKE '%insulin%'  -- generous for detecting insulin
+""".format(DATASET = DATASET)
+
+# +
+persons_with_insulin = pd.io.gbq.read_gbq(persons_with_insulin_query, dialect='standard')
+
+persons_with_insulin.shape
 # -
 
 insulin.head(15)
