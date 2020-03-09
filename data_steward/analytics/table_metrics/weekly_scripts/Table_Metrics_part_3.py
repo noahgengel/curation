@@ -227,7 +227,7 @@ print('Getting the data from the database...')
 temporal_df = pd.io.gbq.read_gbq('''
     SELECT
         COUNT(*) AS total,
-        sum(case when (t1.visit_start_datetime>t1.visit_end_datetime) then 1 else 0 end) as wrong_date
+        sum(case when (t1.visit_start_date>t1.visit_end_date) then 1 else 0 end) as wrong_date
     FROM
        `{}.unioned_ehr_visit_occurrence` AS t1
 
@@ -251,7 +251,7 @@ temporal_df = pd.io.gbq.read_gbq('''
     SELECT
         src_hpo_id,
         COUNT(*) AS total_rows,
-        sum(case when (t1.visit_start_datetime>t1.visit_end_datetime) then 1 else 0 end) as wrong_date_rows
+        sum(case when (t1.visit_start_date>t1.visit_end_date) then 1 else 0 end) as wrong_date_rows
     FROM
        `{}.unioned_ehr_visit_occurrence` AS t1
     INNER JOIN
@@ -298,7 +298,7 @@ print('Getting the data from the database...')
 temporal_df = pd.io.gbq.read_gbq('''
     SELECT
         COUNT(*) AS total,
-        sum(case when (t1.condition_start_datetime>t1.condition_end_datetime) then 1 else 0 end) as wrong_date
+        sum(case when (t1.condition_start_date>t1.condition_end_date) then 1 else 0 end) as wrong_date
     FROM
        `{}.unioned_ehr_condition_occurrence` AS t1
     '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
@@ -325,7 +325,7 @@ temporal_df = pd.io.gbq.read_gbq('''
     SELECT
         src_hpo_id,
         COUNT(*) AS total_rows,
-        sum(case when (t1.condition_start_datetime>t1.condition_end_datetime) then 1 else 0 end) as wrong_date_rows
+        sum(case when (t1.condition_start_date>t1.condition_end_date) then 1 else 0 end) as wrong_date_rows
     FROM
        `{}.unioned_ehr_condition_occurrence` AS t1
     INNER JOIN
@@ -375,7 +375,7 @@ print('Getting the data from the database...')
 temporal_df = pd.io.gbq.read_gbq('''
     SELECT
         COUNT(*) AS total,
-        sum(case when (t1.drug_exposure_start_datetime>t1.drug_exposure_end_datetime) then 1 else 0 end) as wrong_date
+        sum(case when (t1.drug_exposure_start_date>t1.drug_exposure_end_date) then 1 else 0 end) as wrong_date
     FROM
        `{}.unioned_ehr_drug_exposure` AS t1
     '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
@@ -402,7 +402,7 @@ temporal_df = pd.io.gbq.read_gbq('''
     SELECT
         src_hpo_id,
         COUNT(*) AS total_rows,
-        sum(case when (t1.drug_exposure_start_datetime>t1.drug_exposure_end_datetime) then 1 else 0 end) as wrong_date_rows
+        sum(case when (t1.drug_exposure_start_date>t1.drug_exposure_end_date) then 1 else 0 end) as wrong_date_rows
     FROM
        `{}.unioned_ehr_drug_exposure` AS t1
     INNER JOIN
@@ -447,7 +447,7 @@ print('Getting the data from the database...')
 temporal_df = pd.io.gbq.read_gbq('''
     SELECT
         COUNT(*) AS total,
-        sum(case when (t1.device_exposure_start_datetime>t1.device_exposure_end_datetime) then 1 else 0 end) as wrong_date
+        sum(case when (t1.device_exposure_start_date>t1.device_exposure_end_date) then 1 else 0 end) as wrong_date
     FROM
        `{}.unioned_ehr_device_exposure` AS t1
     '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
@@ -473,7 +473,7 @@ temporal_df = pd.io.gbq.read_gbq('''
     SELECT
         src_hpo_id,
         COUNT(*) AS total_rows,
-        sum(case when (t1.device_exposure_start_datetime>t1.device_exposure_end_datetime) then 1 else 0 end) as wrong_date_rows
+        sum(case when (t1.device_exposure_start_date>t1.device_exposure_end_date) then 1 else 0 end) as wrong_date_rows
     FROM
        `{}.unioned_ehr_device_exposure` AS t1
     INNER JOIN
