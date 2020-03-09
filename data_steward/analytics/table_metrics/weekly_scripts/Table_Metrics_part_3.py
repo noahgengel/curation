@@ -966,45 +966,80 @@ birth_df['AGE'].hist(bins=88)
 
 # # Participant should have supporting data in either lab results or drugs if he/she has a condition code for diabetes.
 
-# ## T2D
+# ## T2D - determine those who have diabetes according to the 'condition' table
 
-DATASET
+persons_with_conditions_related_to_diabetes_query = """
+CREATE TABLE `{DATASET}.persons_with_diabetes_according_to_condition_table`
+OPTIONS
+(expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 MINUTE)
+)
+AS
+SELECT
+DISTINCT
+mco.src_hpo_id, 
+p.person_id, 1 as t2d
+FROM
+`{DATASET}.unioned_ehr_person` p
+JOIN
+`{DATASET}.unioned_ehr_condition_occurrence` co
+ON
+p.person_id = co.person_id
+JOIN
+`{DATASET}.concept` c
+ON
+co.condition_concept_id = c.concept_id
+JOIN
+`{DATASET}._mapping_condition_occurrence` mco
+ON
+co.condition_occurrence_id = mco.condition_occurrence_id 
+WHERE
+LOWER(c.concept_name) LIKE '%diabetes%'
+AND
+(invalid_reason is null or invalid_reason = '')
+GROUP BY 1, 2
+ORDER BY 1, 2 DESC
+""".format(DATASET = DATASET)
+
+persons_with_conditions_related_to_diabetes = pd.io.gbq.read_gbq(
+    persons_with_conditions_related_to_diabetes_query, dialect = 'standard')
+
+num_persons_w_diabetes_query = """
+SELECT
+DISTINCT
+COUNT(p.person_id) as num_with_diab
+FROM
+`{DATASET}.persons_with_diabetes_according_to_condition_table` p
+""".format(DATASET = DATASET)
+
+num_persons_w_diabetes = pd.io.gbq.read_gbq(num_persons_w_diabetes_query, dialect = 'standard')
 
 # +
-######################################
-print('Getting the data from the database...')
-######################################
+diabetics = num_persons_w_diabetes['num_with_diab'][0]
 
-t2d_condition = pd.io.gbq.read_gbq("""
-    SELECT
-    DISTINCT
-    mco.src_hpo_id, 
-    p.person_id, 1 as t2d
-    FROM
-    `{DATASET}.unioned_ehr_person` p
-    JOIN
-    `{DATASET}.unioned_ehr_condition_occurrence` co
-    ON
-    p.person_id = co.person_id
-    JOIN
-    `{DATASET}.concept` c
-    ON
-    co.condition_concept_id = c.concept_id
-    JOIN
-    `{DATASET}._mapping_condition_occurrence` mco
-    ON
-    co.condition_occurrence_id = mco.condition_occurrence_id 
-    WHERE
-    LOWER(c.concept_name) LIKE '%diabetes%'
-    GROUP BY 1
-    ORDER BY 1 DESC
-    """.format(DATASET = DATASET, dialect='standard'))
-
-t2d_condition.shape
-
+print("There are {diabetics} persons with diabetes in the total dataset".format(diabetics = diabetics))
 # -
 
-t2d_condition.head()
+create_table_with_substantiating_t2d_drug_concept_ids = """
+CREATE TABLE `{DATASET}.substantiating_t2diabetes_drug_concept_ids`
+OPTIONS (
+expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 MINUTE)
+) AS
+SELECT
+DISTINCT
+ca.descendant_concept_id 
+FROM
+`{DATASET}.concept` c
+JOIN
+`{DATASET}.concept_ancestor` ca
+ON
+c.concept_id = ca.ancestor_concept_id 
+WHERE
+ca.ancestor_concept_id  IN
+(1529331,1530014,1594973,1583722,1597756,1560171,19067100,1559684,1503297,1510202,1502826,
+1525215,1516766,1547504,1580747,1502809,1515249)
+""".format(DATASET = DATASET)
+
+substantiating_t2d_drug_concept_ids = pd.io.gbq.read_gbq(create_table_with_substantiating_t2d_drug_concept_ids, dialect = 'standard')
 
 # ## Drug
 
@@ -1013,60 +1048,29 @@ t2d_condition.head()
 print('Getting the data from the database...')
 ######################################
 
-drug = pd.io.gbq.read_gbq('''
-    SELECT
-            DISTINCT
-            src_hpo_id,
-            person_id,
-            1 as drug
-        FROM
-            `{}.concept`  AS t1
-        INNER JOIN
-            `{}.unioned_ehr_drug_exposure` AS t2
-        ON
-            t1.concept_id=t2.drug_concept_id
-        INNER JOIN
-            (SELECT
-                DISTINCT * 
-            FROM
-                 `{}._mapping_drug_exposure`)  AS t3
-        ON
-            t3.drug_exposure_id=t2.drug_exposure_id
-        WHERE concept_id in (1529331,1530014,1594973,1583722,1597756,1560171,19067100,1559684,1503297,1510202,1502826,
-        1525215,1516766,1547504,1580747,1502809,1515249)and (invalid_reason is null or invalid_reason='')
-    UNION DISTINCT 
-        select 
-            DISTINCT
-            src_hpo_id,
-            person_id,
-            1 as drug
-                FROM
-                    `{}.concept`  AS t4
-                INNER JOIN 
-                    `{}.concept_ancestor` AS t5
-                ON 
-                    t4.concept_id = t5.descendant_concept_id
-                INNER JOIN
-                    `{}.unioned_ehr_drug_exposure` AS t6
-                ON
-                    t4.concept_id=t6.drug_concept_id
-                INNER JOIN
-                    (SELECT
-                        DISTINCT * 
-                    FROM
-                         `{}._mapping_drug_exposure`)  AS t7
-                ON
-                    t7.drug_exposure_id=t6.drug_exposure_id
-          and t5.ancestor_concept_id in (1529331,1530014,1594973,1583722,1597756,1560171,19067100,1559684,1503297,1510202,
-          1502826,1525215,1516766,1547504,1580747,1502809,1515249)
-          and (t4.invalid_reason is null or t4.invalid_reason='')
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                          dialect='standard')
-drug.shape
+persons_w_t2d_by_condition_and_substantiating_drugs_query = """
+SELECT
+DISTINCT
+p.src_hpo_id, p.person_id
+FROM
+`{DATASET}.persons_with_diabetes_according_to_condition_table` p
+RIGHT JOIN
+`{DATASET}.unioned_ehr_drug_exposure` de  -- get the relevant drugs
+ON
+p.person_id = de.person_id
+RIGHT JOIN
+`{DATASET}.substantiating_t2diabetes_drug_concept_ids` t2drugs  -- only focus on the drugs that substantiate diabetes
+ON
+de.drug_concept_id = t2drugs.descendant_concept_id 
+""".format(DATASET = DATASET)
+
+
+persons_with_substantiating_drugs = pd.io.gbq.read_gbq(persons_w_t2d_by_condition_and_substantiating_drugs_query, dialect='standard')
 # -
 
-drug.head(15)
+persons_with_substantiating_drugs
+
+persons_with_substantiating_drugs.shape
 
 # ## glucose_lab
 
