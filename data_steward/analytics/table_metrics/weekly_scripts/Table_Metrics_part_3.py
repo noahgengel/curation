@@ -271,12 +271,12 @@ temporal_df = pd.io.gbq.read_gbq('''
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['succes_rate'] = 100 - round(
+temporal_df['success_rate'] = 100 - round(
     100 * temporal_df['wrong_date_rows'] / temporal_df['total_rows'], 1)
 temporal_df
 
 visit_occurrence = temporal_df.rename(
-    columns={"succes_rate": "visit_occurrence"})
+    columns={"success_rate": "visit_occurrence"})
 visit_occurrence = visit_occurrence[["src_hpo_id", "visit_occurrence"]]
 visit_occurrence = visit_occurrence.fillna(100)
 visit_occurrence
@@ -346,12 +346,12 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['succes_rate'] = 100 - round(
+temporal_df['success_rate'] = 100 - round(
     100 * temporal_df['wrong_date_rows'] / temporal_df['total_rows'], 1)
 temporal_df
 
 condition_occurrence = temporal_df.rename(
-    columns={"succes_rate": "condition_occurrence"})
+    columns={"success_rate": "condition_occurrence"})
 condition_occurrence = condition_occurrence[[
     "src_hpo_id", "condition_occurrence"
 ]]
@@ -421,11 +421,11 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['succes_rate'] = 100 - round(
+temporal_df['success_rate'] = 100 - round(
     100 * temporal_df['wrong_date_rows'] / temporal_df['total_rows'], 1)
 temporal_df
 
-drug_exposure = temporal_df.rename(columns={"succes_rate": "drug_exposure"})
+drug_exposure = temporal_df.rename(columns={"success_rate": "drug_exposure"})
 drug_exposure = drug_exposure[["src_hpo_id", "drug_exposure"]]
 drug_exposure = drug_exposure.fillna(100)
 drug_exposure
@@ -492,11 +492,11 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['succes_rate'] = 100 - round(
+temporal_df['success_rate'] = 100 - round(
     100 * temporal_df['wrong_date_rows'] / temporal_df['total_rows'], 1)
 temporal_df
 
-device_exposure = temporal_df.rename(columns={"succes_rate": "device_exposure"})
+device_exposure = temporal_df.rename(columns={"success_rate": "device_exposure"})
 device_exposure = device_exposure[["src_hpo_id", "device_exposure"]]
 device_exposure = device_exposure.fillna(100)
 device_exposure
@@ -514,21 +514,21 @@ temporal_df
 
 # +
 
-succes_rate = pd.merge(visit_occurrence,
+success_rate = pd.merge(visit_occurrence,
                        condition_occurrence,
                        how='outer',
                        on='src_hpo_id')
-succes_rate = pd.merge(succes_rate, drug_exposure, how='outer', on='src_hpo_id')
-succes_rate = pd.merge(succes_rate,
+success_rate = pd.merge(success_rate, drug_exposure, how='outer', on='src_hpo_id')
+success_rate = pd.merge(success_rate,
                        device_exposure,
                        how='outer',
                        on='src_hpo_id')
-succes_rate = pd.merge(succes_rate, site_df, how='outer', on='src_hpo_id')
-succes_rate = succes_rate.fillna("No Data")
-succes_rate
+success_rate = pd.merge(success_rate, site_df, how='outer', on='src_hpo_id')
+success_rate = success_rate.fillna("No Data")
+success_rate
 # -
 
-succes_rate.to_csv("data\\end_before_begin.csv")
+success_rate.to_csv("data\\end_before_begin.csv")
 
 # # No data point exists beyond 30 days of the death date. (Achilles rule_id #3)
 
@@ -566,14 +566,14 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['succes_rate'] = 100 - round(
+temporal_df['success_rate'] = 100 - round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
 # - main reason death date entered as default value ("1890")
 
 visit_occurrence = temporal_df.rename(
-    columns={"succes_rate": "visit_occurrence"})
+    columns={"success_rate": "visit_occurrence"})
 visit_occurrence = visit_occurrence[["src_hpo_id", "visit_occurrence"]]
 visit_occurrence = visit_occurrence.fillna(100)
 visit_occurrence
@@ -612,12 +612,12 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['succes_rate'] = 100 - round(
+temporal_df['success_rate'] = 100 - round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
 condition_occurrence = temporal_df.rename(
-    columns={"succes_rate": "condition_occurrence"})
+    columns={"success_rate": "condition_occurrence"})
 condition_occurrence = condition_occurrence[[
     "src_hpo_id", "condition_occurrence"
 ]]
@@ -658,11 +658,11 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['succes_rate'] = 100 - round(
+temporal_df['success_rate'] = 100 - round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
-drug_exposure = temporal_df.rename(columns={"succes_rate": "drug_exposure"})
+drug_exposure = temporal_df.rename(columns={"success_rate": "drug_exposure"})
 drug_exposure = drug_exposure[["src_hpo_id", "drug_exposure"]]
 drug_exposure = drug_exposure.fillna(100)
 drug_exposure
@@ -701,11 +701,11 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['succes_rate'] = 100 - round(
+temporal_df['success_rate'] = 100 - round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
-measurement = temporal_df.rename(columns={"succes_rate": "measurement"})
+measurement = temporal_df.rename(columns={"success_rate": "measurement"})
 measurement = measurement[["src_hpo_id", "measurement"]]
 measurement = measurement.fillna(100)
 measurement
@@ -744,12 +744,12 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['succes_rate'] = 100 - round(
+temporal_df['success_rate'] = 100 - round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
 procedure_occurrence = temporal_df.rename(
-    columns={"succes_rate": "procedure_occurrence"})
+    columns={"success_rate": "procedure_occurrence"})
 procedure_occurrence = procedure_occurrence[[
     "src_hpo_id", "procedure_occurrence"
 ]]
@@ -790,11 +790,11 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['succes_rate'] = 100 - round(
+temporal_df['success_rate'] = 100 - round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
-observation = temporal_df.rename(columns={"succes_rate": "observation"})
+observation = temporal_df.rename(columns={"success_rate": "observation"})
 observation = observation[["src_hpo_id", "observation"]]
 observation = observation.fillna(100)
 observation
@@ -833,16 +833,16 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['succes_rate'] = 100 - round(
+temporal_df['success_rate'] = 100 - round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
-device_exposure = temporal_df.rename(columns={"succes_rate": "device_exposure"})
+device_exposure = temporal_df.rename(columns={"success_rate": "device_exposure"})
 device_exposure = device_exposure[["src_hpo_id", "device_exposure"]]
 device_exposure = device_exposure.fillna(100)
 device_exposure
 
-# ## 4. Succes Rate Temporal Data Points - Data After Death Date
+# ## 4. Success Rate Temporal Data Points - Data After Death Date
 
 datas = [
     condition_occurrence, drug_exposure, measurement, procedure_occurrence,
@@ -856,12 +856,12 @@ for filename in datas:
 
 master_df
 
-succes_rate = pd.merge(master_df, site_df, how='outer', on='src_hpo_id')
-succes_rate = succes_rate.fillna("No Data")
+success_rate = pd.merge(master_df, site_df, how='outer', on='src_hpo_id')
+success_rate = succes_rate.fillna("No Data")
 
-succes_rate
+success_rate
 
-succes_rate.to_csv("data\\data_after_death.csv")
+success_rate.to_csv("data\\data_after_death.csv")
 
 # # Age of participant should NOT be below 18 and should NOT be too high (Achilles rule_id #20 and 21)
 
