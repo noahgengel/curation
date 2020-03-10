@@ -465,4 +465,102 @@ final_all_units_df.to_csv("{cwd}\measurement_units.csv".format(cwd = cwd))
 # #  Integration of Routes for Select Drugs:
 #
 
-drugs_standard_df.to_csv("{cwd}\drug_routes.csv".format(cwd = cwd))
+# #### Getting the numbers for all of the route concept IDs by site
+
+# +
+route_concept_ids_by_site_query = """
+CREATE TABLE `{DATASET}.sites_route_counts`
+OPTIONS (
+expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 MINUTE)
+)
+AS
+SELECT
+DISTINCT
+mde.src_hpo_id, COUNT(de.route_concept_id) as number_total_routes
+FROM
+`{DATASET}.unioned_ehr_drug_exposure` de
+JOIN
+`{DATASET}._mapping_drug_exposure` mde
+ON
+de.drug_exposure_id = mde.drug_exposure_id 
+JOIN
+`{DATASET}.concept` c
+ON
+de.route_concept_id = c.concept_id 
+GROUP BY 1
+ORDER BY number_total_routes DESC
+""".format(DATASET = DATASET)
+
+route_concept_ids_by_site = pd.io.gbq.read_gbq(route_concept_ids_by_site_query, dialect='standard')
+
+# +
+route_concept_ids_by_site_query = """
+SELECT
+*
+FROM
+`{DATASET}.sites_route_counts`
+""".format(DATASET = DATASET)
+
+route_concept_ids_by_site = pd.io.gbq.read_gbq(route_concept_ids_by_site_query, dialect='standard')
+# -
+
+route_concept_ids_by_site
+
+# #### Below are the "successful" route concept IDs
+
+# +
+successful_route_concept_ids_by_site_query = """
+CREATE TABLE `{DATASET}.sites_successful_route_counts`
+OPTIONS (
+expiration_timestamp=TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 MINUTE)
+)
+AS
+SELECT
+DISTINCT
+mde.src_hpo_id, COUNT(de.route_concept_id) as number_valid_routes
+FROM
+`{DATASET}.unioned_ehr_drug_exposure` de
+JOIN
+`{DATASET}._mapping_drug_exposure` mde
+ON
+de.drug_exposure_id = mde.drug_exposure_id 
+JOIN
+`{DATASET}.concept` c
+ON
+de.route_concept_id = c.concept_id
+WHERE
+c.standard_concept IN ('S')
+AND
+LOWER(c.domain_id) LIKE '%route%'
+GROUP BY 1
+ORDER BY number_valid_routes DESC
+""".format(DATASET = DATASET)
+
+successful_route_concept_ids_by_site = pd.io.gbq.read_gbq(successful_route_concept_ids_by_site_query, dialect='standard')
+
+# +
+successful_route_concept_ids_by_site_query = """
+SELECT
+*
+FROM
+`{DATASET}.sites_successful_route_counts`
+""".format(DATASET = DATASET)
+
+successful_route_concept_ids_by_site = pd.io.gbq.read_gbq(successful_route_concept_ids_by_site_query, dialect='standard')
+# -
+
+successful_route_concept_ids_by_site
+
+final_all_routes_df = pd.merge(site_df, route_concept_ids_by_site, on = 'src_hpo_id', how = 'left')
+
+final_all_routes_df = pd.merge(final_all_routes_df, successful_route_concept_ids_by_site, on = 'src_hpo_id', how = 'left')
+
+final_all_routes_df['total_route_success_rate'] = round(final_all_routes_df['number_valid_routes'] / final_all_routes_df['number_total_routes'] * 100, 2)
+
+final_all_routes_df = final_all_routes_df.fillna(0)
+
+final_all_routes_df = final_all_routes_df.sort_values(by='total_route_success_rate', ascending = False)
+
+final_all_routes_df
+
+final_all_routes_df.to_csv("{cwd}\drug_routes.csv".format(cwd = cwd))
