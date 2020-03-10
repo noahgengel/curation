@@ -78,7 +78,7 @@ dic = {
         "ipmc_uchicago", "aouw_mcri", "syhc", "cpmc_ceders", "seec_ufl",
         "saou_uab", "trans_am_baylor", "cpmc_ucsd", "ecchc", "chci", "aouw_uwh",
         "cpmc_usc", "hrhc", "ipmc_northshore", "chs", "cpmc_ucsf", "jhchc",
-        "aouw_mcw", "cpmc_ucd", "ipmc_rush"
+        "aouw_mcw", "cpmc_ucd", "ipmc_rush", "va", "saou_umc"
     ],
     'HPO': [
         "UAB Selma", "UAB Huntsville", "Tulane University", "Temple University",
@@ -101,7 +101,9 @@ dic = {
         "University of Southern California", "HRHCare",
         "NorthShore University Health System", "Cherokee Health Systems",
         "UC San Francisco", "Jackson-Hinds CHC", "Medical College of Wisconsin",
-        "UC Davis", "Rush University"
+        "UC Davis", "Rush University", 
+        "United States Department of Veterans Affairs - Boston",
+        "University Medical Center (UA Tuscaloosa)"
     ]
 }
 
