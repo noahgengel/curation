@@ -51,6 +51,7 @@ from datetime import date
 from datetime import time
 from datetime import timedelta
 import time
+import math
 
 DATASET = 'aou-res-curation-prod.ehr_ops'
 
@@ -67,6 +68,11 @@ def cstr(s, color='black'):
 
 
 print('done.')
+# -
+
+cwd = os.getcwd()
+cwd = str(cwd)
+print(cwd)
 
 # +
 dic = {
@@ -526,11 +532,11 @@ success_rate = pd.merge(success_rate,
                        how='outer',
                        on='src_hpo_id')
 success_rate = pd.merge(success_rate, site_df, how='outer', on='src_hpo_id')
-success_rate = success_rate.fillna("No Data")
+success_rate = success_rate.fillna(100)
 success_rate
 # -
 
-success_rate.to_csv("data\\end_before_begin.csv")
+success_rate.to_csv("{cwd}\end_before_begin.csv".format(cwd = cwd))
 
 # # No data point exists beyond 30 days of the death date. (Achilles rule_id #3)
 
@@ -859,11 +865,11 @@ for filename in datas:
 master_df
 
 success_rate = pd.merge(master_df, site_df, how='outer', on='src_hpo_id')
-success_rate = succes_rate.fillna("No Data")
+success_rate = success_rate.fillna(100)
 
 success_rate
 
-success_rate.to_csv("data\\data_after_death.csv")
+success_rate.to_csv("{cwd}\data_after_death.csv".format(cwd = cwd))
 
 # # Age of participant should NOT be below 18 and should NOT be too high (Achilles rule_id #20 and 21)
 
@@ -968,7 +974,7 @@ birth_df['AGE'].hist(bins=88)
 
 # # Participant should have supporting data in either lab results or drugs if he/she has a condition code for diabetes.
 
-# ## T2D - determine those who have diabetes according to the 'condition' table
+# ## Determine those who have diabetes according to the 'condition' table
 
 persons_with_conditions_related_to_diabetes_query = """
 CREATE TABLE `{DATASET}.persons_with_diabetes_according_to_condition_table`
@@ -978,8 +984,7 @@ OPTIONS
 AS
 SELECT
 DISTINCT
-mco.src_hpo_id, 
-p.person_id, 1 as t2d
+mco.src_hpo_id, p.person_id
 FROM
 `{DATASET}.unioned_ehr_person` p
 JOIN
@@ -1008,7 +1013,7 @@ persons_with_conditions_related_to_diabetes = pd.io.gbq.read_gbq(
 num_persons_w_diabetes_query = """
 SELECT
 DISTINCT
-COUNT(p.person_id) as num_with_diab
+SUM(p.person_id) as num_with_diab
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 """.format(DATASET = DATASET)
@@ -1020,6 +1025,20 @@ diabetics = num_persons_w_diabetes['num_with_diab'][0]
 
 print("There are {diabetics} persons with diabetes in the total dataset".format(diabetics = diabetics))
 # -
+
+diabetics_per_site_query = """
+SELECT
+DISTINCT
+p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab
+FROM
+`{DATASET}.persons_with_diabetes_according_to_condition_table` p
+GROUP BY 1
+ORDER BY num_with_diab DESC
+""".format(DATASET = DATASET)
+
+diabetics_per_site = pd.io.gbq.read_gbq(diabetics_per_site_query, dialect = 'standard')
+
+diabetics_per_site
 
 # ## Drug
 
@@ -1057,7 +1076,7 @@ print('Getting the data from the database...')
 persons_w_t2d_by_condition_and_substantiating_drugs_query = """
 SELECT
 DISTINCT
-p.src_hpo_id, p.person_id
+p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab_and_drugs
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 RIGHT JOIN
@@ -1068,15 +1087,17 @@ RIGHT JOIN
 `{DATASET}.substantiating_diabetic_drug_concept_ids` t2drugs  -- only focus on the drugs that substantiate diabetes
 ON
 de.drug_concept_id = t2drugs.descendant_concept_id 
+GROUP BY 1
+ORDER BY num_with_diab_and_drugs DESC
 """.format(DATASET = DATASET)
 
 
-persons_with_substantiating_drugs = pd.io.gbq.read_gbq(persons_w_t2d_by_condition_and_substantiating_drugs_query, dialect='standard')
+diabetics_with_substantiating_drugs = pd.io.gbq.read_gbq(persons_w_t2d_by_condition_and_substantiating_drugs_query, dialect='standard')
 # -
 
-persons_with_substantiating_drugs
+diabetics_with_substantiating_drugs
 
-persons_with_substantiating_drugs.shape
+diabetics_with_substantiating_drugs.shape
 
 # ## glucose_lab
 
@@ -1109,7 +1130,7 @@ valid_glucose_measurements = pd.io.gbq.read_gbq(valid_glucose_measurements_query
 diabetics_with_glucose_measurement_query = """
 SELECT
 DISTINCT
-p.person_id, p.src_hpo_id  
+p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab_and_glucose
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 RIGHT JOIN
@@ -1120,6 +1141,8 @@ RIGHT JOIN
 `{DATASET}.valid_glucose_labs` vgl
 ON
 vgl.concept_id = m.measurement_concept_id -- only get those with the substantiating labs
+GROUP BY 1
+ORDER BY num_with_diab_and_glucose DESC
 """.format(DATASET = DATASET)
 
 diabetics_with_glucose_measurement = pd.io.gbq.read_gbq(diabetics_with_glucose_measurement_query, dialect='standard')
@@ -1148,7 +1171,7 @@ hemoglobin_a1c_desc = pd.io.gbq.read_gbq(hemoglobin_a1c_desc_query, dialect='sta
 diabetics_with_a1c_measurement_query = """
 SELECT
 DISTINCT
-p.person_id, p.src_hpo_id  
+p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab_and_a1c
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 RIGHT JOIN
@@ -1159,6 +1182,8 @@ RIGHT JOIN
 `{DATASET}.a1c_descendants` a1c
 ON
 a1c.concept_id = m.measurement_concept_id -- only get those with the substantiating labs
+GROUP BY 1
+ORDER BY num_with_diab_and_a1c DESC
 """.format(DATASET = DATASET)
 
 # +
@@ -1177,7 +1202,7 @@ print('Getting the data from the database...')
 persons_with_insulin_query = """
 SELECT
 DISTINCT
-p.person_id, p.src_hpo_id  
+p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab_and_insulin
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 RIGHT JOIN
@@ -1190,88 +1215,31 @@ ON
 de.drug_concept_id = c.concept_id
 WHERE
 LOWER(c.concept_name) LIKE '%insulin%'  -- generous for detecting insulin
+GROUP BY 1
+ORDER BY num_with_diab_and_insulin DESC
 """.format(DATASET = DATASET)
-
-# +
-persons_with_insulin = pd.io.gbq.read_gbq(persons_with_insulin_query, dialect='standard')
-
-persons_with_insulin.shape
 # -
 
-insulin.head(15)
+diabetics_with_insulin = pd.io.gbq.read_gbq(persons_with_insulin_query, dialect='standard')
 
-diabet = pd.merge(t2d_condition,
-                  t1d_condition,
-                  on=["src_hpo_id", "person_id"],
-                  how="outer")
-diabet["diabetes"] = 1
+final_diabetic_df = pd.merge(diabetics_per_site, diabetics_with_substantiating_drugs, on = 'src_hpo_id')
 
-diabet = diabet.loc[:, ["src_hpo_id", "person_id", "diabetes"]]
-diabet.shape
+final_diabetic_df['diabetics_w_drugs'] = round(final_diabetic_df['num_with_diab_and_drugs'] / final_diabetic_df['num_with_diab'] * 100, 2)
 
-diabet.head()
+final_diabetic_df = pd.merge(final_diabetic_df, diabetics_with_glucose_measurement, on = 'src_hpo_id')
 
-total_diab = diabet.drop_duplicates(keep=False, inplace=False)
-total_diab.shape
+final_diabetic_df['diabetics_w_glucose'] = round(final_diabetic_df['num_with_diab_and_glucose'] / final_diabetic_df['num_with_diab'] * 100, 2)
 
-total_diab = total_diab.groupby(["src_hpo_id"
-                                ]).size().reset_index().rename(columns={
-                                    0: 'total_diabetes'
-                                }).sort_values(["total_diabetes"])
-total_diab
+final_diabetic_df = pd.merge(final_diabetic_df, diabetics_with_a1c_measurement, on = 'src_hpo_id')
 
-test = pd.merge(drug, glucose_lab, on=["src_hpo_id", "person_id"], how="outer")
-test = pd.merge(test,
-                fasting_glucose,
-                on=["src_hpo_id", "person_id"],
-                how="outer")
-test = pd.merge(test, a1c, on=["src_hpo_id", "person_id"], how="outer")
-test = pd.merge(test, insulin, on=["src_hpo_id", "person_id"], how="outer")
-test["tests"] = 1
+final_diabetic_df['diabetics_w_a1c'] = round(final_diabetic_df['num_with_diab_and_a1c'] / final_diabetic_df['num_with_diab'] * 100, 2)
 
-test = test.loc[:, ["src_hpo_id", "person_id", "tests"]]
-test.shape
+final_diabetic_df = pd.merge(final_diabetic_df, diabetics_with_insulin, on = 'src_hpo_id')
 
-test.head()
+final_diabetic_df['diabetics_w_insulin'] = round(final_diabetic_df['num_with_diab_and_insulin'] / final_diabetic_df['num_with_diab'] * 100, 2)
 
-total_test = test.drop_duplicates(keep=False, inplace=False)
-total_test.shape
+final_diabetic_df
 
-total_test = total_test.groupby(["src_hpo_id"
-                                ]).size().reset_index().rename(columns={
-                                    0: 'total_diabetes'
-                                }).sort_values(["total_diabetes"])
-total_test
+success_rate.to_csv("{cwd}\data_after_death.csv".format(cwd = cwd))
 
-diabetes_and_test = pd.merge(test,
-                             diabet,
-                             on=["src_hpo_id", "person_id"],
-                             how="outer")
 
-diabetes_and_test.head()
-
-mistakes = diabetes_and_test.loc[(diabetes_and_test["tests"].isnull()) &
-                                 (diabetes_and_test["diabetes"] == 1), :]
-
-mistakes.shape
-
-mistakes.head(5)
-
-diabets_no_proof = mistakes.groupby(['src_hpo_id'
-                                    ]).size().reset_index().rename(columns={
-                                        0: 'diabets_no_proof'
-                                    }).sort_values(["diabets_no_proof"])
-diabets_no_proof
-
-combined = diabetes_and_test = pd.merge(diabets_no_proof,
-                                        total_diab,
-                                        on=["src_hpo_id"],
-                                        how="outer")
-combined = combined.fillna(0)
-combined
-
-combined = pd.merge(combined, site_df, how='outer', on='src_hpo_id')
-combined = combined.fillna("No Data")
-combined
-
-combined.to_csv("data\\diabetes.csv")

@@ -66,6 +66,11 @@ def cstr(s, color='black'):
 
 
 print('done.')
+# -
+
+cwd = os.getcwd()
+cwd = str(cwd)
+print(cwd)
 
 # +
 dic = {
@@ -711,4 +716,4 @@ sites_drug_success = sites_drug_success.fillna(0)
 
 sites_drug_success
 
-sites_drug_success.to_csv("data\\drug_success.csv")
+sites_drug_success.to_csv("{cwd}\drug_success.csv".format(cwd = cwd))

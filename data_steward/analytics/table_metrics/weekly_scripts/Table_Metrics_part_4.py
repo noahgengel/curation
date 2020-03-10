@@ -67,6 +67,11 @@ def cstr(s, color='black'):
 
 
 print('done.')
+# -
+
+cwd = os.getcwd()
+cwd = str(cwd)
+print(cwd)
 
 # +
 dic = {
@@ -329,7 +334,7 @@ unit_standard_df = unit_standard_df.fillna("No Data")
 
 unit_standard_df
 
-unit_standard_df.to_csv("data\\unit_integration.csv")
+unit_standard_df.to_csv("{cwd}\unit_integration.csv".format(cwd = cwd))
 
 # #  Integration of Routes for Select Drugs:
 #
@@ -1347,4 +1352,4 @@ drugs_standard_df = drugs_standard_df.fillna("No Data")
 drugs_standard_df
 # -
 
-drugs_standard_df.to_csv("data\\drug_routes.csv")
+drugs_standard_df.to_csv("{cwd}\drug_routes.csv".format(cwd = cwd))

@@ -66,6 +66,11 @@ def cstr(s, color='black'):
 
 
 print('done.')
+# -
+
+cwd = os.getcwd()
+cwd = str(cwd)
+print(cwd)
 
 # +
 dic = {
@@ -523,4 +528,4 @@ sites_measurement = sites_measurement.fillna(0)
 
 sites_measurement
 
-sites_measurement.to_csv("data\\sites_measurement.csv")
+sites_measurement.to_csv("{cwd}\sites_measurement.csv".format(cwd = cwd))

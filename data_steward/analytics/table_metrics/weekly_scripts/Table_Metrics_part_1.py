@@ -70,6 +70,11 @@ def cstr(s, color='black'):
 
 
 print('done.')
+# -
+
+cwd = os.getcwd()
+cwd = str(cwd)
+print(cwd)
 
 # +
 dic = {
@@ -755,7 +760,7 @@ sites_success = sites_success.fillna(0)
 
 sites_success
 
-sites_success.to_csv("data\\duplicates.csv")
+sites_success.to_csv("{cwd}\duplicates.csv".format(cwd = cwd))
 
 # # 20.Dataframe (row for each hpo_id) Condition_occurrence table, condition_source_concept_id field
 
@@ -1191,7 +1196,7 @@ master_df
 
 source = pd.merge(master_df, site_df, how='outer', on='src_hpo_id')
 source = source.fillna("No Data")
-source.to_csv("data\\source_concept_success_rate.csv")
+source.to_csv("{cwd}\source_concept_success_rate.csv".format(cwd = cwd))
 
 # # 16.Dataframe (row for each hpo_id) Condition_occurrence table, condition_concept_id field
 
@@ -1917,4 +1922,4 @@ success_rate
 success_rate = success_rate.fillna("No Data")
 success_rate
 
-success_rate.to_csv("data\\concept.csv")
+success_rate.to_csv("{cwd}\concept.csv".format(cwd = cwd))
