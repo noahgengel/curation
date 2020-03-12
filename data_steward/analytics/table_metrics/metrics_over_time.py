@@ -1119,10 +1119,16 @@ def standardize_column_types(sorted_tables, valid_cols_tot):
     sorted_tables_before_udscr = []
     new_valid_cols = []
 
+    tables_with_no_underscore = ['measurement', 'observation', 'total']
+
     # for comparison down the line
     for idx, table_type in enumerate(sorted_tables):
         under_encountered = False
-        end_idx = 0
+
+        if table_type not in tables_with_no_underscore:
+            end_idx = 0
+        else:  # want a different ending index
+            end_idx = len(table_type)
 
         for c_idx, char in enumerate(table_type):
             if char == '_' and not under_encountered:
@@ -1135,7 +1141,11 @@ def standardize_column_types(sorted_tables, valid_cols_tot):
     # ensure we are only looking for columns that appear in the sheet
     for idx, column_type in enumerate(valid_cols_tot):
         under_encountered = False
-        end_idx = 0
+
+        if table_type not in tables_with_no_underscore:
+            end_idx = 0
+        else:
+            end_idx = len(table_type) - 1
 
         for c_idx, char in enumerate(column_type):
             if char == '_' and not under_encountered:
@@ -1194,6 +1204,7 @@ def determine_dq_for_hpo_on_date(
         file_names, 'total')
 
     # tables that have 'total_row' and data quality metrics available
+    # should basically be the 'sorted tables' without any totals
     valid_cols_tot = standardize_column_types(sorted_tables, valid_cols_tot)
 
     incidence_for_site = site_and_date_info[date]  # data quality
@@ -1201,11 +1212,11 @@ def determine_dq_for_hpo_on_date(
     tot_rows_for_date, tot_errors_for_date = 0, 0
 
     # iterated first b/c rows per site parallels alphabetical site names
+    # also take off the last 'total_row' for both of the lists
     for table, table_row_total in zip(sorted_tables[:-1], valid_cols_tot):
         total_rows_per_site = hpo_total_rows_by_date[date][table_row_total]
 
         for site_name, site_rows in zip(sorted_names, total_rows_per_site):
-
             # found the site in question
             if site == site_name and not math.isnan(site_rows):
                 site_err_rate = incidence_for_site[site][table]
@@ -1215,6 +1226,9 @@ def determine_dq_for_hpo_on_date(
 
                     tot_table_errs_for_date = site_err_rate * site_rows
                     tot_errors_for_date += tot_table_errs_for_date
+
+    if date == 'march_11_2020' and site == 'saou_lsu':
+        print(tot_rows_for_date)
 
     if tot_rows_for_date > 0:  # calculated across all of the tables
         total_err_rate = tot_errors_for_date / tot_rows_for_date * 100
