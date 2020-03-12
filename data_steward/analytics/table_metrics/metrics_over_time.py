@@ -2268,7 +2268,7 @@ and quantify the data.
 # report29 = 'february_24_2020.xlsx'
 
 # UNIONED EHR COMPARISON
-report1 = 'may_11_2019.xlsx'
+report1 = 'may_10_2019.xlsx'
 report2 = 'july_15_2019.xlsx'
 report3 = 'october_04_2019.xlsx'
 report4 = 'march_11_2020.xlsx'
