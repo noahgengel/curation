@@ -2234,7 +2234,6 @@ and quantify the data.
 # report1 = 'july_15_2019.xlsx'
 # report2 = 'july_23_2019.xlsx'
 # report3 = 'august_05_2019.xlsx'
-
 # report4 = 'august_13_2019.xlsx'
 # report5 = 'august_19_2019.xlsx'
 # report6 = 'august_26_2019.xlsx'
@@ -2253,17 +2252,20 @@ and quantify the data.
 # report19 = 'november_27_2019.xlsx'
 # report20 = 'december_02_2019.xlsx'
 # report21 = 'december_09_2019.xlsx'
-report22 = 'december_16_2019.xlsx'
-report23 = 'december_23_2019.xlsx'
-report24 = 'january_21_2020.xlsx'
-report25 = 'january_27_2020.xlsx'
-report26 = 'february_03_2020.xlsx'
+# report22 = 'december_16_2019.xlsx'
+# report23 = 'december_23_2019.xlsx'
+# report24 = 'january_21_2020.xlsx'
+# report25 = 'january_27_2020.xlsx'
+# report26 = 'february_03_2020.xlsx'
+# report27 = 'february_10_2020.xlsx'
+# report28 = 'february_17_2020.xlsx'
+# report29 = 'february_24_2020.xlsx'
 
 # UNIONED EHR COMPARISON
-# report1 = 'may_10_2019.xlsx'
-# report2 = 'september_12_2019.xlsx'
-# report3 = 'december_09_2019.xlsx'
-# report4 = 'january_27_2020.xlsx'
+report1 = 'may_10_2019.xlsx'
+report2 = 'july_15_2019.xlsx'
+report3 = 'october_07_2019.xlsx'
+report4 = 'march_02_2020.xlsx'
 
 # DEID versus DEID_clean
 # report17 = 'october_05_2019.xlsx'
@@ -2276,7 +2278,7 @@ report26 = 'february_03_2020.xlsx'
 # report4 = 'october_10_2019.xlsx'
 # report5 = 'december_16_2019.xlsx'
 
-report_titles = [report22, report23, report24, report25, report26]
+report_titles = [report1, report2, report3, report4]
 
 metric_choice, metric_is_percent, ideal_low = get_user_analysis_choice()
 
