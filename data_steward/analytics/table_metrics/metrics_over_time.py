@@ -77,8 +77,8 @@ def get_user_analysis_choice():
         "A. Duplicates\n" \
         "B. Amount of data following death dates\n" \
         "C. Amount of data with end dates preceding start dates\n" \
-        "D. Success rate for source tables\n" \
-        "E. Success rate for concept tables\n" \
+        "D. Success rate for source_concept_id field\n" \
+        "E. Success rate for concept_id field\n" \
         "F. Population of the 'unit' field in the measurement table (" \
         "only for specified measurements)\n" \
         "G. Population of the 'route' field in the drug exposure table\n" \
@@ -92,7 +92,7 @@ def get_user_analysis_choice():
         'a': 'duplicates',
         'b': 'data_after_death',
         'c': 'end_before_begin',
-        'd': 'source',
+        'd': 'source_concept_success_rate',
         'e': 'concept',
         'f': 'unit_integration',
         'g': 'drug_routes',
@@ -109,7 +109,7 @@ def get_user_analysis_choice():
         'duplicates': False,
         'data_after_death': True,
         'end_before_begin': True,
-        'source': True,
+        'source_concept_success_rate': True,
         'concept': True,
         'unit_integration': True,
         'drug_routes': True,
@@ -122,7 +122,7 @@ def get_user_analysis_choice():
         'duplicates': True,
         'data_after_death': True,
         'end_before_begin': True,
-        'source': False,  # table success rates
+        'source_concept_success_rate': False,  # table success rates
         'concept': False,
         'unit_integration': False,
         'drug_routes': False,
@@ -226,7 +226,7 @@ def get_comprehensive_tables(dataframes, analytics_type):
                          'total', 'device_exposure',
                          'unit_well_defined_row', 'unit_total_row']
 
-    rate_focused_inputs = ['source', 'concept']
+    rate_focused_inputs = ['source_concept_success_rate', 'concept']
     final_tables = []
 
     for sheet in dataframes:  # for each date
@@ -239,8 +239,7 @@ def get_comprehensive_tables(dataframes, analytics_type):
         # get all of the columns; ensure the columns are only logged once
         if analytics_type in rate_focused_inputs:
             for col_label, _ in data_info.iteritems():
-                if col_label[-5:] != '_rate' and \
-                        col_label[-7:] != '_rate_y':
+                if col_label[-5:] != '_rate':
                     undocumented_cols.append(col_label)
 
         final_tables = [x for x in column_names if x not in
@@ -275,7 +274,7 @@ def get_info(sheet, row_num, percentage, sheet_name,
     mandatory_tables (lst): contains the tables that should be
         documented for every table and at every date.
 
-        target_low (bool): determines whether the number displayed
+    target_low (bool): determines whether the number displayed
         should be considered a positive or negative metric
 
     :return:
@@ -314,10 +313,10 @@ def get_info(sheet, row_num, percentage, sheet_name,
                         raise ValueError(
                             "Negative number detected in sheet {} for column "
                             "{}".format(sheet_name, col_label))
-                    elif percentage and number > 100:  # just in case
-                        raise ValueError(
-                            "Percentage value > 100 detected in sheet {} for "
-                            "column {}".format(sheet_name, col_label))
+                    # elif percentage and number > 100:  # just in case
+                    #     raise ValueError(
+                    #         "Percentage value > 100 detected in sheet {} for "
+                    #         "column {}".format(sheet_name, col_label))
 
                     # actual info to be logged if sensible data
                     elif percentage and target_low:  # proportion w/ errors
@@ -2143,7 +2142,7 @@ def generate_aggregate_sheets(file_names, sorted_tables, site_and_date_info,
     total_dfs (lst): list of pandas dataframes that document the
         data quality of the various data types
     """
-    if analytics_type in ['source', 'concept']:
+    if analytics_type in ['source_concept_success_rate', 'concept']:
         # three additional dataframes
         total_dfs = generate_additional_aggregate_dq_sheets(
             file_names, ordered_dates_str)
