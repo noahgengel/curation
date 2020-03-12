@@ -1220,9 +1220,6 @@ def determine_dq_for_hpo_on_date(
                     tot_table_errs_for_date = site_err_rate * site_rows
                     tot_errors_for_date += tot_table_errs_for_date
 
-    if date == 'march_11_2020' and site == 'saou_lsu':
-        print(tot_rows_for_date)
-
     if tot_rows_for_date > 0:  # calculated across all of the tables
         total_err_rate = tot_errors_for_date / tot_rows_for_date * 100
         total_err_rate = round(total_err_rate, 2)
