@@ -94,7 +94,7 @@ def get_user_analysis_choice():
         'c': 'end_before_begin',
         'd': 'source_concept_success_rate',
         'e': 'concept',
-        'f': 'unit_integration',
+        'f': 'measurement_units',
         'g': 'drug_routes',
         'h': 'drug_success',
         'i': 'sites_measurement'}
@@ -111,7 +111,7 @@ def get_user_analysis_choice():
         'end_before_begin': True,
         'source_concept_success_rate': True,
         'concept': True,
-        'unit_integration': True,
+        'measurement_units': True,
         'drug_routes': True,
         'drug_success': True,
         'sites_measurement': True
@@ -124,7 +124,7 @@ def get_user_analysis_choice():
         'end_before_begin': True,
         'source_concept_success_rate': False,  # table success rates
         'concept': False,
-        'unit_integration': False,
+        'measurement_units': False,
         'drug_routes': False,
         'drug_success': False,
         'sites_measurement': False
@@ -820,20 +820,14 @@ def determine_means_to_calculate_weighted_avg(
     underscore_idx = 0
 
     # need to specify the table to use as a reference
-    if analytics_type in ['unit_integration']:
+    if analytics_type in ['measurement_units']:
         table = 'measurement'
     elif analytics_type in ['drug_routes']:
-        if table == 'drugs_overall_success_rate':
-            table = 'drug_expousure'
-        # cannot calculate an aggregate statistic based on a specific
-        # drug class; we do not know how many of a particular drug
-        # class each site contributes
-        else:
-            return None
+        table = 'drug_exposure'
 
     # just a simple average; all sites contribute equally
     # since 'integration' only means having one instance
-    elif analytics_type in ['drug_routes', 'drug_success']:
+    elif analytics_type in ['sites_measurement', 'drug_success']:
         return np.nanmean(new_col_info)
 
     # ASSUMPTION: table naming convention (see #6 in the header)
@@ -1901,7 +1895,7 @@ def unit_integration_aggregate_sheet(
     any given table).
 
     One must use the original dataframe because the
-    unit_integration success rate ONLY looks at particular
+    measurement_units success rate ONLY looks at particular
     rows in the measurement table (namely rows where the
     concept_id is in a list of concept_ids that we are
     looking at as the DRC). This means that the 'total
@@ -2011,7 +2005,7 @@ def aggregate_sheet_route_population(
         # gathering data from all of the sites
         for site_name, total_drug_rows in zip(sorted_names, drug_rows):
             site_succ_rate = site_and_date_info[date][site_name][
-                'drugs_overall_success_rate']
+                'drug_exposure']
 
             if not math.isnan(total_drug_rows) and \
                 not math.isnan(site_succ_rate) and \
@@ -2147,7 +2141,7 @@ def generate_aggregate_sheets(file_names, sorted_tables, site_and_date_info,
         total_dfs = generate_additional_aggregate_dq_sheets(
             file_names, ordered_dates_str)
 
-    elif analytics_type in ['unit_integration']:
+    elif analytics_type in ['measurement_units']:
         # warrants unique approach since units
         # are only for selected measurements
         total_dfs = unit_integration_aggregate_sheet(
