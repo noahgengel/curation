@@ -168,21 +168,28 @@ def load_files(user_choice, file_names):
     sheets = []
 
     while num_files_indexed < len(file_names):
-        try:  # looking for the file
-            file_name = file_names[num_files_indexed]
+        file_name = file_names[num_files_indexed]
 
-            try:  # looking for the sheet
-                sheet = pd.read_excel(file_name, sheet_name=user_choice)
+        try:  # looking for the sheet
+            sheet = pd.read_excel(file_name, sheet_name=user_choice)
 
-                if sheet.empty:
-                    print("WARNING: No data found in the {} sheet "
-                          "in dataframe {}".format(
-                           user_choice, file_name))
-                    del file_names[num_files_indexed]
-                    num_files_indexed -= 1  # skip over the date
-                else:
-                    sheets.append(sheet)
-            except Exception as ex:  # sheet not in specified excel file
+            if sheet.empty:
+                print("WARNING: No data found in the {} sheet "
+                      "in dataframe {}".format(
+                       user_choice, file_name))
+                del file_names[num_files_indexed]
+                num_files_indexed -= 1  # skip over the date
+            else:
+                sheets.append(sheet)
+        except Exception as ex:  # sheet not in specified excel file
+            if type(ex).__name__ == "FileNotFoundError":
+                print("{} not found in the current directory: {}. Please "
+                      "ensure that the file names are consistent between "
+                      "the Python script and the file name in your current "
+                      "directory. ".format(file_names[num_files_indexed], cwd))
+                sys.exit(0)
+
+            else:
                 print("WARNING: No {} sheet found in dataframe {}. "
                       "This is a(n) {}.".format(
                         user_choice, file_name, type(ex).__name__))
@@ -190,14 +197,7 @@ def load_files(user_choice, file_names):
                 del file_names[num_files_indexed]
                 num_files_indexed -= 1  # skip over the date
 
-            num_files_indexed += 1
-
-        except FileNotFoundError:
-            print("{} not found in the current directory: {}. Please "
-                  "ensure that the file names are consistent between "
-                  "the Python script and the file name in your current "
-                  "directory. ".format(file_names[num_files_indexed], cwd))
-            sys.exit(0)
+        num_files_indexed += 1
 
     return sheets
 
@@ -2262,10 +2262,10 @@ and quantify the data.
 # report29 = 'february_24_2020.xlsx'
 
 # UNIONED EHR COMPARISON
-report1 = 'may_10_2019.xlsx'
+report1 = 'may_11_2019.xlsx'
 report2 = 'july_15_2019.xlsx'
-report3 = 'october_07_2019.xlsx'
-report4 = 'march_02_2020.xlsx'
+report3 = 'october_04_2019.xlsx'
+report4 = 'march_11_2020.xlsx'
 
 # DEID versus DEID_clean
 # report17 = 'october_05_2019.xlsx'
