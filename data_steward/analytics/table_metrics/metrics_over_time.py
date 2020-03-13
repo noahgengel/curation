@@ -2051,6 +2051,7 @@ def aggregate_sheet_integration(
         a. columns that are dates
         b. rows that are the different classes of
         drugs/measurements (e.g. ACE Inhibitor, lipids)
+        this include an 'all drugs' class
 
     each point within the dataframe shows the average
     integration across all sites for the particular
