@@ -224,7 +224,8 @@ def get_comprehensive_tables(dataframes, analytics_type):
 
     undocumented_cols = ['Unnamed: 0', 'src_hpo_id', 'HPO',
                          'total', 'device_exposure',
-                         'unit_well_defined_row', 'unit_total_row']
+                         'number_valid_units', 'number_total_units',
+                         'number_sel_meas', 'number_valid_units_sel_meas']
 
     rate_focused_inputs = ['source_concept_success_rate', 'concept']
     final_tables = []
@@ -1922,8 +1923,8 @@ def unit_integration_aggregate_sheet(
     for date_idx, date in enumerate(ordered_dates_str):
         df = dataframes[date_idx]
 
-        wd_col = df['unit_well_defined_row'].tolist()
-        tot_col = df['unit_total_row'].tolist()
+        wd_col = df['number_valid_units_sel_meas'].tolist()
+        tot_col = df['number_sel_meas'].tolist()
 
         tot_wd_units, tot_units = 0, 0
 
