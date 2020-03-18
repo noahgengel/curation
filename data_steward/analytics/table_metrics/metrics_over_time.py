@@ -1092,11 +1092,9 @@ def calculate_unit_aggregate_information(
     return weighted_avg
 
 
-
-def generate_table_dfs(sorted_names, sorted_tables,
-                       ordered_dates_str, site_and_date_info,
-                       percentage, file_names, analytics_type,
-                       dataframes):
+def generate_table_dfs(
+        sorted_names, sorted_tables, ordered_dates_str, site_and_date_info,
+        percentage, file_names, analytics_type, dataframes):
     """
     Function generates a unique dataframe containing data quality
     metrics. Each dataframe should match to the metrics for a
@@ -2107,35 +2105,36 @@ def aggregate_sheet_route_population(
     doing so would merely be a 'guestimate.'
     """
     aggregate_df_weighted = pd.DataFrame(
-        index=['drug_route_overall_success_rate'],
+        index=[
+            'number_total_routes', 'number_valid_routes',
+            'total_route_success_rate'],
         columns=ordered_dates_str)
 
     hpo_total_rows_by_date, _ = generate_hpo_contribution(
         file_names, 'total')
 
     for date in ordered_dates_str:
+        rows_w_unit_date, rows_total_date = 0, 0
         drug_rows = hpo_total_rows_by_date[date]['drug_total_row']
-        total_drug_rows_for_date = np.nansum(drug_rows)  # ignoring nan
-
-        rows_w_unit_date = 0
 
         # gathering data from all of the sites
         for site_name, total_drug_rows in zip(sorted_names, drug_rows):
-            site_succ_rate = site_and_date_info[date][site_name][
-                'drug_exposure']
+            site_successful_rows = site_and_date_info[date][site_name][
+                'number_valid_routes']
+            drug_rows = site_and_date_info[date][site_name][
+                'number_total_routes']
 
-            if not math.isnan(total_drug_rows) and \
-                not math.isnan(site_succ_rate) and \
-                not math.isnan(site_succ_rate):
-                    site_succ_rows = site_succ_rate * total_drug_rows
-                    rows_w_unit_date += site_succ_rows
+            if not math.isnan(drug_rows) and not math.isnan(site_successful_rows):
+                rows_w_unit_date += site_successful_rows
+                rows_total_date += drug_rows
 
-        if total_drug_rows_for_date > 0:
-            quality_for_date = round(rows_w_unit_date / total_drug_rows_for_date, 2)
+        if rows_total_date > 0:
+            quality_for_date = round(rows_w_unit_date / rows_total_date * 100, 2)
         else:
             quality_for_date = np.nan
 
-        aggregate_df_weighted[date] = quality_for_date
+        aggregate_df_weighted[date] = [
+            rows_total_date, rows_w_unit_date, quality_for_date]
 
     # putting in list to make it easy to append
     return [aggregate_df_weighted]
