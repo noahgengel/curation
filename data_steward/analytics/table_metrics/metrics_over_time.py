@@ -1007,13 +1007,13 @@ def generate_column_for_table_df(
             arith_avg = round(arith_avg, 2)
             new_col_info.append(arith_avg)
 
-        if analytics_type in ['measurement_units']:
+        elif analytics_type in ['measurement_units']:
             weighted_avg = calculate_unit_aggregate_information(
                 dataframes, date, ordered_dates_str, table)
 
             new_col_info.append(weighted_avg)
 
-        if analytics_type in ['drug_routes']:
+        elif analytics_type in ['drug_routes']:
             agg_info = calculate_route_aggregate_information(
                 dataframes, date, ordered_dates_str, table)
 
@@ -1212,10 +1212,11 @@ def generate_table_dfs(
         df_in_question = total_dfs[new_sheet_num]
 
         for date in ordered_dates_str:  # generate the columns
+            new_col_info = generate_column_for_table_df
 
             # new col info are the metrics from all of the sites in
             # alphabetical order followed by an 'aggregate' value.
-            df_in_question[date] = generate_column_for_table_df(
+            df_in_question[date] = new_col_info(
                 site_and_date_info, date, sorted_names, table,
                 percentage, file_names, analytics_type,
                 ordered_dates_str, dataframes)
