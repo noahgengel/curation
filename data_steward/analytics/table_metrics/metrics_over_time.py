@@ -1947,7 +1947,7 @@ def determine_table_dq_for_date(
     # now all the error rates for each table type; append to list
     if tot_rows_for_table > 0:
         err_rate_table = tot_errors_for_table / tot_rows_for_table
-        err_rate_table = round(err_rate_table, 3)
+        err_rate_table = round(err_rate_table * 100, 2)
         error_amounts_for_date.append(err_rate_table)
     else:
         error_amounts_for_date.append(float('NaN'))
@@ -2025,7 +2025,7 @@ def determine_weighted_average_of_percent(
         # aggregate data quality for a date
         if tot_rows_for_date > 0:
             tot_errors_for_date = tot_errors_for_date / tot_rows_for_date
-            tot_errors_for_date = round(tot_errors_for_date, 3)
+            tot_errors_for_date = round(tot_errors_for_date * 100, 2)
             error_amounts_for_date.append(tot_errors_for_date)
         else:
             error_amounts_for_date.append(float('NaN'))
