@@ -155,7 +155,7 @@ def load_files(user_choice, file_names):
     sheets (list): list of pandas dataframes. each dataframe contains
         info about data quality for all of the sites for a date.
 
-    NOTE: I recognize that the same 'skip sheet' protocol is implemented
+    NOTE: I recognize that the 'skip sheet' protocol is implemented
     twice but - since it was only implemented twice - I do not believe
     it warrants its own separate function.
     """
