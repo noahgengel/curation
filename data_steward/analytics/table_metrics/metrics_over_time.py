@@ -1012,6 +1012,13 @@ def generate_column_for_table_df(
                 dataframes, date, ordered_dates_str, table)
 
             new_col_info.append(weighted_avg)
+
+        if analytics_type in ['drug_routes']:
+            agg_info = calculate_route_aggregate_information(
+                dataframes, date, ordered_dates_str, table)
+
+            new_col_info.append(agg_info)
+
         else:
             # need to weight sites' relative contributions when
             # calculating an aggregate 'end' value
@@ -1024,6 +1031,61 @@ def generate_column_for_table_df(
                 new_col_info.append("N/A")
 
     return new_col_info
+
+
+def calculate_route_aggregate_information(
+        dataframes, date, ordered_dates_str, table):
+    """
+    Function is used to calculate the 'aggregate' statistic
+    for the 'route_concept_id integration sheet.' This necessitates its own
+    function because it references columns that are specific to
+    the route integration sheet.
+
+    :param
+    dataframes (list): list of pandas dataframes. each dataframe contains
+        info about data quality for all of the sites for a date.
+
+    date (str): date to investigate for populating the column
+
+    ordered_dates_str (lst): list of the different dates for
+        the data analysis outputs. goes from oldest to most
+        recent
+
+    :return:
+    agg_info (float): represents the aggregate information
+        statistic - either a sum of all the drugs/applicable
+        drugs - or an 'overall success rate'
+    """
+
+    for date_idx, date_from_list in enumerate(ordered_dates_str):
+        if date == date_from_list:
+            df = dataframes[date_idx]
+
+    try:
+        all_routes = df['number_total_routes'].tolist()
+        valid_routes = df['number_valid_routes'].tolist()
+
+        all_routes = sum_df_column(all_routes)
+        valid_routes = sum_df_column(valid_routes)
+
+        if table == 'number_total_routes':
+            agg_info = all_routes
+
+        elif table == 'number_valid_routes':
+            agg_info = valid_routes
+
+        elif table == 'total_route_success_rate':
+            weighted_avg = round(
+                valid_routes / all_routes * 100, 2)
+
+            agg_info = weighted_avg
+
+        else:
+            raise ValueError("Unexpected table found in the route sheet.")
+    except:
+        raise ValueError("Dataframe for the unit sheet not found.")
+
+    return agg_info
 
 
 def calculate_unit_aggregate_information(
