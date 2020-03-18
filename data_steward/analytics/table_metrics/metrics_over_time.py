@@ -77,8 +77,7 @@ def get_user_analysis_choice():
         "A. Duplicates\n" \
         "B. Amount of data following death dates\n" \
         "C. Amount of data with end dates preceding start dates\n" \
-        "D. Success rate for source_concept_id field\n" \
-        "E. Success rate for concept_id field\n" \
+        "D. Success rate for concept_id field\n" \
         "F. Population of the 'unit' field in the measurement table (" \
         "only for specified measurements)\n" \
         "G. Population of the 'route' field in the drug exposure table\n" \
@@ -92,8 +91,7 @@ def get_user_analysis_choice():
         'a': 'duplicates',
         'b': 'data_after_death',
         'c': 'end_before_begin',
-        'd': 'source_concept_success_rate',
-        'e': 'concept',
+        'd': 'concept',
         'f': 'measurement_units',
         'g': 'drug_routes',
         'h': 'drug_success',
@@ -109,7 +107,6 @@ def get_user_analysis_choice():
         'duplicates': False,
         'data_after_death': True,
         'end_before_begin': True,
-        'source_concept_success_rate': True,
         'concept': True,
         'measurement_units': True,
         'drug_routes': True,
@@ -122,7 +119,6 @@ def get_user_analysis_choice():
         'duplicates': True,
         'data_after_death': True,
         'end_before_begin': True,
-        'source_concept_success_rate': False,  # table success rates
         'concept': False,
         'measurement_units': False,
         'drug_routes': False,
