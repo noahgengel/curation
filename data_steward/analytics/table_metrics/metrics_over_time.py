@@ -1284,12 +1284,15 @@ def generate_column_for_hpo_df(
     new_col_info = []
     site_info = site_and_date_info[date][site]
 
+    no_need_for_total = ['sites_measurement', 'drug_success',
+                         'measurement_units', 'drug_routes']
+
     for table in tables_only:  # populating each row in the col
         new_col_info.append(site_info[table])
         tot_errs_date += site_info[table]
 
     # creating the 'aggregate' statistic for the bottom of the col
-    if analytics_type in ['sites_measurement', 'drug_success']:
+    if analytics_type in no_need_for_total:
         pass
     elif not percentage:
         new_col_info.append(tot_errs_date)
@@ -1352,14 +1355,16 @@ def generate_site_dfs(sorted_names, sorted_tables,
     """
     total_dfs = []
 
-    no_total_needed = ['sites_measurement', 'drug_success']
+    no_need_for_total = ['sites_measurement', 'drug_success',
+                         'measurement_units', 'drug_routes']
 
-    if analytics_type not in no_total_needed:
+    if analytics_type not in no_need_for_total:
         sorted_tables.append('total')
         # ignoring 'total'
         tables_only = sorted_tables[:-1]
     else:
-        # integration metric - the 'aggregate' statistic is already in place
+        # integration/field metric
+        # the 'aggregate' statistic is already in place
         tables_only = sorted_tables
 
     # ignoring 'aggregate_info'
@@ -1885,6 +1890,33 @@ def determine_weighted_average_of_percent(
     return [aggregate_df_weighted]
 
 
+def sum_df_column(column):
+    """
+    Function is used to take the column of a dataframe (presumably
+    from a analytics report Excel sheet) and returns the total.)
+    This is intentionally designed to avoid errors caused by
+    non-integer values.
+
+    :param
+    column (list): column from a dataframe that should be
+        traversed
+
+    :return:
+    total (int) value that represents the sum of the entire column
+    """
+    total = 0
+
+    for site_val in column:
+        try:
+            site_val = float(site_val)
+            if not math.isnan(site_val):
+                total += site_val
+        except ValueError:
+            pass
+
+    return total
+
+
 def unit_integration_aggregate_sheet(
         ordered_dates_str, dataframes):
     """
@@ -1917,35 +1949,33 @@ def unit_integration_aggregate_sheet(
         for each date investigated.
     """
     aggregate_df = pd.DataFrame(
-        index=['integration rate', 'total rows'], columns=ordered_dates_str)
+        index=['selected_units_success_rate', 'total_units_success_rate',
+               'proportion_selected_measurements'], columns=ordered_dates_str)
 
     # populating column-by-column
     for date_idx, date in enumerate(ordered_dates_str):
         df = dataframes[date_idx]
 
-        wd_col = df['number_valid_units_sel_meas'].tolist()
-        tot_col = df['number_sel_meas'].tolist()
+        all_units = df['number_total_units'].tolist()
+        valid_selected_meas = df['number_valid_units_sel_meas'].tolist()
+        valid_all_meas = df['number_valid_units'].tolist()
+        selected_meas = df['number_sel_meas'].tolist()
 
-        tot_wd_units, tot_units = 0, 0
+        all_units = sum_df_column(all_units)
+        valid_selected_meas = sum_df_column(valid_selected_meas)
+        valid_all_meas = sum_df_column(valid_all_meas)
+        selected_meas = sum_df_column(selected_meas)
 
-        for site_val in wd_col:
-            try:
-                site_val = float(site_val)
-                if not math.isnan(site_val):
-                    tot_wd_units += site_val
-            except ValueError:
-                pass
+        selected_success_rate = round(
+            valid_selected_meas / selected_meas * 100, 1)
+        total_success_rate = round(
+            valid_all_meas / all_units * 100, 1)
+        proportion_selected_measurements = round(
+            selected_meas / all_units * 100, 1)
 
-        for site_val in tot_col:
-            try:
-                site_val = float(site_val)
-                if not math.isnan(site_val):
-                    tot_units += site_val
-            except ValueError:
-                pass
-
-        tot_success_rate = round(tot_wd_units / tot_units * 100, 1)
-        aggregate_df[date] = [tot_success_rate, tot_units]
+        aggregate_df[date] = [
+            selected_success_rate, total_success_rate,
+            proportion_selected_measurements]
 
     return [aggregate_df]  # list so it can be easily appended
 
