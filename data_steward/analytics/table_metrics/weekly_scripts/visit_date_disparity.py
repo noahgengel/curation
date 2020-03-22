@@ -308,6 +308,8 @@ ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancie
 
 procedure_visit_df = pd.io.gbq.read_gbq(p_v_query, dialect='standard')
 
+
+
 procedure_visit_df
 
 # ### Now let's make the dataframe a little more condensed - only show the total number of 'bad records' for each site
@@ -317,6 +319,153 @@ bad_procedure_records_df = procedure_visit_df.groupby('src_hpo_id')['num_bad_rec
 bad_procedure_records_df
 
 num_total_procedure_records_query = """
+SELECT
+DISTINCT
+mp.src_hpo_id, count(p.procedure_occurrence_id) as num_total_records
+FROM
+`{DATASET}.unioned_ehr_procedure_occurrence`p
+JOIN
+`{DATASET}._mapping_procedure_occurrence` mp
+ON
+p.procedure_occurrence_id = mp.procedure_occurrence_id
+GROUP BY 1
+ORDER BY num_total_records DESC
+""".format(DATASET = DATASET)
+
+total_procedure_df = pd.io.gbq.read_gbq(num_total_procedure_records_query, dialect='standard')
+
+total_procedure_df = pd.merge(total_procedure_df, site_df, how='outer', on='src_hpo_id')
+
+total_procedure_df = total_procedure_df[['src_hpo_id', 'HPO', 'num_total_records']]
+
+final_procedure_df = pd.merge(total_procedure_df, bad_procedure_records_df, how='outer', on='src_hpo_id') 
+
+final_procedure_df = final_procedure_df.fillna(0)
+
+# ### Now we can actually calculate the 'tangible success rate'
+
+final_procedure_df['successful_date_adherence'] = \
+round((final_procedure_df['num_total_records'] - final_procedure_df['num_bad_records']) / final_procedure_df['num_total_records'] * 100, 2)
+
+# +
+final_procedure_df = final_procedure_df.fillna(0)
+
+final_procedure_df = final_procedure_df.sort_values(by=['successful_date_adherence'], ascending = False)
+# -
+
+final_procedure_df
+
+# ### to ensure all the dataframes are easy to ultimately merge, let's create a dataframe that only has the success rates and HPOs
+
+short_procedure_df = final_procedure_df.drop(columns=['num_total_records', 'num_bad_records'])
+
+# # Now let's move to the observation table
+
+observation_visit_query = """
+SELECT
+DISTINCT
+a.*, 
+(a.observation_vis_start_diff + a.observation_vis_end_diff + a.observation_vis_start_dt_diff + a.observation_vis_end_dt_diff + a.observation_dt_vis_start_dt_diff + a.observation_dt_vis_end_dt_diff) as total_diff
+FROM 
+( SELECT
+  mo.src_hpo_id, COUNT(mo.src_hpo_id) as num_bad_records, 
+  IFNULL(ABS(DATE_DIFF(o.observation_date, vo.visit_start_date, DAY)), 0) as observation_vis_start_diff,
+  IFNULL(ABS(DATE_DIFF(o.observation_date, vo.visit_end_date, DAY)), 0) as observation_vis_end_diff,
+  IFNULL(ABS(DATE_DIFF(CAST(vo.visit_start_datetime AS DATE), o.observation_date, DAY)), 0) as observation_vis_start_dt_diff,
+  IFNULL(ABS(DATE_DIFF(CAST(vo.visit_end_datetime AS DATE), o.observation_date, DAY)), 0) as observation_vis_end_dt_diff,
+  IFNULL(ABS(DATE_DIFF(CAST(o.observation_datetime AS DATE), CAST(vo.visit_start_datetime AS DATE), DAY)), 0) as observation_dt_vis_start_dt_diff,
+  IFNULL(ABS(DATE_DIFF(CAST(o.observation_datetime AS DATE), CAST(vo.visit_end_datetime AS DATE), DAY)), 0) as observation_dt_vis_end_dt_diff,
+
+  (
+  ABS(DATE_DIFF(o.observation_date, vo.visit_start_date, DAY)) = 
+  ABS(DATE_DIFF(o.observation_date, vo.visit_end_date, DAY)) 
+  AND
+  ABS(DATE_DIFF(o.observation_date, vo.visit_end_date, DAY)) =
+  ABS(DATE_DIFF(CAST(vo.visit_start_datetime AS DATE), o.observation_date, DAY)) 
+  AND
+  ABS(DATE_DIFF(CAST(vo.visit_start_datetime AS DATE), o.observation_date, DAY)) =
+  ABS(DATE_DIFF(CAST(vo.visit_end_datetime AS DATE), o.observation_date, DAY))
+  AND
+  ABS(DATE_DIFF(CAST(vo.visit_end_datetime AS DATE), o.observation_date, DAY)) = 
+  ABS(DATE_DIFF(CAST(o.observation_datetime AS DATE), CAST(vo.visit_start_datetime AS DATE), DAY)) 
+  AND
+  ABS(DATE_DIFF(CAST(o.observation_datetime AS DATE), CAST(vo.visit_start_datetime AS DATE), DAY)) = 
+  ABS(DATE_DIFF(CAST(o.observation_datetime AS DATE), CAST(vo.visit_end_datetime AS DATE), DAY))
+  ) as all_discrepancies_equal
+
+  FROM
+  `{DATASET}.unioned_ehr_observation` o
+  LEFT JOIN
+  `{DATASET}._mapping_observation` mo
+  ON
+  o.observation_id = mo.observation_id
+  LEFT JOIN
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  ON
+  o.visit_occurrence_id = vo.visit_occurrence_id
+
+  WHERE
+    -- must have populated visit occurrence id
+    (
+    o.visit_occurrence_id IS NOT NULL
+    AND
+    o.visit_occurrence_id <> 0
+    AND
+    vo.visit_occurrence_id IS NOT NULL
+    AND
+    vo.visit_occurrence_id <> 0
+    )
+
+  AND
+    (
+    -- problem with procedure date
+    (o.observation_date < vo.visit_start_date
+    OR
+    o.observation_date > vo.visit_end_date)
+
+    OR 
+    -- problem with datetime
+    (o.observation_datetime < vo.visit_start_datetime
+    OR
+    o.observation_datetime > vo.visit_end_datetime )
+
+    OR
+    -- problem with the datetime (extracting date for comparison)
+    (o.observation_date < CAST(vo.visit_start_datetime AS DATE)
+    OR
+    o.observation_date > CAST(vo.visit_end_datetime AS DATE))
+    
+    OR
+    
+    --problem with the datetime
+    (CAST(o.observation_datetime AS DATE) < CAST(vo.visit_start_datetime AS DATE)
+    OR
+    CAST(o.observation_datetime AS DATE) > CAST(vo.visit_end_datetime AS DATE)
+    )
+    )
+
+  GROUP BY mo.src_hpo_id, o.observation_date, vo.visit_start_date, vo.visit_end_date, vo.visit_start_datetime, vo.visit_end_datetime, o.observation_datetime
+  ORDER BY all_discrepancies_equal ASC, num_bad_records DESC
+) a
+WHERE
+-- cannot compare date/datetime date accurately because of problem with UTC dates not converting properly. give 'wiggle room ' of 1
+(
+a.observation_vis_start_dt_diff > 1
+OR
+a.observation_vis_end_dt_diff > 1
+OR
+a.observation_vis_start_diff > 0
+OR
+a.observation_vis_end_diff > 0
+OR
+a.observation_dt_vis_start_dt_diff > 0
+OR
+a.observation_dt_vis_end_dt_diff > 0
+)
+ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
+""".format(DATASET = DATASET)
 
 
-"""
+observation_visit_df = pd.io.gbq.read_gbq(observation_visit_query, dialect='standard')
+
+
