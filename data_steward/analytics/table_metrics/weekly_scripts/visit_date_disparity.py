@@ -40,6 +40,8 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 from matplotlib.lines import Line2D
 
+from notebooks import parameters
+
 import matplotlib.ticker as ticker
 import matplotlib.cm as cm
 import matplotlib as mpl
@@ -73,7 +75,10 @@ print('done.')
 # -
 # --
 
-DATASET = ''
+# +
+DATASET = parameters.LATEST_DATASET
+
+print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
 # +
 dic = {
