@@ -76,7 +76,7 @@ print('done.')
 # --
 
 # +
-DATASET = parameters.LATEST_DATASET
+DATASET = parameters.Q2_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -240,13 +240,13 @@ FROM
   ABS(DATE_DIFF(CAST(po.procedure_datetime AS DATE), CAST(vo.visit_end_datetime AS DATE), DAY))
   ) as all_discrepancies_equal
   FROM
-  `{DATASET}.unioned_ehr_procedure_occurrence` po
+  `{DATASET}.procedure_occurrence` po
   LEFT JOIN
   `{DATASET}._mapping_procedure_occurrence` mpo
   ON
   po.procedure_occurrence_id = mpo.procedure_occurrence_id
   LEFT JOIN
-  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  `{DATASET}.visit_occurrence` vo
   ON
   po.visit_occurrence_id = vo.visit_occurrence_id
   WHERE
@@ -323,7 +323,7 @@ SELECT
 DISTINCT
 mp.src_hpo_id, count(p.procedure_occurrence_id) as num_total_records
 FROM
-`{DATASET}.unioned_ehr_procedure_occurrence`p
+`{DATASET}.procedure_occurrence`p
 JOIN
 `{DATASET}._mapping_procedure_occurrence` mp
 ON
@@ -394,13 +394,13 @@ FROM
   ) as all_discrepancies_equal
 
   FROM
-  `{DATASET}.unioned_ehr_observation` o
+  `{DATASET}.observation` o
   LEFT JOIN
   `{DATASET}._mapping_observation` mo
   ON
   o.observation_id = mo.observation_id
   LEFT JOIN
-  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  `{DATASET}.visit_occurrence` vo
   ON
   o.visit_occurrence_id = vo.visit_occurrence_id
 
@@ -477,7 +477,7 @@ SELECT
 DISTINCT
 mo.src_hpo_id, count(o.observation_id) as num_total_records
 FROM
-`{DATASET}.unioned_ehr_observation`o
+`{DATASET}.observation`o
 JOIN
 `{DATASET}._mapping_observation` mo
 ON
@@ -550,13 +550,13 @@ FROM
   ) as all_discrepancies_equal
 
   FROM
-  `{DATASET}.unioned_ehr_measurement` m
+  `{DATASET}.measurement` m
   LEFT JOIN
   `{DATASET}._mapping_measurement` mm
   ON
   m.measurement_id = mm.measurement_id
   LEFT JOIN
-  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  `{DATASET}.visit_occurrence` vo
   ON
   m.visit_occurrence_id = vo.visit_occurrence_id
 
@@ -632,7 +632,7 @@ SELECT
 DISTINCT
 mm.src_hpo_id, count(m.measurement_id) as num_total_records
 FROM
-`{DATASET}.unioned_ehr_measurement` m
+`{DATASET}.measurement` m
 JOIN
 `{DATASET}._mapping_measurement` mm
 ON
@@ -696,13 +696,13 @@ FROM
   ) as all_discrepancies_equal
 
   FROM
-  `{DATASET}.unioned_ehr_condition_occurrence` co
+  `{DATASET}.condition_occurrence` co
   LEFT JOIN
   `{DATASET}._mapping_condition_occurrence` mco
   ON
   co.condition_occurrence_id = mco.condition_occurrence_id
   LEFT JOIN
-  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  `{DATASET}.visit_occurrence` vo
   ON
   co.visit_occurrence_id = vo.visit_occurrence_id
 
@@ -763,7 +763,7 @@ SELECT
 DISTINCT
 mco.src_hpo_id, count(co.condition_occurrence_id) as num_total_records
 FROM
-`{DATASET}.unioned_ehr_condition_occurrence` co
+`{DATASET}.condition_occurrence` co
 JOIN
 `{DATASET}._mapping_condition_occurrence` mco
 ON
@@ -827,13 +827,13 @@ FROM
   ) as all_discrepancies_equal
 
   FROM
-  `{DATASET}.unioned_ehr_drug_exposure` de
+  `{DATASET}.drug_exposure` de
   LEFT JOIN
   `{DATASET}._mapping_drug_exposure` mde
   ON
   de.drug_exposure_id = mde.drug_exposure_id
   LEFT JOIN
-  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  `{DATASET}.visit_occurrence` vo
   ON
   de.visit_occurrence_id = vo.visit_occurrence_id
 
@@ -894,7 +894,7 @@ SELECT
 DISTINCT
 mde.src_hpo_id, count(de.drug_exposure_id) as num_total_records
 FROM
-`{DATASET}.unioned_ehr_drug_exposure` de
+`{DATASET}.drug_exposure` de
 JOIN
 `{DATASET}._mapping_drug_exposure` mde
 ON
