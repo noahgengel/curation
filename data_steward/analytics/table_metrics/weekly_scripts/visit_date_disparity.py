@@ -935,8 +935,18 @@ short_drug_df = final_drug_df.drop(columns=['num_total_records', 'num_bad_record
 short_drug_df
 # -
 
-final_success_dfs = pd.merge(short_drug_df, short_condition_df, how='outer', on='src_hpo_id') 
+final_success_df = 0
 
-final_success_dfs
+final_success_df = pd.merge(short_drug_df, site_df, how='outer', on='src_hpo_id') 
+final_success_df = final_success_df[['src_hpo_id', 'HPO', 'drug_date_adherence']]  #rearrang columnds
 
+# +
+final_success_df = pd.merge(final_success_df, short_observation_df, how='outer', on='src_hpo_id') 
+final_success_df = pd.merge(final_success_df, short_procedure_df, how='outer', on='src_hpo_id')
+final_success_df = pd.merge(final_success_df, short_measurement_df, how='outer', on='src_hpo_id') 
+final_success_df = pd.merge(final_success_df, short_condition_df, how='outer', on='src_hpo_id')
 
+final_success_df
+# -
+
+final_success_df.to_csv("{cwd}\visit_date_disparity.csv".format(cwd = cwd))
