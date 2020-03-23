@@ -357,7 +357,7 @@ final_procedure_df
 
 # ### to ensure all the dataframes are easy to ultimately merge, let's create a dataframe that only has the success rates and HPOs
 
-short_procedure_df = final_procedure_df.drop(columns=['num_total_records', 'num_bad_records'])
+short_procedure_df = final_procedure_df.drop(columns=['num_total_records', 'num_bad_records', 'HPO'])
 
 # # Now let's move to the observation table
 
@@ -511,7 +511,7 @@ final_observation_df = final_observation_df.sort_values(by=['observation_date_ad
 
 # ### Creating a shorter df
 
-short_observation_df = final_observation_df.drop(columns=['num_total_records', 'num_bad_records'])
+short_observation_df = final_observation_df.drop(columns=['num_total_records', 'num_bad_records', 'HPO'])
 
 short_observation_df
 
@@ -668,9 +668,275 @@ final_measurment_df = final_measurment_df.sort_values(by=['measurement_date_adhe
 ### Creating a shorter df
 
 # +
-short_measurement_df = final_measurment_df.drop(columns=['num_total_records', 'num_bad_records'])
+short_measurement_df = final_measurment_df.drop(columns=['num_total_records', 'num_bad_records', 'HPO'])
 
 short_measurement_df
 # -
+# # Next up: the condition table
+
+
+condition_visit_query = """
+SELECT
+DISTINCT
+a.*, 
+(a.condition_vis_start_diff + a.condition_vis_start_dt_diff + a.condition_dt_vis_start_dt_diff) as total_diff
+FROM 
+( SELECT
+  mco.src_hpo_id, COUNT(mco.src_hpo_id) as num_bad_records, 
+  IFNULL(ABS(DATE_DIFF(co.condition_start_date, vo.visit_start_date, DAY)), 0) as condition_vis_start_diff,
+  IFNULL(ABS(DATE_DIFF(CAST(vo.visit_start_datetime AS DATE), co.condition_start_date, DAY)), 0) as condition_vis_start_dt_diff,
+  IFNULL(ABS(DATE_DIFF(CAST(co.condition_start_datetime AS DATE), CAST(vo.visit_start_datetime AS DATE), DAY)), 0) as condition_dt_vis_start_dt_diff,
+  
+  (
+  ABS(DATE_DIFF(co.condition_start_date, vo.visit_start_date, DAY)) = 
+  ABS(DATE_DIFF(CAST(vo.visit_start_datetime AS DATE), co.condition_start_date, DAY)) 
+  AND
+  ABS(DATE_DIFF(CAST(vo.visit_start_datetime AS DATE), co.condition_start_date, DAY)) =
+  ABS(DATE_DIFF(CAST(co.condition_start_datetime AS DATE), CAST(vo.visit_start_datetime AS DATE), DAY)) 
+  ) as all_discrepancies_equal
+
+  FROM
+  `{DATASET}.unioned_ehr_condition_occurrence` co
+  LEFT JOIN
+  `{DATASET}._mapping_condition_occurrence` mco
+  ON
+  co.condition_occurrence_id = mco.condition_occurrence_id
+  LEFT JOIN
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  ON
+  co.visit_occurrence_id = vo.visit_occurrence_id
+
+  WHERE
+    -- must have populated visit occurrence id
+    (
+    co.visit_occurrence_id IS NOT NULL
+    AND
+    co.visit_occurrence_id <> 0
+    AND
+    vo.visit_occurrence_id IS NOT NULL
+    AND
+    vo.visit_occurrence_id <> 0
+    )
+
+  AND
+    (
+    -- problem with procedure date
+    (co.condition_start_date < vo.visit_start_date)
+
+    OR 
+    -- problem with datetime
+    (co.condition_start_datetime < vo.visit_start_datetime)
+
+    OR
+    -- problem with the datetime (extracting date for comparison)
+    (co.condition_start_date < CAST(vo.visit_start_datetime AS DATE))
+    
+    OR
+    
+    --problem with the datetime
+    (CAST(co.condition_start_datetime AS DATE) < CAST(vo.visit_start_datetime AS DATE))
+    )
+
+  GROUP BY mco.src_hpo_id, co.condition_start_date, vo.visit_start_date, vo.visit_end_date, vo.visit_start_datetime, vo.visit_end_datetime, co.condition_start_datetime
+  ORDER BY all_discrepancies_equal ASC, num_bad_records DESC
+) a
+WHERE
+-- cannot compare date/datetime date accurately because of problem with UTC dates not converting properly. give 'wiggle room ' of 1
+(
+a.condition_vis_start_dt_diff > 1
+OR
+a.condition_vis_start_diff > 0
+OR
+a.condition_dt_vis_start_dt_diff > 0
+)
+ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
+""".format(DATASET = DATASET)
+
+condition_visit_df = pd.io.gbq.read_gbq(condition_visit_query, dialect='standard')
+
+# ### Now let's make the dataframe a little more condensed - only show the total number of 'bad records' for each site
+
+bad_condition_records_df = condition_visit_df.groupby('src_hpo_id')['num_bad_records'].sum().to_frame()
+
+num_total_conditions_query = """
+SELECT
+DISTINCT
+mco.src_hpo_id, count(co.condition_occurrence_id) as num_total_records
+FROM
+`{DATASET}.unioned_ehr_condition_occurrence` co
+JOIN
+`{DATASET}._mapping_condition_occurrence` mco
+ON
+co.condition_occurrence_id = mco.condition_occurrence_id
+GROUP BY 1
+ORDER BY num_total_records DESC
+""".format(DATASET = DATASET)
+
+total_condition_df = pd.io.gbq.read_gbq(num_total_conditions_query, dialect='standard')
+
+# +
+total_condition_df = pd.merge(total_condition_df, site_df, how='outer', on='src_hpo_id')
+
+total_condition_df = total_condition_df[['src_hpo_id', 'HPO', 'num_total_records']]
+
+# +
+final_condition_df = pd.merge(total_condition_df, bad_condition_records_df, how='outer', on='src_hpo_id') 
+
+final_condition_df = final_condition_df.fillna(0)
+# -
+
+# ### Now we can actually calculate the 'tangible success rate'
+
+final_condition_df['condition_date_adherence'] = \
+round((final_condition_df['num_total_records'] - final_condition_df['num_bad_records']) / final_condition_df['num_total_records'] * 100, 2)
+
+# +
+final_condition_df = final_condition_df.fillna(0)
+
+final_condition_df = final_condition_df.sort_values(by=['condition_date_adherence'], ascending = False)
+# -
+
+# ### Creating a shorter df
+
+# +
+short_condition_df = final_condition_df.drop(columns=['num_total_records', 'num_bad_records', 'HPO'])
+
+short_condition_df
+# -
+
+# # Last but not least - the drug exposure table
+
+drug_visit_query = """
+SELECT
+DISTINCT
+a.*, 
+(a.drug_vis_start_diff + a.drug_vis_start_dt_diff + a.drug_dt_vis_start_dt_diff) as total_diff
+FROM 
+( SELECT
+  mde.src_hpo_id, COUNT(mde.src_hpo_id) as num_bad_records, 
+  IFNULL(ABS(DATE_DIFF(de.drug_exposure_start_date, vo.visit_start_date, DAY)), 0) as drug_vis_start_diff,
+  IFNULL(ABS(DATE_DIFF(CAST(vo.visit_start_datetime AS DATE), de.drug_exposure_start_date, DAY)), 0) as drug_vis_start_dt_diff,
+  IFNULL(ABS(DATE_DIFF(CAST(de.drug_exposure_start_datetime AS DATE), CAST(vo.visit_start_datetime AS DATE), DAY)), 0) as drug_dt_vis_start_dt_diff,
+  
+  (
+  ABS(DATE_DIFF(de.drug_exposure_start_date, vo.visit_start_date, DAY)) = 
+  ABS(DATE_DIFF(CAST(vo.visit_start_datetime AS DATE), de.drug_exposure_start_date, DAY)) 
+  AND
+  ABS(DATE_DIFF(CAST(vo.visit_start_datetime AS DATE), de.drug_exposure_start_date, DAY)) =
+  ABS(DATE_DIFF(CAST(de.drug_exposure_start_datetime AS DATE), CAST(vo.visit_start_datetime AS DATE), DAY)) 
+  ) as all_discrepancies_equal
+
+  FROM
+  `{DATASET}.unioned_ehr_drug_exposure` de
+  LEFT JOIN
+  `{DATASET}._mapping_drug_exposure` mde
+  ON
+  de.drug_exposure_id = mde.drug_exposure_id
+  LEFT JOIN
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  ON
+  de.visit_occurrence_id = vo.visit_occurrence_id
+
+  WHERE
+    -- must have populated visit occurrence id
+    (
+    de.visit_occurrence_id IS NOT NULL
+    AND
+    de.visit_occurrence_id <> 0
+    AND
+    vo.visit_occurrence_id IS NOT NULL
+    AND
+    vo.visit_occurrence_id <> 0
+    )
+
+  AND
+    (
+    -- problem with procedure date
+    (de.drug_exposure_start_date < vo.visit_start_date)
+
+    OR 
+    -- problem with datetime
+    (de.drug_exposure_start_datetime < vo.visit_start_datetime)
+
+    OR
+    -- problem with the datetime (extracting date for comparison)
+    (de.drug_exposure_start_date < CAST(vo.visit_start_datetime AS DATE))
+    
+    OR
+    
+    --problem with the datetime
+    (CAST(de.drug_exposure_start_datetime AS DATE) < CAST(vo.visit_start_datetime AS DATE))
+    )
+
+  GROUP BY mde.src_hpo_id, de.drug_exposure_start_date, vo.visit_start_date, vo.visit_end_date, vo.visit_start_datetime, vo.visit_end_datetime, de.drug_exposure_start_datetime
+  ORDER BY all_discrepancies_equal ASC, num_bad_records DESC
+) a
+WHERE
+-- cannot compare date/datetime date accurately because of problem with UTC dates not converting properly. give 'wiggle room ' of 1
+(
+a.drug_vis_start_dt_diff > 1
+OR
+a.drug_vis_start_diff > 0
+OR
+a.drug_dt_vis_start_dt_diff > 0
+)
+ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
+""".format(DATASET = DATASET)
+
+drug_visit_df = pd.io.gbq.read_gbq(drug_visit_query, dialect='standard')
+
+# ### Now let's make the dataframe a little more condensed - only show the total number of 'bad records' for each site
+
+bad_drug_records_df = drug_visit_df.groupby('src_hpo_id')['num_bad_records'].sum().to_frame()
+
+num_total_drugs_query = """
+SELECT
+DISTINCT
+mde.src_hpo_id, count(de.drug_exposure_id) as num_total_records
+FROM
+`{DATASET}.unioned_ehr_drug_exposure` de
+JOIN
+`{DATASET}._mapping_drug_exposure` mde
+ON
+de.drug_exposure_id = mde.drug_exposure_id
+GROUP BY 1
+ORDER BY num_total_records DESC
+""".format(DATASET = DATASET)
+
+total_drug_df = pd.io.gbq.read_gbq(num_total_drugs_query, dialect='standard')
+
+# +
+total_drug_df = pd.merge(total_drug_df, site_df, how='outer', on='src_hpo_id')
+
+total_drug_df = total_drug_df[['src_hpo_id', 'HPO', 'num_total_records']]
+
+# +
+final_drug_df = pd.merge(total_drug_df, bad_drug_records_df, how='outer', on='src_hpo_id') 
+
+final_drug_df = final_drug_df.fillna(0)
+# -
+
+# ### Now we can actually calculate the 'tangible success rate'
+
+final_drug_df['drug_date_adherence'] = \
+round((final_drug_df['num_total_records'] - final_drug_df['num_bad_records']) / final_drug_df['num_total_records'] * 100, 2)
+
+# +
+final_drug_df = final_drug_df.fillna(0)
+
+final_drug_df = final_drug_df.sort_values(by=['drug_date_adherence'], ascending = False)
+# -
+
+# ### Creating a shorter dataframe
+
+# +
+short_drug_df = final_drug_df.drop(columns=['num_total_records', 'num_bad_records', 'HPO'])
+
+short_drug_df
+# -
+
+final_success_dfs = pd.merge(short_drug_df, short_condition_df, how='outer', on='src_hpo_id') 
+
+final_success_dfs
 
 
