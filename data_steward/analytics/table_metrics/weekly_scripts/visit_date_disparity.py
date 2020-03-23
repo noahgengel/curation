@@ -344,13 +344,13 @@ final_procedure_df = final_procedure_df.fillna(0)
 
 # ### Now we can actually calculate the 'tangible success rate'
 
-final_procedure_df['successful_date_adherence'] = \
+final_procedure_df['procedure_date_adherece'] = \
 round((final_procedure_df['num_total_records'] - final_procedure_df['num_bad_records']) / final_procedure_df['num_total_records'] * 100, 2)
 
 # +
 final_procedure_df = final_procedure_df.fillna(0)
 
-final_procedure_df = final_procedure_df.sort_values(by=['successful_date_adherence'], ascending = False)
+final_procedure_df = final_procedure_df.sort_values(by=['procedure_date_adherece'], ascending = False)
 # -
 
 final_procedure_df
@@ -467,5 +467,58 @@ ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancie
 
 
 observation_visit_df = pd.io.gbq.read_gbq(observation_visit_query, dialect='standard')
+
+observation_visit_df
+
+# ### Now let's make the dataframe a little more condensed - only show the total number of 'bad records' for each site
+
+bad_observation_records_df = observation_visit_df.groupby('src_hpo_id')['num_bad_records'].sum().to_frame()
+
+bad_observation_records_df
+
+num_total_observation_records_query = """
+SELECT
+DISTINCT
+mo.src_hpo_id, count(o.observation_id) as num_total_records
+FROM
+`{DATASET}.unioned_ehr_observation`o
+JOIN
+`{DATASET}._mapping_observation` mo
+ON
+o.observation_id = mo.observation_id
+GROUP BY 1
+ORDER BY num_total_records DESC
+""".format(DATASET = DATASET)
+
+total_observation_df = pd.io.gbq.read_gbq(num_total_observation_records_query, dialect='standard')
+
+total_observation_df
+
+# +
+total_observation_df = pd.merge(total_observation_df, site_df, how='outer', on='src_hpo_id')
+
+total_observation_df = total_observation_df[['src_hpo_id', 'HPO', 'num_total_records']]
+# -
+
+final_observation_df = pd.merge(total_observation_df, bad_observation_records_df, how='outer', on='src_hpo_id') 
+
+final_observation_df = final_observation_df.fillna(0)
+
+# ### Now we can actually calculate the 'tangible success rate'
+
+final_observation_df['observation_date_adherence'] = \
+round((final_observation_df['num_total_records'] - final_observation_df['num_bad_records']) / final_observation_df['num_total_records'] * 100, 2)
+
+# +
+final_observation_df = final_observation_df.fillna(0)
+
+final_observation_df = final_observation_df.sort_values(by=['observation_date_adherence'], ascending = False)
+# -
+
+# ### Creating a shorter df
+
+short_observation_df = final_observation_df.drop(columns=['num_total_records', 'num_bad_records'])
+
+short_observation_df
 
 
