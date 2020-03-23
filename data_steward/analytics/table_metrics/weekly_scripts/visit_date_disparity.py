@@ -468,13 +468,9 @@ ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancie
 
 observation_visit_df = pd.io.gbq.read_gbq(observation_visit_query, dialect='standard')
 
-observation_visit_df
-
 # ### Now let's make the dataframe a little more condensed - only show the total number of 'bad records' for each site
 
 bad_observation_records_df = observation_visit_df.groupby('src_hpo_id')['num_bad_records'].sum().to_frame()
-
-bad_observation_records_df
 
 num_total_observation_records_query = """
 SELECT
@@ -491,8 +487,6 @@ ORDER BY num_total_records DESC
 """.format(DATASET = DATASET)
 
 total_observation_df = pd.io.gbq.read_gbq(num_total_observation_records_query, dialect='standard')
-
-total_observation_df
 
 # +
 total_observation_df = pd.merge(total_observation_df, site_df, how='outer', on='src_hpo_id')
@@ -520,5 +514,163 @@ final_observation_df = final_observation_df.sort_values(by=['observation_date_ad
 short_observation_df = final_observation_df.drop(columns=['num_total_records', 'num_bad_records'])
 
 short_observation_df
+
+# # Next up: the measurement table
+
+measurement_visit_query = """
+SELECT
+DISTINCT
+a.*, 
+(a.measurement_vis_start_diff + a.measurement_vis_end_diff + a.measurement_vis_start_dt_diff + a.measurement_vis_end_dt_diff + a.measurement_dt_vis_start_dt_diff + a.measurement_dt_vis_end_dt_diff) as total_diff
+FROM 
+( SELECT
+  mm.src_hpo_id, COUNT(mm.src_hpo_id) as num_bad_records, 
+  IFNULL(ABS(DATE_DIFF(m.measurement_date, vo.visit_start_date, DAY)), 0) as measurement_vis_start_diff,
+  IFNULL(ABS(DATE_DIFF(m.measurement_date, vo.visit_end_date, DAY)), 0) as measurement_vis_end_diff,
+  IFNULL(ABS(DATE_DIFF(CAST(vo.visit_start_datetime AS DATE), m.measurement_date, DAY)), 0) as measurement_vis_start_dt_diff,
+  IFNULL(ABS(DATE_DIFF(CAST(vo.visit_end_datetime AS DATE), m.measurement_date, DAY)), 0) as measurement_vis_end_dt_diff,
+  IFNULL(ABS(DATE_DIFF(CAST(m.measurement_datetime AS DATE), CAST(vo.visit_start_datetime AS DATE), DAY)), 0) as measurement_dt_vis_start_dt_diff,
+  IFNULL(ABS(DATE_DIFF(CAST(m.measurement_datetime AS DATE), CAST(vo.visit_end_datetime AS DATE), DAY)), 0) as measurement_dt_vis_end_dt_diff,
+
+  (
+  ABS(DATE_DIFF(m.measurement_date, vo.visit_start_date, DAY)) = 
+  ABS(DATE_DIFF(m.measurement_date, vo.visit_end_date, DAY)) 
+  AND
+  ABS(DATE_DIFF(m.measurement_date, vo.visit_end_date, DAY)) =
+  ABS(DATE_DIFF(CAST(vo.visit_start_datetime AS DATE), m.measurement_date, DAY)) 
+  AND
+  ABS(DATE_DIFF(CAST(vo.visit_start_datetime AS DATE), m.measurement_date, DAY)) =
+  ABS(DATE_DIFF(CAST(vo.visit_end_datetime AS DATE), m.measurement_date, DAY))
+  AND
+  ABS(DATE_DIFF(CAST(vo.visit_end_datetime AS DATE), m.measurement_date, DAY)) = 
+  ABS(DATE_DIFF(CAST(m.measurement_datetime AS DATE), CAST(vo.visit_start_datetime AS DATE), DAY)) 
+  AND
+  ABS(DATE_DIFF(CAST(m.measurement_datetime AS DATE), CAST(vo.visit_start_datetime AS DATE), DAY)) = 
+  ABS(DATE_DIFF(CAST(m.measurement_datetime AS DATE), CAST(vo.visit_end_datetime AS DATE), DAY))
+  ) as all_discrepancies_equal
+
+  FROM
+  `{DATASET}.unioned_ehr_measurement` m
+  LEFT JOIN
+  `{DATASET}._mapping_measurement` mm
+  ON
+  m.measurement_id = mm.measurement_id
+  LEFT JOIN
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  ON
+  m.visit_occurrence_id = vo.visit_occurrence_id
+
+  WHERE
+    -- must have populated visit occurrence id
+    (
+    m.visit_occurrence_id IS NOT NULL
+    AND
+    m.visit_occurrence_id <> 0
+    AND
+    vo.visit_occurrence_id IS NOT NULL
+    AND
+    vo.visit_occurrence_id <> 0
+    )
+
+  AND
+    (
+    -- problem with procedure date
+    (m.measurement_date < vo.visit_start_date
+    OR
+    m.measurement_date > vo.visit_end_date)
+
+    OR 
+    -- problem with datetime
+    (m.measurement_datetime < vo.visit_start_datetime
+    OR
+    m.measurement_datetime > vo.visit_end_datetime )
+
+    OR
+    -- problem with the datetime (extracting date for comparison)
+    (m.measurement_date < CAST(vo.visit_start_datetime AS DATE)
+    OR
+    m.measurement_date > CAST(vo.visit_end_datetime AS DATE))
+    
+    OR
+    
+    --problem with the datetime
+    (CAST(m.measurement_datetime AS DATE) < CAST(vo.visit_start_datetime AS DATE)
+    OR
+    CAST(m.measurement_datetime AS DATE) > CAST(vo.visit_end_datetime AS DATE)
+    )
+    )
+
+  GROUP BY mm.src_hpo_id, m.measurement_date, vo.visit_start_date, vo.visit_end_date, vo.visit_start_datetime, vo.visit_end_datetime, m.measurement_datetime
+  ORDER BY all_discrepancies_equal ASC, num_bad_records DESC
+) a
+WHERE
+-- cannot compare date/datetime date accurately because of problem with UTC dates not converting properly. give 'wiggle room ' of 1
+(
+a.measurement_vis_start_dt_diff > 1
+OR
+a.measurement_vis_end_dt_diff > 1
+OR
+a.measurement_vis_start_diff > 0
+OR
+a.measurement_vis_end_diff > 0
+OR
+a.measurement_dt_vis_start_dt_diff > 0
+OR
+a.measurement_dt_vis_end_dt_diff > 0
+)
+ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
+""".format(DATASET = DATASET)
+
+measurement_visit_df = pd.io.gbq.read_gbq(measurement_visit_query, dialect='standard')
+
+# ### Now let's make the dataframe a little more condensed - only show the total number of 'bad records' for each site
+
+bad_measurement_records_df = measurement_visit_df.groupby('src_hpo_id')['num_bad_records'].sum().to_frame()
+
+num_total_measurement_records_query = """
+SELECT
+DISTINCT
+mm.src_hpo_id, count(m.measurement_id) as num_total_records
+FROM
+`{DATASET}.unioned_ehr_measurement` m
+JOIN
+`{DATASET}._mapping_measurement` mm
+ON
+m.measurement_id = mm.measurement_id
+GROUP BY 1
+ORDER BY num_total_records DESC
+""".format(DATASET = DATASET)
+
+total_measurement_df = pd.io.gbq.read_gbq(num_total_measurement_records_query, dialect='standard')
+
+# +
+total_measurement_df = pd.merge(total_measurement_df, site_df, how='outer', on='src_hpo_id')
+
+total_measurement_df = total_measurement_df[['src_hpo_id', 'HPO', 'num_total_records']]
+
+# +
+final_measurment_df = pd.merge(total_measurement_df, bad_measurement_records_df, how='outer', on='src_hpo_id') 
+
+final_measurment_df = final_measurment_df.fillna(0)
+# -
+
+# ### Now we can actually calculate the 'tangible success rate'
+
+final_measurment_df['measurement_date_adherence'] = \
+round((final_measurment_df['num_total_records'] - final_measurment_df['num_bad_records']) / final_measurment_df['num_total_records'] * 100, 2)
+
+# +
+final_measurment_df = final_measurment_df.fillna(0)
+
+final_measurment_df = final_measurment_df.sort_values(by=['measurement_date_adherence'], ascending = False)
+
+# +
+### Creating a shorter df
+
+# +
+short_measurement_df = final_measurment_df.drop(columns=['num_total_records', 'num_bad_records'])
+
+short_measurement_df
+# -
 
 
