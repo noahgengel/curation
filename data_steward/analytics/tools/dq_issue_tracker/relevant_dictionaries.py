@@ -1,8 +1,16 @@
 """
-File is meant to contain the relevant links for the output file
+File is meant to contain dictionaries that can be used for the
+primary file and/or the HPO class functions.
+
+The dictionaries are as follows:
+--------------------------------
+relevant_links: the relevant links for the output file
 that is established in create_dq_issue_site_dfs.py. This will
 help maintain the overall readability of the aforementioned
-script.
+script
+
+thresholds: the point at which a data quality metric (whether too
+high or too low) would be flagged as 'erroneous'
 """
 
 relevant_links = {

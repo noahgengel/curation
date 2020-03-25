@@ -14,7 +14,7 @@ Start Date: 03/24/2020 (v1)
 """
 
 from .relevant_dictionaries import relevant_links
-from .relevant_dictionaries import thresholds
+from .hpo_class_definition import HPO
 
 
 concept_success_link = relevant_links['concept_success']
