@@ -138,19 +138,21 @@ class HPO:
             if data_after_death_obj.value > thresholds['data_after_death_max']:
                 failing_metrics.append(data_after_death_obj)
 
-        # the following attributes should only be one object - no need to
-        # iterate through a list
-        if self.route_success < thresholds['route_success_min']:
-            failing_metrics.append(self.route_success)
+        for route_obj in self.route_success:
+            if route_obj.value < thresholds['route_success_min']:
+                failing_metrics.append(route_obj)
 
-        if self.unit_success < thresholds['unit_success_min']:
-            failing_metrics.append(self.unit_success)
+        for unit_obj in self.unit_success:
+            if unit_obj.value < thresholds['unit_success_min']:
+                failing_metrics.append(unit_obj)
 
-        if self.unit_success < thresholds['measurement_integration_min']:
-            failing_metrics.append(self.unit_success)
+        for measurement_integration_obj in self.measurement_integration:
+            if measurement_integration_obj.value < thresholds['measurement_integration_min']:
+                failing_metrics.append(measurement_integration_obj)
 
-        if self.route_success < thresholds['route_success_min']:
-            failing_metrics.append(self.route_success)
+        for ingredient_integration_obj in self.ingredient_integration:
+            if ingredient_integration_obj.value < thresholds['route_success_min']:
+                failing_metrics.append(ingredient_integration_obj)
 
         if not failing_metrics:  # no errors logged
             return None

@@ -130,4 +130,8 @@ def get_err_rate(sheet, row_num, metric, hpo_name, column):
         ))
         sys.exit(0)
 
-    return data_info[column]
+    # tend to reverse the reported metric for ACHILLES errors
+    if metric in ['end_before_begin', 'data_after_death']:
+        return round(100 - data_info[column], 2)
+    else:
+        return data_info[column]

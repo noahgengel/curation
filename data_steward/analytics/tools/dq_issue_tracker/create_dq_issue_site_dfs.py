@@ -14,7 +14,8 @@ Start Date: 03/24/2020 (v1)
 """
 
 from relevant_dictionaries import relevant_links, full_names, \
-    desired_columns_dict, data_quality_dimension_dict, table_based_on_column_provided
+    desired_columns_dict, data_quality_dimension_dict, table_based_on_column_provided, \
+    metric_names
 
 from hpo_class_definition import HPO, DataQualityMetric
 
@@ -23,18 +24,6 @@ from functions_from_metrics_over_time import load_files, \
 
 
 file_name = 'march_19_2020.xlsx'
-
-metric_names = [
-    'measurement_units', 'drug_routes',
-
-    # integration metrics
-    'drug_success','sites_measurement',
-
-    # ACHILLES errors
-    'end_before_begin','data_after_death',
-
-    # other metrics
-    'concept', 'duplicates']
 
 concept_success_link = relevant_links['concept_success']
 duplicates_link = relevant_links['duplicates']
@@ -45,8 +34,10 @@ route_success_link = relevant_links['route_success']
 measurement_integration_link = relevant_links['measurement_integration']
 drug_integration_link = relevant_links['drug_integration']
 
+metric_names = list(metric_names.keys())
 
-def create_hpo_objects():
+
+def create_hpo_objects(file_name):
     # creating the various HPO objects
     hpo_id_column = generate_hpo_id_col(file_name)
     hpo_objects = []
@@ -61,10 +52,13 @@ def create_hpo_objects():
 
         hpo_objects.append(hpo)
 
+    return hpo_objects
+
+
+def populate_hpo_objects_with_dq_metrics(hpo_objects, metric_names):
     # now we need to create the DataQualityMetric objects
     for metric in metric_names:
-        sheet = load_files(
-            sheet_name=metric, file_name=file_name)
+        sheet = load_files(sheet_name=metric, file_name=file_name)
 
         for hpo in hpo_objects:
             hpo_name = hpo.name
@@ -73,7 +67,6 @@ def create_hpo_objects():
             desired_columns = desired_columns_dict[metric]
 
             all_dqds_for_hpo_for_metric = []  # list of objects - to be filled
-            # FIXME: first_reported needs to exist
 
             for column_for_table in desired_columns:
                 err_rate = get_err_rate(sheet, row_num, metric, hpo_name, column_for_table)
@@ -95,9 +88,27 @@ def create_hpo_objects():
                 hpo.set_attribute_with_string(
                     metric=metric_object.metric_type, dq_object=metric_object)
 
+    return hpo_objects
+
+    # FIXME: first_reported needs to exist
+
 
 def main():
-    create_hpo_objects()
+    hpo_objects = create_hpo_objects(file_name=file_name)
+
+    hpo_objects = populate_hpo_objects_with_dq_metrics(
+        hpo_objects=hpo_objects, metric_names=metric_names)
+
+    for object in hpo_objects:
+        if object.name == 'nyc_cu':
+            failing_metrics = object.find_failing_metrics()
+
+    print("There are {} issues with Columbia".format(len(failing_metrics)))
+
+    for metric in failing_metrics:
+        if isinstance(metric, DataQualityMetric):
+            metric.print_dqd_attributes()
+            print("\n\n")
 
 if __name__ == "__main__":
     main()

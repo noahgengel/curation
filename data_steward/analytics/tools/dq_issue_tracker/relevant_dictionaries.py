@@ -4,15 +4,15 @@ primary file and/or the HPO class functions.
 
 The dictionaries are as follows:
 --------------------------------
-relevant_links: the relevant links for the output file
+relevant_links (dict): the relevant links for the output file
     that is established in create_dq_issue_site_dfs.py. This will
     help maintain the overall readability of the aforementioned
     script
 
-thresholds: the point at which a data quality metric (whether too
+thresholds (dict): the point at which a data quality metric (whether too
     high or too low) would be flagged as 'erroneous'
 
-full_names: allows one to use the hpo_id (shorter) name to find
+full_names (dict): allows one to use the hpo_id (shorter) name to find
     the longer (more human-readable) name
 
 metric_names: keys for the sheet in the dataframe and values
@@ -124,7 +124,7 @@ full_names = {
 }
 
 
-metrics_names = {
+metric_names = {
     # field population metrics
     'measurement_units': 'unit_success',
     'drug_routes': 'route_success',
