@@ -120,3 +120,14 @@ def find_hpo_row(sheet, hpo):
 
     return row_num
 
+
+def get_err_rate(sheet, row_num, metric, hpo_name, column):
+    if row_num is not None:
+        data_info = sheet.iloc[row_num, :]  # series, column labels and values
+    else:
+        print("{hpo_name} is now in the following sheet: {sheet}".format(
+            hpo_name=hpo_name, sheet=metric
+        ))
+        sys.exit(0)
+
+    return data_info[column]

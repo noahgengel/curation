@@ -18,6 +18,19 @@ full_names: allows one to use the hpo_id (shorter) name to find
 metric_names: keys for the sheet in the dataframe and values
     for the name of the corresponding attribute for the HPO
     object
+
+desired_columns_dict: determines which column(s) should be used
+    for a particular data quality metric. mulitple columns indicate
+    that multiple dimensions (likely different tables) are being
+    investigated.
+
+data_quality_dimension_dict: shows which attribute of Kahn's Data Quality
+    framework the particular 'data quality metric' at hand relates to
+
+table_based_on_column_provided: allows us to determine the table that
+    should be associated with a particular Data Quality Dimension object
+    based upon the column that was used to get the associated 'value'
+    float
 """
 
 relevant_links = {
@@ -127,3 +140,58 @@ metrics_names = {
     # other metrics
     'concept': 'concept_success',
     'duplicates': 'duplicates'}
+
+
+desired_columns_dict = {
+    # field population metrics
+    'measurement_units': ['total_unit_success_rate'],
+    'drug_routes': ['total_route_success_rate'],
+
+    # integration metrics
+    'drug_success': ['all_drugs'],
+    'sites_measurement': ['All_Measurements'],
+
+    # ACHILLES errors
+    'end_before_begin': ['visit_occurrence', 'condition_occurrence', 'drug_exposure', 'device_exposure'],
+    'data_after_death': ['visit_occurrence', 'condition_occurrence',
+                         'drug_exposure', 'measurement', 'procedure_occurrence',
+                         'observation',	'device_exposure'],
+
+    # other metrics
+    'concept': ['observation_success_rate', 'drug_success_rate', 'procedure_success_rate',
+                'condition_success_rate', 'measurement_success_rate', 'visit_success_rate'],
+
+    'duplicates': ['visit_occurrence', 'condition_occurrence', 'drug_exposure', 'measurement',
+                   'procedure_occurrence', 'device_exposure','observation']
+}
+
+table_based_on_column_provided = {
+    'total_unit_success_rate': 'Measurement',
+    'total_route_success_rate': 'Drug Exposure',
+    'all_drugs': 'Drug Exposure',
+    'All_Measurements': 'Measurement',
+    'visit_occurrence': 'Visit Occurrence',
+    'condition_occurrence': 'Condition Occurrence',
+    'drug_exposure': 'Drug Exposure',
+    'device_exposure': 'Device Exposure',
+    'measurement': 'Measurement',
+    'procedure_occurrence': 'Procedure Occurrence',
+    'observation': 'Observation',
+    'observation_success_rate': 'Observation',
+    'drug_success_rate': 'Drug Exposure',
+    'procedure_success_rate': 'Procedure',
+    'condition_success_rate': 'Condition Occurrence',
+    'measurement_success_rate': 'Measurement',
+    'visit_success_rate': 'Visit Occurrence'
+}
+
+data_quality_dimension_dict = {
+    'concept': 'Conformance',
+    'duplicates': 'Plausibility',
+    'end_before_begin': 'Plausibility',
+    'data_after_death': 'Plausibility',
+    'sites_measurement': 'Completeness',
+    'drug_success': 'Completeness',
+    'drug_routes': 'Completeness',
+    'measurement_units': 'Completeness'
+}

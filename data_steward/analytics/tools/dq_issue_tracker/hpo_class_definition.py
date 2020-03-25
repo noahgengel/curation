@@ -9,18 +9,21 @@ script.
 """
 
 from relevant_dictionaries import thresholds
+from datetime import date
+import sys
 
 
 class HPO:
     """
-    Class is used to store data quality metrics.
+    Class is used to associated data quality issues with a particular
+    HPO.
     """
 
     def __init__(
-            self, name, full_name, concept_success=0, duplicates=0,
-            end_before_begin=0, data_after_death=0,
-            route_success=0, unit_success=0, measurement_integration=0,
-            ingredient_integration=0):
+            self, name, full_name, concept_success, duplicates,
+            end_before_begin, data_after_death,
+            route_success, unit_success, measurement_integration,
+            ingredient_integration):
 
         """
         Used to establish the attributes of the object being instantiated.
@@ -45,43 +48,54 @@ class HPO:
         self.name = name
         self.full_name = full_name
 
+        # relates to multiple tables - therefore should be list of objects
         self.concept_success = concept_success
         self.duplicates = duplicates
         self.end_before_begin = end_before_begin
         self.data_after_death = data_after_death
+
+        # only relates to one table - therefore single float expected
         self.route_success = route_success
         self.unit_success = unit_success
         self.measurement_integration = measurement_integration
         self.ingredient_integration = ingredient_integration
 
-    def set_attribute_with_string(self, key, value):
+    def set_attribute_with_string(self, metric, dq_object):
         """
-        Function is intended to allow the script to use a string
-        to set the attribute for an HPO object using a string
 
-        Parameters
-        ----------
-        key (string): used to select which attribute is to be
-            established/changed
-
-        value (float): actual data quality metric to be logged
+        :param string:
+        :param dq_object:
+        :return:
         """
-        if key == 'concept_success':
-            self.concept_success = value
-        elif key == 'duplicates':
-            self.duplicates = value
-        elif key == 'end_before_begin':
-            self.end_before_begin = value
-        elif key == 'data_after_death':
-            self.data_after_death = value
-        elif key == 'route_success':
-            self.route_success = value
-        elif key == 'unit_success':
-            self.unit_success = value
-        elif key == 'measurement_integration':
-            self.measurement_integration = value
-        elif key == 'ingredient_integration':
-            self.ingredient_integration = value
+
+        if metric == 'concept':
+            self.concept_success.append(dq_object)
+
+        elif metric == 'duplicates':
+            self.duplicates.append(dq_object)
+
+        elif metric == 'end_before_begin':
+            self.end_before_begin.append(dq_object)
+
+        elif metric == 'data_after_death':
+            self.data_after_death.append(dq_object)
+
+        elif metric == 'sites_measurement':
+            self.measurement_integration.append(dq_object)
+
+        elif metric == 'drug_success':
+            self.ingredient_integration.append(dq_object)
+
+        elif metric == 'drug_routes':
+            self.route_success.append(dq_object)
+
+        elif metric == 'measurement_units':
+            self.unit_success.append(dq_object)
+
+        else:
+            print("Unrecognized metric input: {metric} for {hpo}".format(
+                metric=metric, hpo=self.name))
+            sys.exit(0)
 
     def find_failing_metrics(self):
         """
@@ -95,42 +109,80 @@ class HPO:
             be determined
 
         :return:
-        failing_metrics (dict): has the following structure
-            keys: data quality metrics that have 'failed'
-            values: the actual 'value' that was deemed to have failed
+        failing_metrics (list): has a list of the data quality metrics
+            for the HPO that have 'failed' based on the thresholds
+            provided
 
         NOTE:
         if no data quality problems are found, however, the function
         will return 'None' to signify that no issues arose
         """
 
-        failing_metrics = {}
+        failing_metrics = []
 
-        if self.concept_success < thresholds['concept_success_min']:
-            failing_metrics['concept_success'] = self.concept_success
+        # below we can find the data quality metrics for several tables -
+        # need to iterate through a list to get the objects for each table
+        for concept_success_obj in self.concept_success:
+            if concept_success_obj.value < thresholds['concept_success_min']:
+                failing_metrics.append(concept_success_obj)
 
-        if self.duplicates > thresholds['duplicates_max']:
-            failing_metrics['duplicates'] = self.duplicates
+        for duplicates_obj in self.duplicates:
+            if duplicates_obj.value > thresholds['duplicates_max']:
+                failing_metrics.append(duplicates_obj)
 
-        if self.end_before_begin > thresholds['end_before_begin_max']:
-            failing_metrics['end_before_begin'] = self.end_before_begin
+        for end_before_begin_obj in self.end_before_begin:
+            if end_before_begin_obj.value > thresholds['end_before_begin_max']:
+                failing_metrics.append(end_before_begin_obj)
 
-        if self.data_after_death > thresholds['data_after_death_max']:
-            failing_metrics['data_after_death'] = self.data_after_death
+        for data_after_death_obj in self.data_after_death:
+            if data_after_death_obj.value > thresholds['data_after_death_max']:
+                failing_metrics.append(data_after_death_obj)
 
+        # the following attributes should only be one object - no need to
+        # iterate through a list
         if self.route_success < thresholds['route_success_min']:
-            failing_metrics['route_success'] = self.route_success
+            failing_metrics.append(self.route_success)
 
         if self.unit_success < thresholds['unit_success_min']:
-            failing_metrics['unit_success'] = self.unit_success
+            failing_metrics.append(self.unit_success)
 
         if self.unit_success < thresholds['measurement_integration_min']:
-            failing_metrics['measurement_integration'] = self.unit_success
+            failing_metrics.append(self.unit_success)
 
         if self.route_success < thresholds['route_success_min']:
-            failing_metrics['route_success'] = self.route_success
+            failing_metrics.append(self.route_success)
 
         if not failing_metrics:  # no errors logged
             return None
         else:
             return failing_metrics
+
+
+class DataQualityMetric:
+    """
+    Class is used to store data quality metrics.
+    """
+
+    def __init__(
+        self, hpo='', table='', metric_type='', value=0,
+            data_quality_dimension='', first_reported=date.today()):
+
+        self.hpo = hpo
+        self.table = table
+        self.metric_type = metric_type
+        self.value = value
+        self.data_quality_dimension = data_quality_dimension
+        self.first_reported = first_reported
+
+    def print_dqd_attributes(self):
+        print(
+            "HPO: {hpo}\n"
+            "Table: {table}\n"
+            "Metric Type: {metric_type}\n"
+            "Value: {value}\n"
+            "Data Quality Dimension: {dqd}\n"
+            "First Reported: {date}".format(
+                hpo=self.hpo, table=self.table,
+                metric_type=self.metric_type,
+                value=self.value, dqd=self.data_quality_dimension,
+                date=self.first_reported))
