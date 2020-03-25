@@ -47,7 +47,7 @@ measurement_integration_link = relevant_links['measurement_integration']
 drug_integration_link = relevant_links['drug_integration']
 
 
-def main():
+def create_hpo_objects():
     # creating the various HPO objects
     hpo_id_column = generate_hpo_id_col(file_name)
     hpo_objects = []
@@ -63,6 +63,9 @@ def main():
         for hpo in hpo_objects:
             hpo_row = find_hpo_row(sheet, hpo.name)
 
+
+def main():
+    create_hpo_objects()
 
 if __name__ == "__main__":
     main()
