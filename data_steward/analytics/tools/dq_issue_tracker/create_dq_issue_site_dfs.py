@@ -23,7 +23,7 @@ from general_functions import load_files, \
     generate_hpo_id_col, find_hpo_row, get_err_rate
 
 
-file_name = 'march_19_2020.xlsx'
+excel_file_name = 'march_19_2020.xlsx'
 
 # these are the links we will ultimately use to populate the df
 concept_success_link = relevant_links['concept_success']
@@ -71,9 +71,35 @@ def create_hpo_objects(file_name):
     return hpo_objects
 
 
-def populate_hpo_objects_with_dq_metrics(hpo_objects, metric_names):
+def populate_hpo_objects_with_dq_metrics(
+        hpo_objects, metrics, file_name):
+    """
+    Function is used to take the HPO objects created in a previous
+    function (create_hpo_objects) and associate them with
+    DataQualityMetric objects that contain the relevant pieces
+    of information from the selected sheet.
+
+    Parameters
+    ----------
+    hpo_objects (lst): list of HPO objects (see class_definitions.py)
+        that will be used and ultimately populated with the
+        data quality metrics
+
+    metric_names (lst): list of the sheets that will be used to
+        identify the data quality metrics for each of the HPO
+        and DataQualityMetric objects
+
+    file_name (str): the date of the file that is being used to generate
+        the data quality issue frames
+
+    Returns
+    -------
+    hpo_objects (lst): list of HPO objects (see class_definitions.py)
+        that now have the appropriate DataQualityMetric objects
+    """
+
     # now we need to create the DataQualityMetric objects
-    for metric in metric_names:
+    for metric in metrics:
         sheet = load_files(sheet_name=metric, file_name=file_name)
 
         for hpo in hpo_objects:
@@ -110,14 +136,18 @@ def populate_hpo_objects_with_dq_metrics(hpo_objects, metric_names):
 
 
 def main():
-    hpo_objects = create_hpo_objects(file_name=file_name)
+    """
+    Function that executes the entirety of the program. 
+    """
+    hpo_objects = create_hpo_objects(file_name=excel_file_name)
 
     hpo_objects = populate_hpo_objects_with_dq_metrics(
-        hpo_objects=hpo_objects, metric_names=metric_names)
+        hpo_objects=hpo_objects, metrics=metric_names,
+        file_name=excel_file_name)
 
-    for object in hpo_objects:
-        if object.name == 'nyc_cu':
-            failing_metrics = object.find_failing_metrics()
+    for hpo in hpo_objects:
+        if hpo.name == 'nyc_cu':
+            failing_metrics = hpo.find_failing_metrics()
 
     print("There are {} issues with Columbia".format(len(failing_metrics)))
 
@@ -125,6 +155,7 @@ def main():
         if isinstance(metric, DataQualityMetric):
             metric.print_dqd_attributes()
             print("\n\n")
+
 
 if __name__ == "__main__":
     main()
