@@ -1,6 +1,8 @@
 """
-Python library is intended to house the funcitons that were leveraged
-in metrics_over_time. These functions are comparatively straighforward
+Python library is intended to house the functions for use in the
+general 'main' file in the library.
+
+These functions are comparatively straighforward
 and are better sequestered in a separate script rather than bogging down
 the 'heavy lifting' of the code in create_dq_issue_site_dfs.py.
 """
@@ -19,17 +21,20 @@ def load_files(sheet_name, file_name):
     This function is also designed so it skips over instances where
     the user's input only exists in some of the defined sheets.
 
-    :parameter
+    Parameters
+    ----------
     sheet (str): represents the sheet from the analysis reports
         whose metrics will be compared over time
 
     file_name (str): name of the user-specified Excel files in the
         in the current directory. this should be an analytics report
-        to be scanne.d
+        to be scanned
 
-    :returns
-    sheets (list): list of pandas dataframes. each dataframe contains
-        info about data quality for all of the sites for a date.
+    Returns
+    -------
+    sheet (df): dataframe contains info about data quality
+        for all of the sites on a particular dimension of data
+        quality for a particular date
     """
     cwd = os.getcwd()
 
@@ -66,12 +71,14 @@ def generate_hpo_id_col(current_file):
     Function is used to get the names of all the HPOs in the
     current file.
 
-    :parameter
+    Parameters
+    ----------
     current_file (str): user-specified Excel file that should
         reside in the current directory. Files are analytics
         reports to be scanned.
 
-    :returns
+    Returns
+    -------
     hpo_id_col (list): list of the strings that should go
         into an HPO ID column. these will later be used
         to instantiate HPO objects.
@@ -94,7 +101,8 @@ def find_hpo_row(sheet, hpo):
     Finds the row index of a particular HPO site within
     a larger sheet.
 
-    :parameter
+    Parameters
+    ----------
     sheet (dataframe): dataframe with all of the data quality
         metrics for the sites.
 
@@ -122,6 +130,36 @@ def find_hpo_row(sheet, hpo):
 
 
 def get_err_rate(sheet, row_num, metric, hpo_name, column):
+    """
+    Function is used to get the 'error rate' - or the number
+    that we traditionally report out to the sites. This rate
+    will be used to ultimately determine if the data quality
+    metric is up to part.
+
+    Parameters
+    ----------
+    sheet (df): dataframe contains info about data quality
+        for all of the sites on a particular dimension of data
+        quality for a particular date
+
+    row_num (int): row number where the HPO site of question
+        lies within the sheet
+
+    metric (string): the name of the sheet that contains the
+        dimension of data quality to be investigated
+
+    hpo_name (string): ID for the HPO to be investigated
+
+    column (string): column to be used to find the relevant
+        quantitative metric that captures the data quality
+        issue (often includes the metric name and relevant
+        table)
+
+    Returns
+    -------
+    val (float): value that represents the quantitative value
+        of the data quality metric being investigated
+    """
     if row_num is not None:
         data_info = sheet.iloc[row_num, :]  # series, column labels and values
     else:
@@ -132,6 +170,8 @@ def get_err_rate(sheet, row_num, metric, hpo_name, column):
 
     # tend to reverse the reported metric for ACHILLES errors
     if metric in ['end_before_begin', 'data_after_death']:
-        return round(100 - data_info[column], 2)
+        val = round(100 - data_info[column], 2)
     else:
-        return data_info[column]
+        val = data_info[column]
+
+    return val

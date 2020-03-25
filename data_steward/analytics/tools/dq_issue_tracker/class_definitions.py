@@ -13,6 +13,70 @@ from datetime import date
 import sys
 
 
+class DataQualityMetric:
+    """
+    Class is used to store data quality metrics.
+    """
+
+    def __init__(
+        self, hpo='', table='', metric_type='', value=0,
+            data_quality_dimension='', first_reported=date.today()):
+
+        """
+        Used to establish the attributes of the DataQualityMetric
+        object being instantiated.
+
+        Parameters
+        ----------
+        hpo (string): name of the HPO being associated with the
+            data quality metric in question (e.g. nyc_cu)
+
+        table (string): name of the table whose data quality metric
+            is being determined (e.g. Measurement)
+
+        metric_type (string): name of the metric that is being
+            determined (e.g. duplicates)
+
+        value (float): value that represents the quantitative value
+            of the data quality metric being investigated
+
+        data_quality_dimension (string): represents whether the
+            metric_type being investigated is related to the
+            conformance, completeness, or plausibility of data
+            quality with respect to the Kahn framework
+
+        first_reported (datetime.date): represents the time
+            at which this metric (with all of the other parameters
+            being exactly the same) was first reported
+        """
+
+        self.hpo = hpo
+        self.table = table
+        self.metric_type = metric_type
+        self.value = value
+        self.data_quality_dimension = data_quality_dimension
+        self.first_reported = first_reported
+
+    def print_dqd_attributes(self):
+        """
+        Function is used to print out some of the attributes
+        of a DataQualityMetric object in a manner that enables
+        all of the information to be displayed in a
+        human-readable format.
+        """
+        print(
+            "HPO: {hpo}\n"
+            "Table: {table}\n"
+            "Metric Type: {metric_type}\n"
+            "Value: {value}\n"
+            "Data Quality Dimension: {dqd}\n"
+            "First Reported: {date}".format(
+                hpo=self.hpo, table=self.table,
+                metric_type=self.metric_type,
+                value=self.value, dqd=self.data_quality_dimension,
+                date=self.first_reported))
+
+
 class HPO:
     """
     Class is used to associated data quality issues with a particular
@@ -26,7 +90,7 @@ class HPO:
             ingredient_integration):
 
         """
-        Used to establish the attributes of the object being instantiated.
+        Used to establish the attributes of the HPO object being instantiated.
 
         Parameters
         ----------
@@ -36,15 +100,14 @@ class HPO:
 
         full_name (str): full name of the HPO
 
-        all other optional parameters are intended to be float objects. they
-        each represent a data quality metric that can be found on the AoU
-        HPO site at the following link:
+        all other optional parameters are intended to be lists. These
+        lists should contain DataQualityMetric objects that have all
+        of the relevant pieces pertaining to said metric object.
+
+        the exact descriptions of the data quality metrics can be found
+        on the AoU HPO website at the following link:
         https://sites.google.com/view/ehrupload
-
-        they were all set to 0 because this would be the value all of the data
-        quality metrics would receive if the site were to have no data
         """
-
         self.name = name
         self.full_name = full_name
 
@@ -60,12 +123,23 @@ class HPO:
         self.measurement_integration = measurement_integration
         self.ingredient_integration = ingredient_integration
 
-    def set_attribute_with_string(self, metric, dq_object):
+    def add_attribute_with_string(self, metric, dq_object):
         """
+        Function is designed to enable the script to add
+        a DataQualityMetric object to the attributes that
+        define an HPO object. This will allow us to easily
+        associate an HPO object with its constituent data
+        quality metrics
 
-        :param string:
-        :param dq_object:
-        :return:
+        Parameters
+        ----------
+        metric (string): the name of the sheet that contains the
+            dimension of data quality to be investigated
+
+        dq_object (DataQualityMetric): object that contains
+            the information for a particular aspect of the
+            site's data quality (NOTE: dq_object.hpo should
+            equal self.name whenever this is used)
         """
 
         if metric == 'concept':
@@ -108,13 +182,13 @@ class HPO:
         self (HPO object): the object whose 'failing metrics' are to
             be determined
 
-        :return:
+        Returns
+        -------
         failing_metrics (list): has a list of the data quality metrics
             for the HPO that have 'failed' based on the thresholds
             provided
 
-        NOTE:
-        if no data quality problems are found, however, the function
+        NOTE: if no data quality problems are found, however, the function
         will return 'None' to signify that no issues arose
         """
 
@@ -159,32 +233,3 @@ class HPO:
         else:
             return failing_metrics
 
-
-class DataQualityMetric:
-    """
-    Class is used to store data quality metrics.
-    """
-
-    def __init__(
-        self, hpo='', table='', metric_type='', value=0,
-            data_quality_dimension='', first_reported=date.today()):
-
-        self.hpo = hpo
-        self.table = table
-        self.metric_type = metric_type
-        self.value = value
-        self.data_quality_dimension = data_quality_dimension
-        self.first_reported = first_reported
-
-    def print_dqd_attributes(self):
-        print(
-            "HPO: {hpo}\n"
-            "Table: {table}\n"
-            "Metric Type: {metric_type}\n"
-            "Value: {value}\n"
-            "Data Quality Dimension: {dqd}\n"
-            "First Reported: {date}".format(
-                hpo=self.hpo, table=self.table,
-                metric_type=self.metric_type,
-                value=self.value, dqd=self.data_quality_dimension,
-                date=self.first_reported))

@@ -25,6 +25,7 @@ from general_functions import load_files, \
 
 file_name = 'march_19_2020.xlsx'
 
+# these are the links we will ultimately use to populate the df
 concept_success_link = relevant_links['concept_success']
 duplicates_link = relevant_links['duplicates']
 end_before_start_link = relevant_links['end_before_start']
@@ -34,10 +35,25 @@ route_success_link = relevant_links['route_success']
 measurement_integration_link = relevant_links['measurement_integration']
 drug_integration_link = relevant_links['drug_integration']
 
-metric_names = list(metric_names.keys())
+metric_names = list(metric_names.keys())  # sheets to be investigated
 
 
 def create_hpo_objects(file_name):
+    """
+    Function is used to establish the HPO objects that will
+    ultimately carry all of the data from the sheet.
+
+    Parameters
+    ----------
+    file_name (str): the date of the file that is being used to generate
+        the data quality issue frames
+
+    Returns
+    -------
+    hpo_objects (lst): list of HPO objects (see class_definitions.py)
+        that will be used and ultimately populated with the
+        data quality metrics
+    """
     # creating the various HPO objects
     hpo_id_column = generate_hpo_id_col(file_name)
     hpo_objects = []
@@ -85,7 +101,7 @@ def populate_hpo_objects_with_dq_metrics(hpo_objects, metric_names):
 
             for metric_object in all_dqds_for_hpo_for_metric:
 
-                hpo.set_attribute_with_string(
+                hpo.add_attribute_with_string(
                     metric=metric_object.metric_type, dq_object=metric_object)
 
     return hpo_objects
