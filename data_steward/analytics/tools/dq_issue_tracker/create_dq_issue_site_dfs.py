@@ -13,13 +13,13 @@ For a full description of this issue, please see EDQ-427.
 Start Date: 03/24/2020 (v1)
 """
 
-from relevant_dictionaries import relevant_links, full_names, \
+from dictionaries_and_lists import relevant_links, full_names, \
     desired_columns_dict, data_quality_dimension_dict, table_based_on_column_provided, \
     metric_names
 
-from hpo_class_definition import HPO, DataQualityMetric
+from class_definitions import HPO, DataQualityMetric
 
-from functions_from_metrics_over_time import load_files, \
+from general_functions import load_files, \
     generate_hpo_id_col, find_hpo_row, get_err_rate
 
 
@@ -90,7 +90,7 @@ def populate_hpo_objects_with_dq_metrics(hpo_objects, metric_names):
 
     return hpo_objects
 
-    # FIXME: first_reported needs to exist
+# FIXME: first_reported needs to exist
 
 
 def main():

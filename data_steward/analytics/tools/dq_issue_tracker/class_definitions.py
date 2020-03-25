@@ -8,7 +8,7 @@ to add functions could prove useful in future iterations of the
 script.
 """
 
-from relevant_dictionaries import thresholds
+from dictionaries_and_lists import thresholds
 from datetime import date
 import sys
 
