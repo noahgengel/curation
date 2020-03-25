@@ -8,7 +8,7 @@ to add functions could prove useful in future iterations of the
 script.
 """
 
-from .relevant_dictionaries import thresholds
+from relevant_dictionaries import thresholds
 
 
 class HPO:
@@ -53,6 +53,35 @@ class HPO:
         self.unit_success = unit_success
         self.measurement_integration = measurement_integration
         self.ingredient_integration = ingredient_integration
+
+    def set_attribute_with_string(self, key, value):
+        """
+        Function is intended to allow the script to use a string
+        to set the attribute for an HPO object using a string
+
+        Parameters
+        ----------
+        key (string): used to select which attribute is to be
+            established/changed
+
+        value (float): actual data quality metric to be logged
+        """
+        if key == 'concept_success':
+            self.concept_success = value
+        elif key == 'duplicates':
+            self.duplicates = value
+        elif key == 'end_before_begin':
+            self.end_before_begin = value
+        elif key == 'data_after_death':
+            self.data_after_death = value
+        elif key == 'route_success':
+            self.route_success = value
+        elif key == 'unit_success':
+            self.unit_success = value
+        elif key == 'measurement_integration':
+            self.measurement_integration = value
+        elif key == 'ingredient_integration':
+            self.ingredient_integration = value
 
     def find_failing_metrics(self):
         """
