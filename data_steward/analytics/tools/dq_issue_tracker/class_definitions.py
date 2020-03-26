@@ -189,28 +189,28 @@ class HPO:
             equal self.name whenever this is used)
         """
 
-        if metric == 'concept':
+        if metric == 'Concept ID Success Rate':
             self.concept_success.append(dq_object)
 
-        elif metric == 'duplicates':
+        elif metric == 'Duplicate Records':
             self.duplicates.append(dq_object)
 
-        elif metric == 'end_before_begin':
+        elif metric == 'End Dates Preceding Start Dates':
             self.end_before_begin.append(dq_object)
 
-        elif metric == 'data_after_death':
+        elif metric == 'Data After Death':
             self.data_after_death.append(dq_object)
 
-        elif metric == 'sites_measurement':
+        elif metric == 'Measurement Integration':
             self.measurement_integration.append(dq_object)
 
-        elif metric == 'drug_success':
+        elif metric == 'Drug Ingredient Integration':
             self.ingredient_integration.append(dq_object)
 
-        elif metric == 'drug_routes':
+        elif metric == 'Route Concept ID Success Rate':
             self.route_success.append(dq_object)
 
-        elif metric == 'measurement_units':
+        elif metric == 'Unit Concept ID Success Rate':
             self.unit_success.append(dq_object)
 
         else:

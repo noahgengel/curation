@@ -4,15 +4,15 @@ primary file and/or the HPO class functions.
 
 The dictionaries are as follows:
 --------------------------------
-relevant_links (dict): the relevant links for the output file
+relevant_links: the relevant links for the output file
     that is established in create_dq_issue_site_dfs.py. This will
     help maintain the overall readability of the aforementioned
     script
 
-thresholds (dict): the point at which a data quality metric (whether too
+thresholds: the point at which a data quality metric (whether too
     high or too low) would be flagged as 'erroneous'
 
-full_names (dict): allows one to use the hpo_id (shorter) name to find
+full_names: allows one to use the hpo_id (shorter) name to find
     the longer (more human-readable) name
 
 metric_names: keys for the sheet in the dataframe and values
@@ -31,6 +31,8 @@ table_based_on_column_provided: allows us to determine the table that
     should be associated with a particular Data Quality Dimension object
     based upon the column that was used to get the associated 'value'
     float
+
+metric_type_to_english_dict (dict)
 """
 
 relevant_links = {
@@ -194,4 +196,24 @@ data_quality_dimension_dict = {
     'drug_success': 'Completeness',
     'drug_routes': 'Completeness',
     'measurement_units': 'Completeness'
+}
+
+
+metric_type_to_english_dict = {
+    # field population metrics
+    'measurement_units': 'Unit Concept ID Success Rate',
+    'drug_routes': 'Route Concept ID Success Rate',
+
+    # integration metrics
+    'drug_success': 'Drug Ingredient Integration',
+    'sites_measurement': 'Measurement Integration',
+
+    # ACHILLES errors
+    'end_before_begin': 'End Dates Preceding Start Dates',
+    'data_after_death': 'Data After Death',
+
+    # other metrics
+    'concept': 'Concept ID Success Rate',
+    'duplicates': 'Duplicate Records'
+
 }

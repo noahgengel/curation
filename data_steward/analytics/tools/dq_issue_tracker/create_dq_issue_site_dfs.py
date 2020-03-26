@@ -15,7 +15,7 @@ Start Date: 03/24/2020 (v1)
 
 from dictionaries_and_lists import relevant_links, full_names, \
     desired_columns_dict, data_quality_dimension_dict, table_based_on_column_provided, \
-    metric_names
+    metric_names, metric_type_to_english_dict
 
 from class_definitions import HPO, DataQualityMetric
 
@@ -115,7 +115,7 @@ def populate_hpo_objects_with_dq_metrics(
 
                 data_quality_dimension = DataQualityMetric(
                     hpo=hpo_name, table=table_based_on_column_provided[column_for_table],
-                    metric_type=metric, value=err_rate,
+                    metric_type=metric_type_to_english_dict[metric], value=err_rate,
                     data_quality_dimension=data_quality_dimension_dict[metric],
                     link=relevant_links[metric])
 
@@ -181,7 +181,7 @@ def create_hpo_problem_dfs(hpo_objects, hpo_id_column):
             for row_idx, failed_metric in enumerate(failing_metrics):
                 attributes = failed_metric.get_attributes_in_order()
 
-                df[row_idx] = attributes
+                df.loc[row_idx] = attributes
 
     df_dictionary_by_site = dict(zip(hpo_id_column, total_dfs))
 
