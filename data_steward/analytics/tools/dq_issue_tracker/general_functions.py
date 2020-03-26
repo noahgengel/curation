@@ -10,6 +10,7 @@ the 'heavy lifting' of the code in create_dq_issue_site_dfs.py.
 import os
 import pandas as pd
 import sys
+import datetime
 
 
 def load_files(sheet_name, file_name):
@@ -180,3 +181,34 @@ def get_err_rate(sheet, row_num, metric, hpo_name, column):
         val = 0
 
     return val
+
+
+def sort_and_convert_dates(file_names):
+    """
+    Function is used to sort the file names to order
+    them by the date in their names. These string date
+    names are then converted into datetime objects so
+    they could eventually be assigned to DataQualityMetric
+    objects.
+
+    Parameters
+    ----------
+    file_names (list): list of the files for the main
+        script
+
+    Returns
+    -------
+    ordered_dates_dt (list) list of ordered dates
+        that could be assigned to a DataQualityMetric
+        object
+    """
+    ordered_dates_dt = []
+
+    # NOTE: requires files to have full month name and 4-digit year
+    for date_str in file_names:
+        date = datetime.datetime.strptime(date_str, '%B_%d_%Y')
+        ordered_dates_dt.append(date)
+
+    ordered_dates_dt = sorted(ordered_dates_dt)
+
+    return ordered_dates_dt
