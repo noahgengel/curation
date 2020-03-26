@@ -174,4 +174,9 @@ def get_err_rate(sheet, row_num, metric, hpo_name, column):
     else:
         val = data_info[column]
 
+    # to ensure that comparisons can be drawn across
+    # the threshold
+    if val in ["No Data"] or val is None:
+        val = 0
+
     return val

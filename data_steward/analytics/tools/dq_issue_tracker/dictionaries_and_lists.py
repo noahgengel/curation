@@ -34,28 +34,28 @@ table_based_on_column_provided: allows us to determine the table that
 """
 
 relevant_links = {
-    "concept_success":
+    "concept":
     "https://sites.google.com/view/ehrupload/data-quality-metrics/concept-success-rate?authuser=0",
 
     "duplicates":
     "https://sites.google.com/view/ehrupload/data-quality-metrics/duplicates?authuser=0",
 
-    "end_before_start":
+    "end_before_begin":
     "https://sites.google.com/view/ehrupload/data-quality-metrics/end-dates-preceding-start-dates?authuser=0",
 
     "data_after_death":
     "https://sites.google.com/view/ehrupload/data-quality-metrics/data-after-death?authuser=0",
 
-    "unit_success":
+    "measurement_units":
     "https://sites.google.com/view/ehrupload/data-quality-metrics/unit-concept-success-rate?authuser=0",
 
-    "route_success":
+    "drug_routes":
     "https://sites.google.com/view/ehrupload/data-quality-metrics/route-concept-success-rate?authuser=0",
 
-    "measurement_integration":
+    "sites_measurement":
     "https://sites.google.com/view/ehrupload/data-quality-metrics/measurement-integration-rate?authuser=0",
 
-    "drug_integration":
+    "drug_success":
     "https://sites.google.com/view/ehrupload/data-quality-metrics/drug-ingredient-integration-rate?authuser=0"
 }
 

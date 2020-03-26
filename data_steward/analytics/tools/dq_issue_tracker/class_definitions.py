@@ -20,7 +20,8 @@ class DataQualityMetric:
 
     def __init__(
         self, hpo='', table='', metric_type='', value=0,
-            data_quality_dimension='', first_reported=date.today()):
+            data_quality_dimension='', first_reported=date.today(),
+            link=''):
 
         """
         Used to establish the attributes of the DataQualityMetric
@@ -48,6 +49,9 @@ class DataQualityMetric:
         first_reported (datetime.date): represents the time
             at which this metric (with all of the other parameters
             being exactly the same) was first reported
+
+        link (string): link to the AoU EHR Operations page that
+            can help the site troubleshoot its data quality
         """
 
         self.hpo = hpo
@@ -56,6 +60,7 @@ class DataQualityMetric:
         self.value = value
         self.data_quality_dimension = data_quality_dimension
         self.first_reported = first_reported
+        self.link = link
 
     def print_dqd_attributes(self):
         """
@@ -70,11 +75,53 @@ class DataQualityMetric:
             "Metric Type: {metric_type}\n"
             "Value: {value}\n"
             "Data Quality Dimension: {dqd}\n"
-            "First Reported: {date}".format(
+            "First Reported: {date}\n"
+            "Link: {link}".format(
                 hpo=self.hpo, table=self.table,
                 metric_type=self.metric_type,
                 value=self.value, dqd=self.data_quality_dimension,
-                date=self.first_reported))
+                date=self.first_reported,
+                link=self.link))
+
+    def get_list_of_attribute_names(self):
+        """
+        Function is used to get a list of the attributes that
+        are associated with a DataQualityMetric object. This will
+        ultimately be used to populate the columns of a
+        pandas dataframe.
+
+        Return
+        ------
+        attribute_names (list): list of the attribute names
+            for a DataQualityMetric object
+        """
+
+        attribute_names = [
+            "HPO", "Table", "Metric Type",
+            "Value", "Data Quality Dimension", "First Reported",
+            "Link"]
+
+        return attribute_names
+
+    def get_attributes_in_order(self):
+        """
+        Function is used to get the attributes of a particular
+        DataQualityMetric object in an order that parallels
+        the get_list_of_attribute_names function above. This
+        will be used to populate the dataframe with data quality
+        issues.
+
+        Return
+        ------
+        attributes (list): list of the attributes (values, strings)
+            for the object
+        """
+
+        attributes = [
+            self.hpo, self.table, self.metric_type, self.value,
+            self.data_quality_dimension, self.first_reported, self.link]
+
+        return attributes
 
 
 class HPO:
@@ -106,7 +153,7 @@ class HPO:
 
         the exact descriptions of the data quality metrics can be found
         on the AoU HPO website at the following link:
-        https://sites.google.com/view/ehrupload
+            sites.google.com/view/ehrupload
         """
         self.name = name
         self.full_name = full_name
@@ -232,4 +279,3 @@ class HPO:
             return None
         else:
             return failing_metrics
-
