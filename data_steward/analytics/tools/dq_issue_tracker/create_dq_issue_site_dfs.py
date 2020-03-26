@@ -98,7 +98,7 @@ def populate_hpo_objects_with_dq_metrics(
         that now have the appropriate DataQualityMetric objects
     """
 
-    # now we need to create the DataQualityMetric objects
+    # start with analyzing each metric first - minimizes 'loads'
     for metric in metrics:
         sheet = load_files(sheet_name=metric, file_name=file_name)
 
@@ -106,6 +106,7 @@ def populate_hpo_objects_with_dq_metrics(
             hpo_name = hpo.name
             row_num = find_hpo_row(sheet, hpo_name)
 
+            # what we are looking for within each analytics sheet
             desired_columns = desired_columns_dict[metric]
 
             all_dqds_for_hpo_for_metric = []  # list of objects - to be filled
@@ -118,6 +119,7 @@ def populate_hpo_objects_with_dq_metrics(
                     metric_type=metric, value=err_rate,
                     data_quality_dimension=data_quality_dimension_dict[metric])
 
+                # adding to a list of the same metric type for the same site
                 all_dqds_for_hpo_for_metric.append(data_quality_dimension)
 
             # now we have objects for all of the data quality metrics for
@@ -126,7 +128,6 @@ def populate_hpo_objects_with_dq_metrics(
             # for a particular data quality metric - should now assign to HPO
 
             for metric_object in all_dqds_for_hpo_for_metric:
-
                 hpo.add_attribute_with_string(
                     metric=metric_object.metric_type, dq_object=metric_object)
 
