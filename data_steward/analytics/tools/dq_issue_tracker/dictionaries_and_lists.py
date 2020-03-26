@@ -32,7 +32,14 @@ table_based_on_column_provided: allows us to determine the table that
     based upon the column that was used to get the associated 'value'
     float
 
-metric_type_to_english_dict (dict)
+metric_type_to_english_dict: allows one to translate the 'metric type'
+    that is normally associated with a 'DataQualityMetric' object to
+    'English'. this is useful for printing the columns on a new
+    dashboard
+
+english_to_metric_type_dict: effectively reverse engineers the
+    dicitonary above. useful for going from an 'old' dashboard to
+    comparing to the attributes of DataQualityMetrics
 """
 
 relevant_links = {
@@ -215,5 +222,22 @@ metric_type_to_english_dict = {
     # other metrics
     'concept': 'Concept ID Success Rate',
     'duplicates': 'Duplicate Records'
+}
 
+english_to_metric_type_dict = {
+    # field population metrics
+    'Unit Concept ID Success Rate': 'measurement_units',
+    'Route Concept ID Success Rate': 'drug_routes',
+
+    # integration metrics
+    'Drug Ingredient Integration': 'drug_success',
+    'Measurement Integration': 'sites_measurement',
+
+    # ACHILLES errors
+    'End Dates Preceding Start Dates': 'end_before_begin',
+    'Data After Death': 'data_after_death',
+
+    # other metrics
+    'Concept ID Success Rate': 'concept',
+    'Duplicate Records': 'duplicates'
 }

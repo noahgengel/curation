@@ -206,6 +206,7 @@ def sort_and_convert_dates(file_names):
 
     # NOTE: requires files to have full month name and 4-digit year
     for date_str in file_names:
+        date_str = date_str[:-5]  # take off the .xlsx
         date = datetime.datetime.strptime(date_str, '%B_%d_%Y')
         ordered_dates_dt.append(date)
 

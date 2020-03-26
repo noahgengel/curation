@@ -23,11 +23,14 @@ from class_definitions import HPO, DataQualityMetric
 from general_functions import load_files, \
     generate_hpo_id_col, find_hpo_row, get_err_rate, sort_and_convert_dates
 
+from cross_reference_functions import cross_reference_old_metrics
+
 import pandas as pd
 
+old_dashboards = 'march_12_2020_data_quality_issues.xlsx'
 
-excel_file_name = 'march_19_2020.xlsx'
 old_excel_file_name = 'march_12_2020.xlsx'
+excel_file_name = 'march_19_2020.xlsx'
 
 metric_names = list(metric_names.keys())  # sheets to be investigated
 
@@ -140,62 +143,8 @@ def populate_hpo_objects_with_dq_metrics(
     return hpo_objects
 
 
-def cross_reference_old_metrics(failing_metrics, old_failing_metrics):
-    """
-    Function is used to determine if the 'failing metrics' for a particular
-    site are 'new' (appeared in the most recent iteration) or if they
-    are 'old' (existed in the last iteration). If the metric is deemed to
-    be 'old', the first_reported metric for the 'newer' version is reset
-    to the former first_reported metric.
-
-    Parameters
-    ----------
-    failing_metrics (list): contains DataQualityMetric objects that are
-        known to 'fail' with respect to the thresholds established.
-        these are the metrics from the newer file.
-
-    old_failing_metrics (list): contains DataQualityMetric objects
-        that are known to 'fail' with respect to the thresholds
-        established. these are the metrics from the older file.
-
-    Returns
-    -------
-    failing_metrics (list): now contains the DataQuality objects
-        but has the updated first_reported attribute
-    """
-
-    for new_metric in failing_metrics:
-        found_in_old = False
-
-        for old_metric in old_failing_metrics:
-
-            # all attributes except value or first reported
-            metrics_the_same = (
-                new_metric.hpo == old_metric.hpo and
-                new_metric.table_type == old_metric.table_type and
-                new_metric.metric_type == old_metric.metric_type and
-                new_metric.data_quality_dimension ==
-                old_metric.data_quality_dimension and
-                    new_metric.link == old_metric.link
-
-            )
-
-            if metrics_the_same:
-                    found_in_old = True
-
-        if found_in_old:
-            # found the metric in previous sheet - need to find the
-            # original report date and change accordingly
-            pass
-
-
-    pass
-
-
-# FIXME: Should also reassign the metric dates for first_discovered
-# on the HPO objects
-
-def create_hpo_problem_dfs(hpo_objects, old_hpo_objects, hpo_id_column):
+def create_hpo_problem_dfs(hpo_objects, old_hpo_objects, hpo_id_column,
+                           prev_dashboards):
     """
     Function is used to actually create the output Pandas dataframes
     that catalogue the problems for each site. There should be one
@@ -215,6 +164,11 @@ def create_hpo_problem_dfs(hpo_objects, old_hpo_objects, hpo_id_column):
 
     hpo_id_column (lst): list of the hpo_ids that will eventually
         each be associated with its own dataframe
+
+    prev_dashboards (string): name of the 'old' dashboards that
+        should reside in an Excel file in the current directory.
+        these dashboards will be necessary to update the
+        'first_reported' aspect of DataQualityMetric objects.
 
     Returns
     -------
@@ -245,8 +199,12 @@ def create_hpo_problem_dfs(hpo_objects, old_hpo_objects, hpo_id_column):
         failing_metrics = hpo.find_failing_metrics()
         old_failing_metrics = old_hpo.find_failing_metrics()
 
+        # assign failing metrics the correct 'first_reported' date
         failing_metrics = cross_reference_old_metrics(
-            failing_metrics, old_failing_metrics)
+            failing_metrics, old_failing_metrics,
+            prev_dashboards)
+
+        # FIXME: update the 'hpo_objects' accordingly if necessary
 
         # can only iterate if problem exists
         if failing_metrics:
@@ -291,7 +249,8 @@ def main():
     df_dict = create_hpo_problem_dfs(
         hpo_objects=hpo_objects,
         old_hpo_objects=old_hpo_objects,
-        hpo_id_column=hpo_id_column)
+        hpo_id_column=hpo_id_column,
+        prev_dashboards=old_dashboards)
 
     # cut off previous extension
     output_file_name = excel_file_name[:-5] + \
