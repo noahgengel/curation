@@ -7,7 +7,7 @@ to add functions could prove useful in future iterations of the
 script.
 """
 
-from datetime import date
+from dictionaries_and_lists import thresholds
 import sys
 
 
@@ -18,8 +18,8 @@ class DataQualityMetric:
 
     def __init__(
         self, hpo='', table='', metric_type='', value=0,
-            data_quality_dimension='', first_reported=date.today(),
-            link=''):
+            data_quality_dimension=''
+    ):
 
         """
         Used to establish the attributes of the DataQualityMetric
@@ -62,14 +62,10 @@ class DataQualityMetric:
             "Table: {table}\n"
             "Metric Type: {metric_type}\n"
             "Value: {value}\n"
-            "Data Quality Dimension: {dqd}\n"
-            "First Reported: {date}\n"
-            "Link: {link}".format(
+            "Data Quality Dimension: {dqd}\n".format(
                 hpo=self.hpo, table=self.table,
                 metric_type=self.metric_type,
-                value=self.value, dqd=self.data_quality_dimension,
-                date=self.first_reported,
-                link=self.link))
+                value=self.value, dqd=self.data_quality_dimension))
 
     def get_list_of_attribute_names(self):
         """
@@ -85,8 +81,7 @@ class DataQualityMetric:
 
         attribute_names = [
             "HPO", "Table", "Metric Type",
-            "Value", "Data Quality Dimension", "First Reported",
-            "Link"]
+            "Value", "Data Quality Dimension"]
 
         return attribute_names
 
@@ -105,7 +100,7 @@ class DataQualityMetric:
 
         attributes = [
             self.hpo, self.table, self.metric_type, self.value,
-            self.data_quality_dimension, self.first_reported, self.link]
+            self.data_quality_dimension]
 
         return attributes
 
@@ -117,10 +112,24 @@ class HPO:
     """
 
     def __init__(
-            self, name, full_name, concept_success, duplicates,
+            self,
+
+            # basic attributes
+            name, full_name, date,
+
+            # data quality metrics
+            concept_success, duplicates,
             end_before_begin, data_after_death,
             route_success, unit_success, measurement_integration,
-            ingredient_integration):
+            ingredient_integration,
+
+            # number of rows for the 6 canonical tables
+            num_measurement_rows = 0,
+            num_visit_rows = 0,
+            num_procedure_rows = 0,
+            num_condition_rows = 0,
+            num_drug_rows = 0,
+            num_observation_rows = 0):
 
         """
         Used to establish the attributes of the HPO object being instantiated.
@@ -128,28 +137,100 @@ class HPO:
         ----------
         self (HPO object): the object to be created
         name (str): name of the HPO ID to create (e.g. nyc_cu)
+
         full_name (str): full name of the HPO
-        all other optional parameters are intended to be lists. These
-        lists should contain DataQualityMetric objects that have all
-        of the relevant pieces pertaining to said metric object.
-        the exact descriptions of the data quality metrics can be found
-        on the AoU HPO website at the following link:
-            sites.google.com/view/ehrupload
+
+        date (datetime): 'date' that the HPO represents (in
+            other words, the corresponding analytics
+            report from which it hails)
+
+        concept_success (list): list of DataQuality metric objects
+            that should all have the metric_type relating
+            to concept success rate. each index should also
+            represent a different table.
+
+        duplicates (list): list of DataQuality metric objects
+            that should all have the metric_type relating
+            to the number of duplicates. each index should
+            also represent a different table
+
+        end_before_begin (list): list of DataQuality metric objects
+            that should all have the metric_type relating
+            to the number of end dates preceding start dates.
+            each index should also represent a different table
+
+        data_after_death (list): list of DataQuality metric objects
+            that should all have the metric_type relating
+            to the percentage of data points that follow a
+            patient's death date. each index should also
+            represent a different table
+
+        route_success (list): list of DataQuality metric objects
+            that should all have the metric_type relating
+            to the concept success rate for the route_concept_id
+            field. should have a length of one (for the drug
+            exposure table)
+
+        unit_success (list): list of DataQuality metric objects
+            that should all have the metric_type relating
+            to the concept success rate for the route_concept_id
+            field. should have a length of one (for the
+            measurement table)
+
+        measurement_integration (list): list of DataQuality metric
+            objects that should all have the metric_type relating
+            to the integration of certain measurement concepts.
+            should have a length of one (for the measurement
+            table).
+
+        ingredient_integration (list): list of DataQuality metric
+            objects that should all have the metric_type relating
+            to the integration of certain drug ingredients.
+            should have a length of one (for the drug exposure
+            table).
+
+        num_measurement_rows (float): number of rows in the
+            measurement table
+
+        num_visit_rows (float): number of rows in the
+            visit_occurrence table
+
+        num_procedure_rows (float): number of rows in the
+            procedure_occurrence table
+
+        num_condition_rows (float): number of rows in the
+            condition_occurrence table
+
+        num_drug_rows (float): number of rows in the drug
+            exposure table
+
+        number_observation_rows (float): number of rows
+            in the observation table
         """
+        # inherent attributes
         self.name = name
         self.full_name = full_name
+        self.date = date
 
-        # relates to multiple tables - therefore should be list of objects
+        # relates to multiple tables
         self.concept_success = concept_success
         self.duplicates = duplicates
         self.end_before_begin = end_before_begin
         self.data_after_death = data_after_death
 
-        # only relates to one table - therefore single float expected
+        # only relates to one table
         self.route_success = route_success
         self.unit_success = unit_success
         self.measurement_integration = measurement_integration
         self.ingredient_integration = ingredient_integration
+
+        # number of rows in each table
+        self.num_measurement_rows = num_measurement_rows,
+        self.num_visit_rows = num_visit_rows,
+        self.num_procedure_rows = num_procedure_rows,
+        self.num_condition_rows = num_condition_rows,
+        self.num_drug_rows = num_drug_rows,
+        self.num_observation_rows = num_observation_rows
 
     def add_attribute_with_string(self, metric, dq_object):
         """
@@ -162,6 +243,7 @@ class HPO:
         ----------
         metric (string): the name of the sheet that contains the
             dimension of data quality to be investigated
+
         dq_object (DataQualityMetric): object that contains
             the information for a particular aspect of the
             site's data quality (NOTE: dq_object.hpo should
@@ -202,17 +284,26 @@ class HPO:
         Function is used to create a catalogue of the 'failing' data
         quality metrics at defined by the thresholds established by
         the appropriate dictionary from relevant_dictionaries.
+
         Parameters
         ----------
         self (HPO object): the object whose 'failing metrics' are to
             be determined
+
         Returns
         -------
         failing_metrics (list): has a list of the data quality metrics
             for the HPO that have 'failed' based on the thresholds
             provided
-        NOTE: if no data quality problems are found, however, the function
-        will return 'None' to signify that no issues arose
+
+        NOTES
+        -----
+        1. if no data quality problems are found, however, the
+        function will return 'None' to signify that no issues arose
+
+        2. this funciton is not currently implemented in our current
+        iteration of metrics_over_time. this function, however, holds
+        potential to be useful in future iterations.
         """
 
         failing_metrics = []
