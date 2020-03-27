@@ -8,6 +8,7 @@ script.
 """
 
 from dictionaries_and_lists import thresholds
+import datetime
 import sys
 
 
@@ -18,7 +19,7 @@ class DataQualityMetric:
 
     def __init__(
         self, hpo='', table='', metric_type='', value=0,
-            data_quality_dimension=''
+            data_quality_dimension='', date=datetime.today()
     ):
 
         """
@@ -42,6 +43,10 @@ class DataQualityMetric:
             metric_type being investigated is related to the
             conformance, completeness, or plausibility of data
             quality with respect to the Kahn framework
+
+        date (datetime): 'date' that the DQM represents (in
+            other words, the corresponding analytics
+            report from which it hails)
         """
 
         self.hpo = hpo
@@ -49,6 +54,7 @@ class DataQualityMetric:
         self.metric_type = metric_type
         self.value = value
         self.data_quality_dimension = data_quality_dimension
+        self.date=date
 
     def print_dqd_attributes(self):
         """
@@ -62,10 +68,12 @@ class DataQualityMetric:
             "Table: {table}\n"
             "Metric Type: {metric_type}\n"
             "Value: {value}\n"
-            "Data Quality Dimension: {dqd}\n".format(
+            "Data Quality Dimension: {dqd}\n"
+            "Date: {date}\n\n".format(
                 hpo=self.hpo, table=self.table,
                 metric_type=self.metric_type,
-                value=self.value, dqd=self.data_quality_dimension))
+                value=self.value, dqd=self.data_quality_dimension,
+                date=self.date))
 
     def get_list_of_attribute_names(self):
         """
@@ -81,7 +89,7 @@ class DataQualityMetric:
 
         attribute_names = [
             "HPO", "Table", "Metric Type",
-            "Value", "Data Quality Dimension"]
+            "Value", "Data Quality Dimension", "Date"]
 
         return attribute_names
 
@@ -100,7 +108,7 @@ class DataQualityMetric:
 
         attributes = [
             self.hpo, self.table, self.metric_type, self.value,
-            self.data_quality_dimension]
+            self.data_quality_dimension, self.date]
 
         return attributes
 
@@ -278,6 +286,68 @@ class HPO:
             print("Unrecognized metric input: {metric} for {hpo}".format(
                 metric=metric, hpo=self.name))
             sys.exit(0)
+
+    def use_table_name_to_find_total_rows(self, metric):
+        """
+        Function is intended to use the table name to find
+        the 'total number of rows' associated with said
+        table (which should be stored in the HPO object.)
+
+        :param metric:
+        :return:
+        """
+
+        pass
+
+    def return_successful_row_count(self, metric, table):
+        """
+        Function is used to return the 'successful row
+        count' for a particular metric. This will be
+        useful for determine 'aggregate metrics' which
+        are contingent upon 'aggregate' successes over
+        totals.
+
+        :param metric:
+        :return:
+        """
+
+        if metric == 'Concept ID Success Rate':
+            relevant_objects = self.concept_success
+
+            for dqm in relevant_objects:
+                dqm_table = dqm.table
+
+                if dqm_table == dqm_table:  # discovered
+                    total_rows = use_table_name_to_find_total_rows(table)
+
+        # elif metric == 'Duplicate Records':
+        #     self.duplicates.append(dq_object)
+        #
+        # elif metric == 'End Dates Preceding Start Dates':
+        #     self.end_before_begin.append(dq_object)
+        #
+        # elif metric == 'Data After Death':
+        #     self.data_after_death.append(dq_object)
+        #
+        # elif metric == 'Measurement Integration':
+        #     self.measurement_integration.append(dq_object)
+        #
+        # elif metric == 'Drug Ingredient Integration':
+        #     self.ingredient_integration.append(dq_object)
+        #
+        # elif metric == 'Route Concept ID Success Rate':
+        #     self.route_success.append(dq_object)
+        #
+        # elif metric == 'Unit Concept ID Success Rate':
+        #     self.unit_success.append(dq_object)
+
+        else:
+            print("Unrecognized metric input: {metric} for {hpo}".format(
+                metric=metric, hpo=self.name))
+            sys.exit(0)
+
+
+
 
     def find_failing_metrics(self):
         """
