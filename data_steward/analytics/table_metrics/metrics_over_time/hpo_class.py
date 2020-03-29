@@ -1,120 +1,20 @@
 """
-File is intended to establish a 'HPO class' that can be used
-to store data quality metrics for each HPO in an easy and
+File is intended to establish an 'HPO class' that can be used
+to store data quality metrics in an easy and
 identifiable fashion.
+
 Class was used as a means for storing information as the ability
 to add functions could prove useful in future iterations of the
 script.
+
+Please note that many of the functions and parameters outlined
+in this class are highly contingent upon the DataQualityMetric
+class. Please familiarize yourself with the aforementioned
+class before learning more about the HPO class.
 """
 
 from dictionaries_lists_and_prompts import thresholds
-import datetime
 import sys
-
-
-class DataQualityMetric:
-    """
-    Class is used to store data quality metrics.
-    """
-
-    def __init__(
-        self, hpo='', table='', metric_type='', value=0,
-            data_quality_dimension='', date=datetime.today()
-    ):
-
-        """
-        Used to establish the attributes of the DataQualityMetric
-        object being instantiated.
-
-        Parameters
-        ----------
-        hpo (string): name of the HPO being associated with the
-            data quality metric in question (e.g. nyc_cu)
-
-        table (string): name of the table whose data quality metric
-            is being determined (e.g. Measurement)
-
-        metric_type (string): name of the metric that is being
-            determined (e.g. duplicates)
-
-        value (float): value that represents the quantitative value
-            of the data quality metric being investigated
-
-        data_quality_dimension (string): represents whether the
-            metric_type being investigated is related to the
-            conformance, completeness, or plausibility of data
-            quality with respect to the Kahn framework
-
-        date (datetime): 'date' that the DQM represents (in
-            other words, the corresponding analytics
-            report from which it hails)
-        """
-
-        self.hpo = hpo
-        self.table = table
-        self.metric_type = metric_type
-        self.value = value
-        self.data_quality_dimension = data_quality_dimension
-        self.date=date
-
-    def print_dqd_attributes(self):
-        """
-        Function is used to print out some of the attributes
-        of a DataQualityMetric object in a manner that enables
-        all of the information to be displayed in a
-        human-readable format.
-        """
-        print(
-            "HPO: {hpo}\n"
-            "Table: {table}\n"
-            "Metric Type: {metric_type}\n"
-            "Value: {value}\n"
-            "Data Quality Dimension: {dqd}\n"
-            "Date: {date}\n\n".format(
-                hpo=self.hpo, table=self.table,
-                metric_type=self.metric_type,
-                value=self.value, dqd=self.data_quality_dimension,
-                date=self.date))
-
-    def get_list_of_attribute_names(self):
-        """
-        Function is used to get a list of the attributes that
-        are associated with a DataQualityMetric object. This will
-        ultimately be used to populate the columns of a
-        pandas dataframe.
-
-        Return
-        ------
-        attribute_names (list): list of the attribute names
-            for a DataQualityMetric object
-        """
-
-        attribute_names = [
-            "HPO", "Table", "Metric Type",
-            "Value", "Data Quality Dimension", "Date"]
-
-        return attribute_names
-
-    def get_attributes_in_order(self):
-        """
-        Function is used to get the attributes of a particular
-        DataQualityMetric object in an order that parallels
-        the get_list_of_attribute_names function above. This
-        will be used to populate the dataframe with data quality
-        issues.
-
-        Return
-        ------
-        attributes (list): list of the attributes (values, strings)
-            for the object
-        """
-
-        attributes = [
-            self.hpo, self.table, self.metric_type, self.value,
-            self.data_quality_dimension, self.date]
-
-        return attributes
-
 
 class HPO:
     """
