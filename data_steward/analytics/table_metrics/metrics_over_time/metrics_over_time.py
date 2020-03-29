@@ -37,3 +37,9 @@ file names of the .xlsx files in the current working directory.
       (first word of the table type)_well_defined_row
       ex: drug_total_row
 """
+
+from startup_functions import get_user_analysis_choice
+
+from data_quality_metric_class import DataQualityMetric
+
+from hpo_class import HPO

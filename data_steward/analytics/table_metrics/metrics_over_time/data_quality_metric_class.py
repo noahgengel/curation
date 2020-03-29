@@ -55,7 +55,7 @@ class DataQualityMetric:
         self.metric_type = metric_type
         self.value = value
         self.data_quality_dimension = data_quality_dimension
-        self.date=date
+        self.date = date
 
     def print_dqd_attributes(self):
         """

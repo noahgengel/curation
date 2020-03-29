@@ -16,6 +16,7 @@ class before learning more about the HPO class.
 from dictionaries_lists_and_prompts import thresholds
 import sys
 
+
 class HPO:
     """
     Class is used to associated data quality issues with a particular
@@ -35,12 +36,12 @@ class HPO:
             ingredient_integration,
 
             # number of rows for the 6 canonical tables
-            num_measurement_rows = 0,
-            num_visit_rows = 0,
-            num_procedure_rows = 0,
-            num_condition_rows = 0,
-            num_drug_rows = 0,
-            num_observation_rows = 0):
+            num_measurement_rows=0,
+            num_visit_rows=0,
+            num_procedure_rows=0,
+            num_condition_rows=0,
+            num_drug_rows=0,
+            num_observation_rows=0):
 
         """
         Used to establish the attributes of the HPO object being instantiated.
@@ -216,44 +217,44 @@ class HPO:
         """
 
         if metric == 'Concept ID Success Rate':
-            for object in self.concept_success:
-                if object.table == table:
-                    succ_rate = object.value
+            for obj in self.concept_success:
+                if obj.table == table:
+                    succ_rate = obj.value
 
         elif metric == 'Duplicate Records':
-           for object in self.duplicates:
-                if object.table == table:
-                    succ_rate = object.value
+            for obj in self.duplicates:
+                if obj.table == table:
+                    succ_rate = obj.value
 
         elif metric == 'End Dates Preceding Start Dates':
-            for object in self.end_before_begin:
-                if object.table == table:
-                    succ_rate = object.value
+            for obj in self.end_before_begin:
+                if obj.table == table:
+                    succ_rate = obj.value
 
         elif metric == 'Data After Death':
-            for object in self.data_after_death:
-                if object.table == table:
-                    succ_rate = object.value
+            for obj in self.data_after_death:
+                if obj.table == table:
+                    succ_rate = obj.value
 
         elif metric == 'Measurement Integration':
-            for object in self.measurement_integration:
-                if object.table == table:
-                    succ_rate = object.value
+            for obj in self.measurement_integration:
+                if obj.table == table:
+                    succ_rate = obj.value
 
         elif metric == 'Drug Ingredient Integration':
-            for object in self.measurement_integration:
-                if object.table == table:
-                    succ_rate = object.value
+            for obj in self.measurement_integration:
+                if obj.table == table:
+                    succ_rate = obj.value
 
         elif metric == 'Route Concept ID Success Rate':
-            for object in self.measurement_integration:
-                if object.table == table:
-                    succ_rate = object.value
+            for obj in self.measurement_integration:
+                if obj.table == table:
+                    succ_rate = obj.value
 
         elif metric == 'Unit Concept ID Success Rate':
-            for object in self.measurement_integration:
-                if object.table == table:
-                    succ_rate = object.value
+            for obj in self.measurement_integration:
+                if obj.table == table:
+                    succ_rate = obj.value
 
         else:
             raise Exception(
@@ -283,8 +284,8 @@ class HPO:
 
         return succ_rate, total_rows
 
-    def get_row_count_from_table_and_metric(self, metric, table,
-        relevant_objects):
+    def get_row_count_from_table_and_metric(
+            self, metric, table, relevant_objects):
         """
         Function is used to get the number of rows (either the
         amount of 'successful' or 'failed') for a particular
@@ -321,7 +322,8 @@ class HPO:
                     self.use_table_name_to_find_rows(
                         table=table, metric=metric)
 
-                row_count = total_rows * succ_rate / 100  # convert from percent
+                # convert from percent
+                row_count = total_rows * succ_rate / 100
 
         # making sure we could calculate the row_count
         assert row_count is not None, "The row count for the following " \
@@ -330,7 +332,6 @@ class HPO:
                 table=table, metric=metric)
 
         return row_count
-
 
     def return_metric_row_count(self, metric, table):
         """
@@ -361,51 +362,41 @@ class HPO:
         if metric == 'Concept ID Success Rate':
             relevant_objects = self.concept_success
 
-
         elif metric == 'Duplicate Records':
             relevant_objects = self.duplicates
-
-            for dqm in relevant_objects:
-                dqm_table = dqm.table
-
-                if dqm_table == table:  # discovered
-                    succ_rate, total_rows = \
-                        self.use_table_name_to_find_rows(
-                            table=table, metric=metric)
-                    row_count = total_rows * succ_rate / 100  # convert from percent
 
         elif metric == 'End Dates Preceding Start Dates':
             relevant_objects = self.end_before_begin
 
-            for dqm in relevant_objects:
-                dqm_table = dqm.table
+        elif metric == 'Data After Death':
+            relevant_objects = self.data_after_death
 
-                if dqm_table == table:  # discovered
-                    succ_rate, total_rows = \
-                        self.use_table_name_to_find_rows(
-                            table=table, metric=metric)
-                    row_count = total_rows * succ_rate / 100  # convert from percent
+        elif metric == 'Measurement Integration':
+            relevant_objects = self.measurement_integration
 
-        #
-        # elif metric == 'Data After Death':
-        #     self.data_after_death.append(dq_object)
-        #
-        # elif metric == 'Measurement Integration':
-        #     self.measurement_integration.append(dq_object)
-        #
-        # elif metric == 'Drug Ingredient Integration':
-        #     self.ingredient_integration.append(dq_object)
-        #
-        # elif metric == 'Route Concept ID Success Rate':
-        #     self.route_success.append(dq_object)
-        #
-        # elif metric == 'Unit Concept ID Success Rate':
-        #     self.unit_success.append(dq_object)
+        elif metric == 'Drug Ingredient Integration':
+            relevant_objects = self.ingredient_integration
+
+        elif metric == 'Route Concept ID Success Rate':
+            relevant_objects = self.route_success
+
+        elif metric == 'Unit Concept ID Success Rate':
+            relevant_objects = self.unit_success
 
         else:
-            print("Unrecognized metric input: {metric} for {hpo}".format(
-                metric=metric, hpo=self.name))
-            sys.exit(0)
+            raise Exception(
+                "The following was identified as a metric: "
+                "{metric} for the following table: "
+                "{table}".format(
+                    metric=metric, table=table)
+            )
+
+        row_count = self.get_row_count_from_table_and_metric(
+            metric=metric, table=table,
+            relevant_objects=relevant_objects
+        )
+
+        return row_count
 
     def find_failing_metrics(self):
         """
