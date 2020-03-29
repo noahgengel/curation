@@ -25,6 +25,7 @@ class DataQualityMetric:
         """
         Used to establish the attributes of the DataQualityMetric
         object being instantiated.
+
         Parameters
         ----------
         hpo (string): name of the HPO being associated with the
@@ -81,6 +82,7 @@ class DataQualityMetric:
         are associated with a DataQualityMetric object. This will
         ultimately be used to populate the columns of a
         pandas dataframe.
+
         Return
         ------
         attribute_names (list): list of the attribute names
@@ -100,6 +102,7 @@ class DataQualityMetric:
         the get_list_of_attribute_names function above. This
         will be used to populate the dataframe with data quality
         issues.
+
         Return
         ------
         attributes (list): list of the attributes (values, strings)
@@ -141,6 +144,7 @@ class HPO:
 
         """
         Used to establish the attributes of the HPO object being instantiated.
+
         Parameters
         ----------
         self (HPO object): the object to be created
@@ -379,6 +383,55 @@ class HPO:
 
         return succ_rate, total_rows
 
+    def get_row_count_from_table_and_metric(self, metric, table,
+        relevant_objects):
+        """
+        Function is used to get the number of rows (either the
+        amount of 'successful' or 'failed') for a particular
+        metric in the HPO class. This is intended to primarily
+        perform the computational work underlying the
+        return_metric_row_count function.
+
+        Parameters
+        ----------
+        metric (string): the metric (e.g. the concept
+            success rate) that is being investigated
+
+        table (string): table whose data quality metrics are
+            to be determined
+
+        relevant_objects (lst): list of DataQualityMetric
+            objects that are to be iterated over. These
+            DQM objects should all have the same
+            'metric_type' attribute
+
+        Returns
+        -------
+        row_count (float): total number of rows - merely
+            a multiplier of the two aforementioned
+            number converted from percent to rows
+        """
+        row_count = None
+
+        for dqm in relevant_objects:
+            dqm_table = dqm.table
+
+            if dqm_table == table:  # discovered
+                succ_rate, total_rows = \
+                    self.use_table_name_to_find_rows(
+                        table=table, metric=metric)
+
+                row_count = total_rows * succ_rate / 100  # convert from percent
+
+        # making sure we could calculate the row_count
+        assert row_count is not None, "The row count for the following " \
+            "data quality metric could not be found for the " \
+            "table {table} and the metric {metric}".format(
+                table=table, metric=metric)
+
+        return row_count
+
+
     def return_metric_row_count(self, metric, table):
         """
         Function is used to return the 'row
@@ -408,21 +461,31 @@ class HPO:
         if metric == 'Concept ID Success Rate':
             relevant_objects = self.concept_success
 
+
+        elif metric == 'Duplicate Records':
+            relevant_objects = self.duplicates
+
             for dqm in relevant_objects:
                 dqm_table = dqm.table
 
-                if dqm_table == dqm_table:  # discovered
+                if dqm_table == table:  # discovered
                     succ_rate, total_rows = \
-                        use_table_name_to_find_rows(
-                            self, table,
-                            metric)
-                    succ_rows = total_rows * succ_rate / 100  # convert from percent
+                        self.use_table_name_to_find_rows(
+                            table=table, metric=metric)
+                    row_count = total_rows * succ_rate / 100  # convert from percent
 
-        # elif metric == 'Duplicate Records':
-        #     self.duplicates.append(dq_object)
-        #
-        # elif metric == 'End Dates Preceding Start Dates':
-        #     self.end_before_begin.append(dq_object)
+        elif metric == 'End Dates Preceding Start Dates':
+            relevant_objects = self.end_before_begin
+
+            for dqm in relevant_objects:
+                dqm_table = dqm.table
+
+                if dqm_table == table:  # discovered
+                    succ_rate, total_rows = \
+                        self.use_table_name_to_find_rows(
+                            table=table, metric=metric)
+                    row_count = total_rows * succ_rate / 100  # convert from percent
+
         #
         # elif metric == 'Data After Death':
         #     self.data_after_death.append(dq_object)
