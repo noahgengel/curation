@@ -7,7 +7,7 @@ to add functions could prove useful in future iterations of the
 script.
 """
 
-from dictionaries_and_lists import thresholds
+from dictionaries_lists_and_prompts import thresholds
 import datetime
 import sys
 
@@ -247,6 +247,7 @@ class HPO:
         define an HPO object. This will allow us to easily
         associate an HPO object with its constituent data
         quality metrics
+
         Parameters
         ----------
         metric (string): the name of the sheet that contains the
@@ -287,28 +288,121 @@ class HPO:
                 metric=metric, hpo=self.name))
             sys.exit(0)
 
-    def use_table_name_to_find_total_rows(self, metric):
+    def use_table_name_to_find_rows(self, table, metric):
         """
         Function is intended to use the table name to find
         the 'total number of rows' associated with said
-        table (which should be stored in the HPO object.)
+        table and the 'success rate' for said table.
+        Both should which should be stored in the HPO object.
 
-        :param metric:
-        :return:
+        Parameters
+        ----------
+        table (string): table whose data quality metrics are
+            to be determined
+
+        metric (string): the metric (e.g. the concept
+            success rate) that is being investigated
+
+        Returns
+        -------
+        succ_rate (float): success rate for the particular table
+
+        total_rows (float): the total number of rows for the
+            table being queried
         """
 
-        pass
+        if metric == 'Concept ID Success Rate':
+            for object in self.concept_success:
+                if object.table == table:
+                    succ_rate = object.value
 
-    def return_successful_row_count(self, metric, table):
+        elif metric == 'Duplicate Records':
+           for object in self.duplicates:
+                if object.table == table:
+                    succ_rate = object.value
+
+        elif metric == 'End Dates Preceding Start Dates':
+            for object in self.end_before_begin:
+                if object.table == table:
+                    succ_rate = object.value
+
+        elif metric == 'Data After Death':
+            for object in self.data_after_death:
+                if object.table == table:
+                    succ_rate = object.value
+
+        elif metric == 'Measurement Integration':
+            for object in self.measurement_integration:
+                if object.table == table:
+                    succ_rate = object.value
+
+        elif metric == 'Drug Ingredient Integration':
+            for object in self.measurement_integration:
+                if object.table == table:
+                    succ_rate = object.value
+
+        elif metric == 'Route Concept ID Success Rate':
+            for object in self.measurement_integration:
+                if object.table == table:
+                    succ_rate = object.value
+
+        elif metric == 'Unit Concept ID Success Rate':
+            for object in self.measurement_integration:
+                if object.table == table:
+                    succ_rate = object.value
+
+        else:
+            raise Exception(
+                "Unexpected metric type:"
+                "{metric} found for table {table}".format(
+                    metric=metric, table=table
+                ))
+
+        if table == "Measurement":
+            total_rows = self.num_measurement_rows
+        elif table == "Visit":
+            total_rows = self.num_visit_rows
+        elif table == "Procedure":
+            total_rows = self.num_procedure_rows
+        elif table == "Condition":
+            total_rows = self.num_condition_rows
+        elif table == "Drug":
+            total_rows = self.num_drug_rows
+        elif table == "Observation":
+            total_rows = self.num_observation_rows
+        else:
+            raise Exception(
+                "Unexpected table type:"
+                "{table} found for metric {metric}".format(
+                    table=table, metric=metric
+                ))
+
+        return succ_rate, total_rows
+
+    def return_metric_row_count(self, metric, table):
         """
-        Function is used to return the 'successful row
+        Function is used to return the 'row
         count' for a particular metric. This will be
         useful for determine 'aggregate metrics' which
         are contingent upon 'aggregate' successes over
-        totals.
+        totals. This 'row count' could either refer to
+        the number of 'successful' rows or the number
+        of 'failed' rows depending on the nature of the
+        metric that is being investigated.
 
-        :param metric:
-        :return:
+        Parameters
+        ----------
+        metric (string): the metric (e.g. the concept
+            success rate) that is being investigated
+
+        table (string): table whose data quality metrics are
+            to be determined
+
+        Returns
+        -------
+        row_count (float): total number of rows - merely
+            a multiplier of the two aforementioned
+            number converted from percent to rows
         """
 
         if metric == 'Concept ID Success Rate':
@@ -318,7 +412,11 @@ class HPO:
                 dqm_table = dqm.table
 
                 if dqm_table == dqm_table:  # discovered
-                    total_rows = use_table_name_to_find_total_rows(table)
+                    succ_rate, total_rows = \
+                        use_table_name_to_find_rows(
+                            self, table,
+                            metric)
+                    succ_rows = total_rows * succ_rate / 100  # convert from percent
 
         # elif metric == 'Duplicate Records':
         #     self.duplicates.append(dq_object)
@@ -345,9 +443,6 @@ class HPO:
             print("Unrecognized metric input: {metric} for {hpo}".format(
                 metric=metric, hpo=self.name))
             sys.exit(0)
-
-
-
 
     def find_failing_metrics(self):
         """
