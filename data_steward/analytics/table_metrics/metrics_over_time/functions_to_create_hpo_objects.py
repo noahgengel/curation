@@ -173,3 +173,72 @@ def add_number_total_rows_for_hpo_and_date(
                 )
 
     return hpos
+
+
+def sort_hpos_into_dicts(
+        hpo_objects, hpo_names):
+    """
+    Function is used to sort the newly-created HPO objects
+    into dictionaries where the keys can be used to access
+    pertinent DataQualityMetric objects. The keys for the
+    dictionaries can either be the HPO sites or the metric
+    type that is being investigated.
+
+    This can ultimately decrease the number of iterations
+    needed to create 'aggregate' data quality metric objects.
+
+    Parameters
+    ----------
+    hpo_objects (list): list of HPO objects. These HPO objects
+        should have their associated DataQualityMetric objects
+        and attached row counts.
+
+    hpo_names (list): list of the HPO names that are to be
+        put into dataframes (either as the titles of the
+        dataframe or the rows of a dataframe)
+
+    Returns
+    -------
+    metric_dictionary (dict): has the following structure
+        keys: all of the different metric_types possible
+        values: all of the HPO objects that
+            have that associated metric_type
+
+    hpo_dictionary (dict): has the following structure
+        keys: all of the different HPO IDs
+        values: all of the associated HPO objects that
+            have that associated HPO ID
+    """
+    # want to have an aggregate
+    metrics_to_instantiate = []
+    metric_dictionary, hpo_dictionary = {}, {}
+
+    # creating the keys for the metric dictionary
+    for hpo_obj in hpo_objects:
+        hpo_metric = hpo_obj.metric_type
+        if hpo_metric not in metrics_to_instantiate:
+            metrics_to_instantiate.append(hpo_metric)
+
+    # create the 'metric key' dictionary
+    for metric_type in metrics_to_instantiate:
+        relevant_hpo_objs = []
+        for hpo_obj in hpo_objects:
+            hpo_metric = hpo_obj.metric_type
+
+            if hpo_metric == metric_type:
+                relevant_hpo_objs.append(hpo_obj)
+
+        metric_dictionary[metric_type] = relevant_hpo_objs
+
+    # creating the 'HPO' dictionary
+    for hpo_name in hpo_names:
+        relevant_hpo_objs = []
+        for hpo_obj in hpo_objects:
+            hpo_id = hpo_obj.name
+
+            if hpo_id == hpo_name:
+                relevant_hpo_objs.append(hpo_obj)
+
+        hpo_dictionary[hpo_name] = relevant_hpo_objs
+
+    return metric_dictionary, hpo_dictionary

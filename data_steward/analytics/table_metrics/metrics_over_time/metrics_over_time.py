@@ -54,7 +54,10 @@ from dictionaries_lists_and_prompts import \
     columns_to_document_for_sheet, table_based_on_column_provided
 
 from functions_to_create_hpo_objects import establish_hpo_objects, \
-    add_dqm_to_hpo_objects, add_number_total_rows_for_hpo_and_date
+    add_dqm_to_hpo_objects, add_number_total_rows_for_hpo_and_date, \
+    sort_hpos_into_dicts
+
+from create_aggregate_objects import create_aggregate_dqms
 
 
 def create_dqm_objects_for_sheet(
@@ -174,7 +177,6 @@ def create_hpo_objects(dqm_objects, file_names, datetimes):
 
     return hpo_objects
 
-
 # UNIONED EHR COMPARISON
 report1 = 'may_10_2019.xlsx'
 report2 = 'july_15_2019.xlsx'
@@ -207,6 +209,14 @@ def main():
 
     hpo_objects = create_hpo_objects(
         dqm_objects=dqm_list, file_names=file_names, datetimes=datetimes)
+
+    metric_dictionary, hpo_dictionary = sort_hpos_into_dicts(
+        hpo_objects=hpo_objects, hpo_names=hpo_names)
+
+    user_choice = understand_sheet_output_type(
+        hpo_objects=hpo_objects, hpo_names=hpo_names,
+        metric_type=user_choice)
+
 
 
 if __name__ == "__main__":
