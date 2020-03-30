@@ -19,7 +19,8 @@ class DataQualityMetric:
 
     def __init__(
         self, hpo='', table='', metric_type='', value=0,
-            data_quality_dimension='', date=datetime.today()
+            data_quality_dimension='',
+            date=datetime.datetime.today()
     ):
 
         """

@@ -16,7 +16,7 @@ import sys
 
 from dictionaries_lists_and_prompts import \
     analysis_type_prompt, choice_dict, percentage_dict, \
-    target_low
+    target_low_dict
 
 
 def get_user_analysis_choice():
@@ -45,7 +45,7 @@ def get_user_analysis_choice():
 
     analytics_type = choice_dict[user_command]
     percent_bool = percentage_dict[analytics_type]
-    target_low = target_low[analytics_type]
+    target_low = target_low_dict[analytics_type]
 
     return analytics_type, percent_bool, target_low
 

@@ -50,13 +50,52 @@ from hpo_class import HPO
 report1 = 'may_10_2019.xlsx'
 report2 = 'july_15_2019.xlsx'
 report3 = 'october_04_2019.xlsx'
-report4 = 'march_19_2019.xlsx'
+report4 = 'march_19_2020.xlsx'
 
 
 report_names = [report1, report2, report3, report4]
 
 
 def startup():
+    """
+    Function is used to 'startup' the script. This should in essence
+    get the user's choice, load the appropriate files, and allow us
+    to determine which HPO objects we will instantiate.
+
+    Returns
+    -------
+    metric_choice (string): represents the sheet from the analysis reports
+        whose metrics will be compared over time
+
+    metric_is_percent (bool): determines whether the data will be seen
+        as 'percentage complete' or individual instances of a
+        particular error
+
+    ideal_low (bool): determines whether the number displayed should
+        be considered a desirable or undesirable characteristic
+
+    file_names (list): list of the user-specified Excel files that are
+        in the current directory. Files are analytics reports to be
+        scanned.
+
+    hpo_id_col (list): list of the strings that should go
+        into an HPO ID column. for use in generating HPO objects.
+    """
     metric_choice, metric_is_percent, ideal_low = get_user_analysis_choice()
     data_frames = load_files(metric_choice, report_names)
     hpo_name_col = generate_hpo_id_col(report_names)
+
+    return metric_choice, metric_is_percent, ideal_low, \
+        data_frames, hpo_name_col
+
+
+def main():
+    """
+    Function that executes the entirety of the program.
+    """
+    user_choice, percent_bool, target_low, dfs, hpo_names = \
+        startup()
+
+
+if __name__ == "__main__":
+    main()

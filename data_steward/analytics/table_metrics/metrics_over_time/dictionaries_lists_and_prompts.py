@@ -22,9 +22,9 @@ percentage_dict: correlated a particular analysis choice with whether or
     duplicate records) or a  'percentage' (namely success or failure
     rates)
 
-target_low: indicates whether the metric is intended to be minimized
-    (in the case of an 'error') or maximized (in the case of a 'success
-    rate')
+target_low_dict: indicates whether the metric is intended to be
+    minimized (in the case of an 'error') or maximized (in the
+    case of a 'success rate')
 """
 
 thresholds = {
@@ -81,7 +81,7 @@ percentage_dict = {
     'visit_date_disparity': True
 }
 
-target_low = {
+target_low_dict = {
     'duplicates': True,
     'data_after_death': True,
     'end_before_begin': True,
