@@ -45,12 +45,12 @@ from data_quality_metric_class import DataQualityMetric
 
 from hpo_class import HPO
 
-from miscellaneous_functions import find_hpo_row, \
+from functions_to_create_dqm_objects import find_hpo_row, \
     get_info
 
 from dictionaries_lists_and_prompts import \
     metric_type_to_english_dict, data_quality_dimension_dict, \
-    columns_to_document_for_sheet
+    columns_to_document_for_sheet, table_based_on_column_provided
 
 # UNIONED EHR COMPARISON
 report1 = 'may_10_2019.xlsx'
@@ -117,9 +117,11 @@ def create_dqm_objects_for_sheet(
         # for each table / class (column) in the dataframe
         for table, data in data_dict.items():
 
+            table_name = table_based_on_column_provided[table]
+
             new_dqm_object = DataQualityMetric(
-                hpo=name, table=table, metric_type=metric_type, value=data,
-                data_quality_dimension=dqm_type,
+                hpo=name, table=table_name, metric_type=metric_type,
+                value=data, data_quality_dimension=dqm_type,
                 date=date)
 
             dqm_objects.append(new_dqm_object)
@@ -143,6 +145,10 @@ def main():
             dataframe=dataframe, hpo_names=hpo_names,
             user_choice=user_choice, metric_is_percent=percent_bool,
             target_low=target_low, date=date)
+
+        for dqm_object in dqm_objects:
+            if __name__ == '__main__':
+                dqm_object.print_dqd_attributes()
 
 
 if __name__ == "__main__":

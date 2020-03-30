@@ -243,6 +243,7 @@ def convert_file_names_to_datetimes(file_names):
 
     return ordered_dates_str, ordered_dates_dt
 
+
 def startup(file_names):
     """
     Function is used to 'startup' the script. This should in essence
