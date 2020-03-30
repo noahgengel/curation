@@ -53,7 +53,8 @@ from dictionaries_lists_and_prompts import \
     metric_type_to_english_dict, data_quality_dimension_dict, \
     columns_to_document_for_sheet, table_based_on_column_provided
 
-from functions_to_create_hpo_objects import establish_hpo_objects
+from functions_to_create_hpo_objects import establish_hpo_objects, \
+    add_dqm_to_hpo_objects
 
 
 def create_dqm_objects_for_sheet(
@@ -128,7 +129,7 @@ def create_dqm_objects_for_sheet(
     return dqm_objects, columns
 
 
-def create_hpo_objects(dqm_objects):
+def create_hpo_objects(dqm_objects, file_names):
     """
     Function is used to create the various 'HPO' objects
     that will be used to eventually populate the sheets.
@@ -139,6 +140,10 @@ def create_hpo_objects(dqm_objects):
         these will eventually be associated to their respective
         HPO objects.
 
+    file_names (list): list of the strings that indicate
+        the names of the files being ingested. these
+        in sequential order.
+
     Return
     ------
     hpo_objects (list): contains all of the HPO objects. the
@@ -146,6 +151,9 @@ def create_hpo_objects(dqm_objects):
         the HPO objects appropriately.
     """
     blank_hpo_objects = establish_hpo_objects(dqm_objects)
+    hpo_objects = add_dqm_to_hpo_objects(
+        blank_hpo_objects, file_names)
+    add_number_total_rows_for_hpo_and_date
 
 
 # UNIONED EHR COMPARISON

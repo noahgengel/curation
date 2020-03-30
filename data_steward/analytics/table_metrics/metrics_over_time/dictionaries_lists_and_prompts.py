@@ -45,6 +45,11 @@ Prompts
 -------
 analysis_type_prompt: used to determine what data quality metric the user
     would like to analyze
+
+Lists
+-----
+row_count_col_names: shows the column names where one can find the
+    total row count for a particular date for each table
 """
 
 thresholds = {
@@ -251,3 +256,12 @@ full_names = {
     "va": "United States Department of Veterans Affairs - Boston",
     "saou_umc": "University Medical Center (UA Tuscaloosa)"
 }
+
+row_count_col_names = [
+    'observation_total_row',
+    'drug_total_row',
+    'procedure_total_row',
+    'condition_total_row',
+    'measurement_total_row',
+    'visit_total_row'
+]

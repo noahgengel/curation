@@ -145,7 +145,7 @@ class HPO:
         self.num_drug_rows = num_drug_rows,
         self.num_observation_rows = num_observation_rows
 
-    def add_attribute_with_string(self, metric, dq_object):
+    def add_metric_with_string(self, metric, dq_object):
         """
         Function is designed to enable the script to add
         a DataQualityMetric object to the attributes that
@@ -191,6 +191,41 @@ class HPO:
         else:
             print("Unrecognized metric input: {metric} for {hpo}".format(
                 metric=metric, hpo=self.name))
+            sys.exit(0)
+
+    def add_row_count_with_string(self, table, value):
+        """
+        Function is designed to enable the script to add
+        a row count (float) to the attributes that
+        define an HPO object. This will allow us to easily
+        associate an HPO object with its row count for different
+        tables.
+
+        Parameters
+        ----------
+        table (string): the name of the column that was used
+            to determine the number of rows there are associated
+            with each table
+
+        value (float): number of rows for the particular
+            table
+        """
+
+        if table == 'observation_total_row':
+            self.num_observation_rows = value
+        elif table == 'drug_total_row':
+            self.num_drug_rows = value
+        elif table == 'procedure_total_row':
+            self.num_procedure_rows = value
+        elif table == 'condition_total_row':
+            self.num_condition_rows = value
+        elif table == 'measurement_total_row':
+            self.num_measurement_rows = value
+        elif table == 'visit_total_row':
+            self.num_visit_rows = value
+        else:
+            print("Unrecognized table input: {table} for {hpo}".format(
+                table=table, hpo=self.name))
             sys.exit(0)
 
     def use_table_name_to_find_rows(self, table, metric):

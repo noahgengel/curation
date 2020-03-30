@@ -316,8 +316,8 @@ def understand_sheet_output_type(tables, names):
         format(len(tables), len(names))
 
     user_input = input(output_prompt).lower()
-    output_choice_dict = {'a': 'table_sheets',
-                          'b': 'hpo_sheets'}
+    output_choice_dict = {
+        'a': 'table_sheets', 'b': 'hpo_sheets'}
 
     while user_input not in output_choice_dict.keys():
         print("\nInvalid choice. Please specify a letter that corresponds "
