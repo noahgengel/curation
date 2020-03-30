@@ -12,11 +12,6 @@ thresholds: thresholds: the point at which a data quality metric (whether too
 choice_dict: correlates the user-specified choice to the corresponding
     page on the analytics report
 
-Prompts
--------
-analysis_type_prompt: used to determine what data quality metric the user
-    would like to analyze
-
 percentage_dict: correlated a particular analysis choice with whether or
     not it is intended to report out a fixed number (as in the case of
     duplicate records) or a  'percentage' (namely success or failure
@@ -25,6 +20,28 @@ percentage_dict: correlated a particular analysis choice with whether or
 target_low_dict: indicates whether the metric is intended to be
     minimized (in the case of an 'error') or maximized (in the
     case of a 'success rate')
+
+columns_to_document_for_sheet: indicates which columns contain
+    information that should be stored for the particular data
+    quality metric that is being analyzed
+
+table_based_on_column_provided: allows us to determine the table that
+    should be associated with a particular Data Quality Dimension object
+    based upon the column that was used to get the associated 'value'
+    float
+
+data_quality_dimension_dict: shows which attribute of Kahn's Data Quality
+    framework the particular 'data quality metric' at hand relates to
+
+metric_type_to_english_dict: allows one to translate the 'metric type'
+    that is normally associated with a 'DataQualityMetric' object to
+    'English'. this is useful for printing the columns on a new
+    dashboard
+
+Prompts
+-------
+analysis_type_prompt: used to determine what data quality metric the user
+    would like to analyze
 """
 
 thresholds = {
@@ -91,4 +108,95 @@ target_low_dict = {
     'drug_success': False,
     'sites_measurement': False,
     'visit_date_disparity': False
+}
+
+columns_to_document_for_sheet = {
+    'measurement_units': ['total_unit_success_rate'],
+
+    'sites_measurement': ['Physical_Measurement',
+                          'CMP', 'CBCwDiff', 'CBC',
+                          'Lipid', 'All_Measurements'],
+
+    'end_before_begin': [
+        'visit_occurrence', 'condition_occurrence',
+        'drug_exposure', 'device_exposure'],
+
+    'duplicates': ['visit_occurrence', 'condition_occurrence',
+                   'drug_exposure', 'measurement',
+                   'procedure_occurrence', 'device_exposure',
+                   'observation'],
+
+    'drug_routes': ['total_route_success_rate'],
+
+    'drug_success': [
+        'ace_inhibitors', 'painnsaids',	'msknsaids',
+        'statins', 'antibiotics', 'opioids',
+        'oralhypoglycemics', 'vaccine', 'ccb',
+        'diuretics', 'all_drugs'],
+
+    'data_after_death': [
+        'visit_occurrence', 'condition_occurrence',
+        'drug_exposure', 'measurement',
+        'procedure_occurrence', 'observation',
+        'device_exposure'],
+
+    'diabetes': [
+        'diabetics_w_drugs', 'diabetics_w_glucose',
+        'diabetics_w_a1c', 'diabetics_w_insulin'
+    ],
+
+    'concept': [
+        'observation_success_rate', 'drug_success_rate',
+        'procedure_success_rate', 'condition_success_rate'
+        'measurement_success_rate', 'visit_success_rate']
+}
+
+
+table_based_on_column_provided = {
+    'total_unit_success_rate': 'Measurement',
+    'total_route_success_rate': 'Drug Exposure',
+    'all_drugs': 'Drug Exposure',
+    'All_Measurements': 'Measurement',
+    'visit_occurrence': 'Visit Occurrence',
+    'condition_occurrence': 'Condition Occurrence',
+    'drug_exposure': 'Drug Exposure',
+    'device_exposure': 'Device Exposure',
+    'measurement': 'Measurement',
+    'procedure_occurrence': 'Procedure Occurrence',
+    'observation': 'Observation',
+    'observation_success_rate': 'Observation',
+    'drug_success_rate': 'Drug Exposure',
+    'procedure_success_rate': 'Procedure',
+    'condition_success_rate': 'Condition Occurrence',
+    'measurement_success_rate': 'Measurement',
+    'visit_success_rate': 'Visit Occurrence'
+}
+
+data_quality_dimension_dict = {
+    'concept': 'Conformance',
+    'duplicates': 'Plausibility',
+    'end_before_begin': 'Plausibility',
+    'data_after_death': 'Plausibility',
+    'sites_measurement': 'Completeness',
+    'drug_success': 'Completeness',
+    'drug_routes': 'Completeness',
+    'measurement_units': 'Completeness'
+}
+
+metric_type_to_english_dict = {
+    # field population metrics
+    'measurement_units': 'Unit Concept ID Success Rate',
+    'drug_routes': 'Route Concept ID Success Rate',
+
+    # integration metrics
+    'drug_success': 'Drug Ingredient Integration',
+    'sites_measurement': 'Measurement Integration',
+
+    # ACHILLES errors
+    'end_before_begin': 'End Dates Preceding Start Dates',
+    'data_after_death': 'Data After Death',
+
+    # other metrics
+    'concept': 'Concept ID Success Rate',
+    'duplicates': 'Duplicate Records'
 }

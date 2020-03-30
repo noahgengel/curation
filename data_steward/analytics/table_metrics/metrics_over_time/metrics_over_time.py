@@ -39,12 +39,19 @@ file names of the .xlsx files in the current working directory.
 """
 
 from startup_functions import \
-    get_user_analysis_choice, load_files, generate_hpo_id_col
+    get_user_analysis_choice, load_files, generate_hpo_id_col, \
+    convert_file_name_to_datetimes
 
 from data_quality_metric_class import DataQualityMetric
 
 from hpo_class import HPO
 
+from miscellaneous_functions import find_hpo_row, \
+    columns_to_document_for_sheet, get_info, \
+    convert_file_names_to_datetimes
+
+from dictionaries_lists_and_prompts import \
+    metric_type_to_english_dict, data_quality_dimension_dict
 
 # UNIONED EHR COMPARISON
 report1 = 'may_10_2019.xlsx'
@@ -56,11 +63,18 @@ report4 = 'march_19_2020.xlsx'
 report_names = [report1, report2, report3, report4]
 
 
-def startup():
+def startup(file_names):
     """
     Function is used to 'startup' the script. This should in essence
     get the user's choice, load the appropriate files, and allow us
     to determine which HPO objects we will instantiate.
+
+    Parameters
+    -----------
+    file_names (list): list of the user-specified Excel files that are
+        in the current directory. Files are analytics reports to be
+        scanned.
+
 
     Returns
     -------
@@ -78,15 +92,82 @@ def startup():
         in the current directory. Files are analytics reports to be
         scanned.
 
-    hpo_id_col (list): list of the strings that should go
-        into an HPO ID column. for use in generating HPO objects.
+    sheets (list): list of pandas dataframes. each dataframe contains
+        info about data quality for all of the sites for a date. each
+        index of the list should represent a particular date's metrics.
     """
     metric_choice, metric_is_percent, ideal_low = get_user_analysis_choice()
-    data_frames = load_files(metric_choice, report_names)
-    hpo_name_col = generate_hpo_id_col(report_names)
+    sheets = load_files(metric_choice, file_names)
+    hpo_name_col = generate_hpo_id_col(file_names)
 
     return metric_choice, metric_is_percent, ideal_low, \
-        data_frames, hpo_name_col
+        sheets, hpo_name_col
+
+
+def create_dqm_objects_for_sheet(
+        dataframe, hpo_names, user_choice, metric_is_percent,
+        target_low, date):
+    """
+    Function is used to create DataQualityMetric objects for all of
+    the pertinent values on the various sheets being loaded.
+
+    Parameters
+    ---------
+    dataframe (df): contains the information for a particular dimension
+        of data quality on a particular date
+
+    hpo_names (list): list of the strings that should go
+        into an HPO ID column. for use in generating HPO objects.
+
+    user_choice (string): represents the sheet from the analysis reports
+        whose metrics will be compared over time
+
+    metric_is_percent (bool): determines whether the data will be seen
+        as 'percentage complete' or individual instances of a
+        particular error
+
+    target_low (bool): determines whether the number displayed should
+        be considered a desirable or undesirable characteristic
+
+    date (datetime): datetime object that represents the time that the
+        data quality metric was documented (corresponding to the
+        title of the file from which it was extracted
+
+    Returns
+    -------
+    dqm_objects (list): list of DataQualityMetrics objects
+        these are objects that all should have the same
+        metric_type, data_quality_dimension, and date attributes
+
+    """
+    # to instantiate dqm objects later on
+    metric_type = metric_type_to_english_dict[user_choice]
+    dqm_type = data_quality_dimension_dict[user_choice]
+    dqm_objects = []
+
+    # for each HPO (row) in the dataframe
+    for name in hpo_names:
+        row_number = find_hpo_row(sheet=dataframe, hpo=name)
+
+        columns = columns_to_document_for_sheet[user_choice]
+
+        data_dict = get_info(
+            sheet=dataframe, row_num=row_number,
+            percentage=metric_is_percent, sheet_name=user_choice,
+            columns_to_collect=columns,
+            target_low=target_low)
+
+        # for each table / class (column) in the dataframe
+        for table, data in data_dict.items():
+
+            new_dqm_object = DataQualityMetric(
+                hpo=name, table=table, metric_type=metric_type, value=data,
+                data_quality_dimension=dqm_type,
+                date=date)
+
+            dqm_objects.append(new_dqm_object)
+
+    return dqm_objects
 
 
 def main():
@@ -94,7 +175,17 @@ def main():
     Function that executes the entirety of the program.
     """
     user_choice, percent_bool, target_low, dfs, hpo_names = \
-        startup()
+        startup(file_names=report_names)
+
+    file_names, datetimes = convert_file_names_to_datetimes(
+        file_names=report_names)
+
+    for dataframe, file_names, date in zip(dfs, file_names, datetimes):
+
+        dqm_objects = create_dqm_objects_for_sheet(
+            dataframe=dataframe, hpo_names=hpo_names,
+            user_choice=user_choice, metric_is_percent=percent_bool,
+            target_low=target_low, date=date)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,9 @@ Python file is intended to be used for the 'startup' of the
 metrics_over_time script. This includes prompting the user
 to specify his/her analysis target and loading applicable files.
 
+Some other smaller functions are also included in this file
+to improve the overall readability of the main script.
+
 ASSUMPTIONS
 -----------
 1. The 'concept' sheet in a dataframe will always have all of
@@ -13,6 +16,7 @@ ASSUMPTIONS
 import os
 import pandas as pd
 import sys
+import datetime
 
 from dictionaries_lists_and_prompts import \
     analysis_type_prompt, choice_dict, percentage_dict, \
@@ -24,7 +28,8 @@ def get_user_analysis_choice():
     Function gets the user input to determine what kind of data
     quality metrics s/he wants to investigate.
 
-    :return:
+    Returns
+    -------
     analytics_type (str): the data quality metric the user wants to
         investigate
 
@@ -60,7 +65,8 @@ def load_files(user_choice, file_names):
     This function is also designed so it skips over instances where
     the user's input only exists in some of the defined sheets.
 
-    :parameter
+    Parameters
+    ----------
     user_choice (string): represents the sheet from the analysis reports
         whose metrics will be compared over time
 
@@ -68,7 +74,8 @@ def load_files(user_choice, file_names):
         in the current directory. Files are analytics reports to be
         scanned.
 
-    :returns
+    Returns
+    -------
     sheets (list): list of pandas dataframes. each dataframe contains
         info about data quality for all of the sites for a date.
 
@@ -160,7 +167,8 @@ def generate_hpo_id_col(file_names):
     """
 
     # use concept sheet; always has all of the HPO IDs
-    dataframes = load_files('concept', file_names)
+    dataframes = load_files(
+        user_choice='concept', file_names=file_names)
     hpo_col_name = 'src_hpo_id'
     selective_rows, total_hpo_id_columns = [], []
 
@@ -188,9 +196,48 @@ def generate_hpo_id_col(file_names):
 
     # standardize; all sheets now have the same rows
     hpo_id_col = in_all_sheets + selective_rows
-    bad_rows = [' Avarage', 'aggregate counts']  # do not include
-
-    hpo_id_col = [x for x in hpo_id_col if x not in bad_rows]
     hpo_id_col = sorted(hpo_id_col)
 
     return hpo_id_col
+
+
+def convert_file_names_to_datetimes(file_names):
+    """
+    Function is used to convert a list of file names
+    to a list of datetime objects.
+
+    This is useful for establishing the 'date' attribute of
+    DataQualityMetric objects.
+
+    Parameter
+    ---------
+    file_names (list): list of strings that indicate the names
+        of the files being ingested. each file name should
+        follow the convention month_date_year.xlsx
+        (year should be 4-digit)
+
+    Return
+    ------
+    ordered_dates_str (list): list of the strings that
+        indicate the names of the files being ingested. these
+        are now in sequential order.
+
+    ordered_dates_dt (list): list of datetime objects that
+        represent the dates of the files that are being
+        ingested
+    """
+
+    ordered_dates_dt = []
+
+    # NOTE: requires files to have full month name and 4-digit year
+    for date_str in file_names:
+        date = datetime.datetime.strptime(date_str, '%B_%d_%Y')
+        ordered_dates_dt.append(date)
+
+    ordered_dates_dt = sorted(ordered_dates_dt)
+
+    # converting back to standard form to index into file
+    ordered_dates_str = [x.strftime('%B_%d_%Y').lower() for x
+                         in ordered_dates_dt]
+
+    return ordered_dates_str, ordered_dates_dt
