@@ -3,12 +3,13 @@ File is intended to store a number of functions that are
 used to create the HPO objects throughtout the script.
 """
 
-from dictionaries_and_lists import full_names, \
+from dictionaries_lists_and_prompts import full_names, \
     row_count_col_names
 from hpo_class import HPO
 from startup_functions import load_files
 from functions_to_create_dqm_objects import find_hpo_row, \
     get_info
+import datetime
 
 
 def establish_hpo_objects(dqm_objects):
@@ -34,7 +35,7 @@ def establish_hpo_objects(dqm_objects):
     blank_hpo_objects = []
 
     for obj in dqm_objects:
-        name = obj.name
+        name = obj.hpo
         date = obj.date
 
         if name not in names_to_establish:
@@ -91,7 +92,7 @@ def add_dqm_to_hpo_objects(dqm_objects, hpo_objects):
     """
     for dqm in dqm_objects:
         hpo_name_for_metric = dqm.hpo
-        metric_name = dqm.metric
+        metric_name = dqm.metric_type
 
         for hpo in hpo_objects:
             if hpo.name == hpo_name_for_metric:
@@ -103,7 +104,7 @@ def add_dqm_to_hpo_objects(dqm_objects, hpo_objects):
 
 
 def add_number_total_rows_for_hpo_and_date(
-        hpos, date_names):
+        hpos, date_names, date):
     """
     Function is used to add further attributes to the HPO
     objects. These are the attributes pertaining to the number
@@ -120,26 +121,48 @@ def add_number_total_rows_for_hpo_and_date(
         the names of the files being ingested. these
         in sequential order.
 
+    date (list): datetime object that is used to ensure
+        that data quality metrics are being associated
+        with the HPO object that is associated with their
+        respective date
+
     Returns
     -------
     hpos (list): list of the HPO objects. now should have the
         attributes for the number of rows filled in.
     """
-    sheet_name = 'concept'
-
+    sheet_name = 'concept'  # where row count is stored
     dfs = load_files(
-        user_choice=sheet_name, files_names=date_names)
+        user_choice=sheet_name, file_names=date_names)
 
-    for df in dfs:  # each date
-        #FIXME: need to assert that the dates coincide
+    dates_objs = []
 
-        for hpo in hpos:
+    for date_str in date_names:
+        date_str = date_str[:-5]  # get rid of extension
+        date_obj = datetime.datetime.strptime(date_str, '%B_%d_%Y')
+        dates_objs.append(date_obj)
+
+    chosen_idx = -1
+
+    for idx, date_object in enumerate(dates_objs):
+        if date_object == date:
+            chosen_idx = idx
+
+    assert chosen_idx > -1, "Invalid Date: {date}".format(
+        date=date
+    )
+
+    df_for_date = dfs[chosen_idx]
+
+    for hpo in hpos:
+        if hpo.date == date:
+
             hpo_name = hpo.name
             hpo_row = find_hpo_row(
-                sheet=df, hpo=hpo_name)
+                sheet=df_for_date, hpo=hpo_name)
 
             num_rows_dictionary = get_info(
-                sheet=df, row_num=hpo_row,
+                sheet=df_for_date, row_num=hpo_row,
                 percentage=False, sheet_name=sheet_name,
                 columns_to_collect=row_count_col_names,
                 target_low=False)
@@ -149,3 +172,4 @@ def add_number_total_rows_for_hpo_and_date(
                     table=table_name, value=value
                 )
 
+    return hpos

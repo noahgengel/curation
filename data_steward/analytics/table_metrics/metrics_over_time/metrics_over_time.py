@@ -54,7 +54,7 @@ from dictionaries_lists_and_prompts import \
     columns_to_document_for_sheet, table_based_on_column_provided
 
 from functions_to_create_hpo_objects import establish_hpo_objects, \
-    add_dqm_to_hpo_objects
+    add_dqm_to_hpo_objects, add_number_total_rows_for_hpo_and_date
 
 
 def create_dqm_objects_for_sheet(
@@ -84,7 +84,7 @@ def create_dqm_objects_for_sheet(
 
     date (datetime): datetime object that represents the time that the
         data quality metric was documented (corresponding to the
-        title of the file from which it was extracted
+        title of the file from which it was extracted)
 
     Returns
     -------
@@ -116,7 +116,6 @@ def create_dqm_objects_for_sheet(
 
         # for each table / class (column) in the dataframe
         for table, data in data_dict.items():
-
             table_name = table_based_on_column_provided[table]
 
             new_dqm_object = DataQualityMetric(
@@ -129,7 +128,7 @@ def create_dqm_objects_for_sheet(
     return dqm_objects, columns
 
 
-def create_hpo_objects(dqm_objects, file_names):
+def create_hpo_objects(dqm_objects, file_names, datetimes):
     """
     Function is used to create the various 'HPO' objects
     that will be used to eventually populate the sheets.
@@ -144,16 +143,36 @@ def create_hpo_objects(dqm_objects, file_names):
         the names of the files being ingested. these
         in sequential order.
 
+    datetimes (list): list of datetime objects that
+        represent the dates of the files that are being
+        ingested
+
     Return
     ------
     hpo_objects (list): contains all of the HPO objects. the
         DataQualityMetric objects will now be associated to
         the HPO objects appropriately.
+
+    NOTE
+    ----
+    The DQM objects that are being established would only
+    have 'metrics' that are associated with the user's choice
+    of analytics output.
     """
-    blank_hpo_objects = establish_hpo_objects(dqm_objects)
+    blank_hpo_objects = establish_hpo_objects(
+        dqm_objects=dqm_objects)
+
     hpo_objects = add_dqm_to_hpo_objects(
-        blank_hpo_objects, file_names)
-    add_number_total_rows_for_hpo_and_date
+        dqm_objects=dqm_objects, hpo_objects=blank_hpo_objects)
+
+    for date in datetimes:
+        hpo_objects = \
+            add_number_total_rows_for_hpo_and_date(
+                hpos=hpo_objects,
+                date_names=file_names,
+                date=date)
+
+    return hpo_objects
 
 
 # UNIONED EHR COMPARISON
@@ -175,18 +194,30 @@ def main():
     file_names, datetimes = convert_file_names_to_datetimes(
         file_names=report_names)
 
-    for dataframe, file_names, date in zip(dfs, file_names, datetimes):
+    dqm_list = []
 
+    for dataframe, file_name, date in zip(dfs, file_names, datetimes):
         dqm_objects, col_names = create_dqm_objects_for_sheet(
             dataframe=dataframe, hpo_names=hpo_names,
             user_choice=user_choice, metric_is_percent=percent_bool,
             target_low=target_low, date=date)
 
+        dqm_list.extend(dqm_objects)
+
+    hpo_objects = create_hpo_objects(
+        dqm_objects=dqm_objects, file_names=file_names, datetimes=datetimes)
+
+    for obj in hpo_objects:
+        output = obj.return_attributes_as_string()
+        dups_objects = obj.duplicates
+
+        for dup in dups_objects:
+            dup.print_dqd_attributes()
+
     user_choice = understand_sheet_output_type(
         tables=col_names, names=hpo_names)
 
     # TODO: CREATE AN AGGREGATE FUNCTION HERE FOR THE DATE, TABLE, ETC.
-
 
 
 if __name__ == "__main__":

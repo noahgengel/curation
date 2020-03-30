@@ -145,6 +145,56 @@ class HPO:
         self.num_drug_rows = num_drug_rows,
         self.num_observation_rows = num_observation_rows
 
+    def return_attributes_as_string(self):
+        """
+        Function is used to generate a string that can be
+        used to display the various attributes as a string.
+
+
+        attributes_str (str): lists the attibutes (or the
+            number of attributes) as a string
+        """
+        attributes_str = """
+        HPO ID: {hpo_id}\n
+        Full Name: {full_name}\n
+        Date: {date}\n\n
+        Number of Metrics: \n
+        \t Concept Success Rate: {num_concepts}\n
+        \t Duplicates: {duplicates}\n
+        \t End Dates Preceding Start Dates: {end_before_start}\n
+        \t Data After Death: {d_a_d}\n
+        \t Route Success: {route_success}\n
+        \t Unit Success: {unit_success}\n
+        \t Measurement Integration: {measurement_integration}\n
+        \t Ingredient Integration: {ingredient_integration}\n
+        \n
+        Number of Rows:\n
+        \t Measurement: {measurement}\n
+        \t Visit Occurrence: {visit}\n
+        \t Procedure Occurrence: {procedure}\n
+        \t Condition Occurrence: {condition}\n
+        \t Drug Exposure: {drug}\n
+        \t Observation: {observation}
+        """.format(
+            hpo_id=self.name, full_name=self.full_name,
+            date=self.date, num_concepts=len(self.concept_success),
+            duplicates=len(self.duplicates),
+            end_before_start=len(self.end_before_begin),
+            d_a_d=len(self.data_after_death),
+            route_success=len(self.route_success),
+            unit_success=len(self.unit_success),
+            measurement_integration=len(self.measurement_integration),
+            ingredient_integration=len(self.ingredient_integration),
+            measurement=self.num_measurement_rows,
+            visit=self.num_visit_rows,
+            procedure=self.num_procedure_rows,
+            condition=self.num_condition_rows,
+            drug=self.num_drug_rows,
+            observation=self.num_observation_rows
+        )
+
+        return attributes_str
+
     def add_metric_with_string(self, metric, dq_object):
         """
         Function is designed to enable the script to add

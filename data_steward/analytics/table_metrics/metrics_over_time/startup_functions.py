@@ -238,8 +238,9 @@ def convert_file_names_to_datetimes(file_names):
     ordered_dates_dt = sorted(ordered_dates_dt)
 
     # converting back to standard form to index into file
-    ordered_dates_str = [x.strftime('%B_%d_%Y').lower() for x
-                         in ordered_dates_dt]
+    ordered_dates_str = [
+        x.strftime('%B_%d_%Y').lower() + '.xlsx' \
+        for x in ordered_dates_dt]
 
     return ordered_dates_str, ordered_dates_dt
 
