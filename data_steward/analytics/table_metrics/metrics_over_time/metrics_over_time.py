@@ -39,7 +39,8 @@ file names of the .xlsx files in the current working directory.
 """
 
 from startup_functions import \
-    startup, convert_file_names_to_datetimes
+    startup, convert_file_names_to_datetimes, \
+    understand_sheet_output_type
 
 from data_quality_metric_class import DataQualityMetric
 
@@ -52,13 +53,7 @@ from dictionaries_lists_and_prompts import \
     metric_type_to_english_dict, data_quality_dimension_dict, \
     columns_to_document_for_sheet, table_based_on_column_provided
 
-# UNIONED EHR COMPARISON
-report1 = 'may_10_2019.xlsx'
-report2 = 'july_15_2019.xlsx'
-report3 = 'october_04_2019.xlsx'
-report4 = 'march_19_2020.xlsx'
-
-report_names = [report1, report2, report3, report4]
+from functions_to_create_hpo_objects import establish_hpo_objects
 
 
 def create_dqm_objects_for_sheet(
@@ -96,17 +91,21 @@ def create_dqm_objects_for_sheet(
         these are objects that all should have the same
         metric_type, data_quality_dimension, and date attributes
 
+    columns (list): the column names that whose data will be extracted.
+        these will eventually be converted to either the rows of
+        dataframes or the names of the different dataframes to be
+        output.
     """
     # to instantiate dqm objects later on
     metric_type = metric_type_to_english_dict[user_choice]
     dqm_type = data_quality_dimension_dict[user_choice]
+    columns = columns_to_document_for_sheet[user_choice]
+
     dqm_objects = []
 
     # for each HPO (row) in the dataframe
     for name in hpo_names:
         row_number = find_hpo_row(sheet=dataframe, hpo=name)
-
-        columns = columns_to_document_for_sheet[user_choice]
 
         data_dict = get_info(
             sheet=dataframe, row_num=row_number,
@@ -126,7 +125,36 @@ def create_dqm_objects_for_sheet(
 
             dqm_objects.append(new_dqm_object)
 
-    return dqm_objects
+    return dqm_objects, columns
+
+
+def create_hpo_objects(dqm_objects):
+    """
+    Function is used to create the various 'HPO' objects
+    that will be used to eventually populate the sheets.
+
+    Parameter
+    ---------
+    dqm_objects (list): list of DataQualityMetric objects.
+        these will eventually be associated to their respective
+        HPO objects.
+
+    Return
+    ------
+    hpo_objects (list): contains all of the HPO objects. the
+        DataQualityMetric objects will now be associated to
+        the HPO objects appropriately.
+    """
+    blank_hpo_objects = establish_hpo_objects(dqm_objects)
+
+
+# UNIONED EHR COMPARISON
+report1 = 'may_10_2019.xlsx'
+report2 = 'july_15_2019.xlsx'
+report3 = 'october_04_2019.xlsx'
+report4 = 'march_19_2020.xlsx'
+
+report_names = [report1, report2, report3, report4]
 
 
 def main():
@@ -141,14 +169,16 @@ def main():
 
     for dataframe, file_names, date in zip(dfs, file_names, datetimes):
 
-        dqm_objects = create_dqm_objects_for_sheet(
+        dqm_objects, col_names = create_dqm_objects_for_sheet(
             dataframe=dataframe, hpo_names=hpo_names,
             user_choice=user_choice, metric_is_percent=percent_bool,
             target_low=target_low, date=date)
 
-        for dqm_object in dqm_objects:
-            if __name__ == '__main__':
-                dqm_object.print_dqd_attributes()
+    user_choice = understand_sheet_output_type(
+        tables=col_names, names=hpo_names)
+
+    # TODO: CREATE AN AGGREGATE FUNCTION HERE FOR THE DATE, TABLE, ETC.
+
 
 
 if __name__ == "__main__":

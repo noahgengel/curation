@@ -1,6 +1,7 @@
 """
 File is intended to store a number of functions that are
-used throughout the script.
+used to create the DataQualityMetric objects throughtout
+the script.
 """
 import pandas as pd
 

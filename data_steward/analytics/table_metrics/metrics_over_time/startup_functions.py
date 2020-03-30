@@ -283,3 +283,47 @@ def startup(file_names):
 
     return metric_choice, metric_is_percent, ideal_low, \
         sheets, hpo_name_col
+
+
+def understand_sheet_output_type(tables, names):
+    """
+    Function used to determine what kind out output formatting
+    the user would want for the generated Excel files.
+
+    Parameters
+    ----------
+    tables (lst): list of the different table types
+        sorted alphabetically (can also be a category
+        within a table, such as CBC)
+
+    sorted_names (lst): list of the hpo site names (sorted
+        by alphabetic order)
+
+    Return
+    ------
+    user_choice (string): determines which variable (either
+        distinct site or distinct table) will serve as a
+        'anchor' to separate out the sheets
+    """
+    output_prompt = \
+        "\nWould you prefer to generate: \n" \
+        "A. {} sheets detailing the data quality for each table. " \
+        "The HPO IDs would be displayed as rows. \nor \n" \
+        "B. {} sheets detailing the data quality for each HPO site. " \
+        "The table type would be displayed as rows. This will " \
+        "also include 1-3 table(s) with statistics on the " \
+        "aggregate data for each table type on each date.". \
+        format(len(tables), len(names))
+
+    user_input = input(output_prompt).lower()
+    output_choice_dict = {'a': 'table_sheets',
+                          'b': 'hpo_sheets'}
+
+    while user_input not in output_choice_dict.keys():
+        print("\nInvalid choice. Please specify a letter that corresponds "
+              "to an appropriate output type.\n")
+        user_input = input(output_prompt).lower()
+
+    user_choice = output_choice_dict[user_input]
+
+    return user_choice

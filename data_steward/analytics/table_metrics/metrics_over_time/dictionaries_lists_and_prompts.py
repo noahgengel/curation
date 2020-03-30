@@ -38,6 +38,9 @@ metric_type_to_english_dict: allows one to translate the 'metric type'
     'English'. this is useful for printing the columns on a new
     dashboard
 
+full_names: allows one to use the hpo_id (shorter) name to find
+    the longer (more human-readable) name
+
 Prompts
 -------
 analysis_type_prompt: used to determine what data quality metric the user
@@ -199,4 +202,52 @@ metric_type_to_english_dict = {
     # other metrics
     'concept': 'Concept ID Success Rate',
     'duplicates': 'Duplicate Records'
+}
+
+full_names = {
+    "saou_uab_selma": "UAB Selma",
+    "saou_uab_hunt": "UAB Huntsville",
+    "saou_tul": "Tulane University",
+    "pitt_temple": "Temple University",
+    "saou_lsu": "Louisiana State University",
+    "trans_am_meyers": "Reliant Medical Group (Meyers Primary Care)",
+    "trans_am_essentia": "Essentia Health Superior Clinic",
+    "saou_ummc": "University of Mississippi",
+    "seec_miami": "SouthEast Enrollment Center Miami",
+    "seec_morehouse": "SouthEast Enrollment Center Morehouse",
+    "seec_emory": "SouthEast Enrollment Center Emory",
+    "uamc_banner": "Banner Health",
+    "pitt": "University of Pittsburgh",
+    "nyc_cu": "Columbia University Medical Center",
+    "ipmc_uic": "University of Illinois Chicago",
+    "trans_am_spectrum": "Spectrum Health",
+    "tach_hfhs": "Henry Ford Health System",
+    "nec_bmc": "Boston Medical Center",
+    "cpmc_uci": "UC Irvine",
+    "nec_phs": "Partners HealthCare",
+    "nyc_cornell": "Weill Cornell Medical Center",
+    "ipmc_nu": "Northwestern Memorial Hospital",
+    "nyc_hh": "Harlem Hospital",
+    "ipmc_uchicago": "University of Chicago",
+    "aouw_mcri": "Marshfield Clinic",
+    "syhc": "San Ysidro Health Center",
+    "cpmc_ceders": "Cedars-Sinai",
+    "seec_ufl": "University of Florida",
+    "saou_uab": "University of Alabama at Birmingham",
+    "trans_am_baylor": "Baylor",
+    "cpmc_ucsd": "UC San Diego",
+    "ecchc": "Eau Claire Cooperative Health Center",
+    "chci": "Community Health Center, Inc.",
+    "aouw_uwh": "UW Health (University of Wisconsin Madison)",
+    "cpmc_usc": "University of Southern California",
+    "hrhc": "HRHCare",
+    "ipmc_northshore": "NorthShore University Health System",
+    "chs": "Cherokee Health Systems",
+    "cpmc_ucsf": "UC San Francisco",
+    "jhchc": "Jackson-Hinds CHC",
+    "aouw_mcw": "Medical College of Wisconsin",
+    "cpmc_ucd": "UC Davis",
+    "ipmc_rush": "Rush University",
+    "va": "United States Department of Veterans Affairs - Boston",
+    "saou_umc": "University Medical Center (UA Tuscaloosa)"
 }
