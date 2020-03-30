@@ -39,8 +39,8 @@ def find_hpo_row(sheet, hpo):
 
 
 def get_info(
-    sheet, row_num, percentage, sheet_name,
-    columns_to_collect, target_low):
+        sheet, row_num, percentage,
+        sheet_name, columns_to_collect, target_low):
     """
     Function is used to create a dictionary that contains
     the number of flawed records for a particular site.

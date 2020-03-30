@@ -196,6 +196,7 @@ def main():
 
     dqm_list = []
 
+    # creating the DQM objects and assigning to HPOs
     for dataframe, file_name, date in zip(dfs, file_names, datetimes):
         dqm_objects, col_names = create_dqm_objects_for_sheet(
             dataframe=dataframe, hpo_names=hpo_names,
@@ -205,19 +206,7 @@ def main():
         dqm_list.extend(dqm_objects)
 
     hpo_objects = create_hpo_objects(
-        dqm_objects=dqm_objects, file_names=file_names, datetimes=datetimes)
-
-    for obj in hpo_objects:
-        output = obj.return_attributes_as_string()
-        dups_objects = obj.duplicates
-
-        for dup in dups_objects:
-            dup.print_dqd_attributes()
-
-    user_choice = understand_sheet_output_type(
-        tables=col_names, names=hpo_names)
-
-    # TODO: CREATE AN AGGREGATE FUNCTION HERE FOR THE DATE, TABLE, ETC.
+        dqm_objects=dqm_list, file_names=file_names, datetimes=datetimes)
 
 
 if __name__ == "__main__":

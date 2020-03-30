@@ -239,7 +239,7 @@ def convert_file_names_to_datetimes(file_names):
 
     # converting back to standard form to index into file
     ordered_dates_str = [
-        x.strftime('%B_%d_%Y').lower() + '.xlsx' \
+        x.strftime('%B_%d_%Y').lower() + '.xlsx'
         for x in ordered_dates_dt]
 
     return ordered_dates_str, ordered_dates_dt
@@ -286,19 +286,19 @@ def startup(file_names):
         sheets, hpo_name_col
 
 
-def understand_sheet_output_type(tables, names):
+def understand_sheet_output_type(hpo_objects, hpo_names):
     """
     Function used to determine what kind out output formatting
     the user would want for the generated Excel files.
 
     Parameters
     ----------
-    tables (lst): list of the different table types
-        sorted alphabetically (can also be a category
-        within a table, such as CBC)
+    hpo_objects (list): list of HPO objects that have associated
+        DataQualityMetric objects
 
-    sorted_names (lst): list of the hpo site names (sorted
-        by alphabetic order)
+    hpo_names (list): list of the HPO names that are to be
+        put into dataframes (either as the titles of the
+        dataframe or the rows of a dataframe)
 
     Return
     ------
@@ -306,6 +306,14 @@ def understand_sheet_output_type(tables, names):
         distinct site or distinct table) will serve as a
         'anchor' to separate out the sheets
     """
+    tables = []
+
+    for hpo in hpo_objects:
+        if hpo.table not in tables:
+            tables.append(hpo.table)
+
+    num_names, num_tables = (len(hpo_names) + 1), (len(tables))
+
     output_prompt = \
         "\nWould you prefer to generate: \n" \
         "A. {} sheets detailing the data quality for each table. " \
@@ -314,7 +322,7 @@ def understand_sheet_output_type(tables, names):
         "The table type would be displayed as rows. This will " \
         "also include 1-3 table(s) with statistics on the " \
         "aggregate data for each table type on each date.". \
-        format(len(tables), len(names))
+        format(num_tables, num_names)
 
     user_input = input(output_prompt).lower()
     output_choice_dict = {
