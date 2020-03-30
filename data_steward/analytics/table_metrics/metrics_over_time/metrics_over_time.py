@@ -39,19 +39,18 @@ file names of the .xlsx files in the current working directory.
 """
 
 from startup_functions import \
-    get_user_analysis_choice, load_files, generate_hpo_id_col, \
-    convert_file_name_to_datetimes
+    startup, convert_file_names_to_datetimes
 
 from data_quality_metric_class import DataQualityMetric
 
 from hpo_class import HPO
 
 from miscellaneous_functions import find_hpo_row, \
-    columns_to_document_for_sheet, get_info, \
-    convert_file_names_to_datetimes
+    get_info
 
 from dictionaries_lists_and_prompts import \
-    metric_type_to_english_dict, data_quality_dimension_dict
+    metric_type_to_english_dict, data_quality_dimension_dict, \
+    columns_to_document_for_sheet
 
 # UNIONED EHR COMPARISON
 report1 = 'may_10_2019.xlsx'
@@ -59,49 +58,7 @@ report2 = 'july_15_2019.xlsx'
 report3 = 'october_04_2019.xlsx'
 report4 = 'march_19_2020.xlsx'
 
-
 report_names = [report1, report2, report3, report4]
-
-
-def startup(file_names):
-    """
-    Function is used to 'startup' the script. This should in essence
-    get the user's choice, load the appropriate files, and allow us
-    to determine which HPO objects we will instantiate.
-
-    Parameters
-    -----------
-    file_names (list): list of the user-specified Excel files that are
-        in the current directory. Files are analytics reports to be
-        scanned.
-
-
-    Returns
-    -------
-    metric_choice (string): represents the sheet from the analysis reports
-        whose metrics will be compared over time
-
-    metric_is_percent (bool): determines whether the data will be seen
-        as 'percentage complete' or individual instances of a
-        particular error
-
-    ideal_low (bool): determines whether the number displayed should
-        be considered a desirable or undesirable characteristic
-
-    file_names (list): list of the user-specified Excel files that are
-        in the current directory. Files are analytics reports to be
-        scanned.
-
-    sheets (list): list of pandas dataframes. each dataframe contains
-        info about data quality for all of the sites for a date. each
-        index of the list should represent a particular date's metrics.
-    """
-    metric_choice, metric_is_percent, ideal_low = get_user_analysis_choice()
-    sheets = load_files(metric_choice, file_names)
-    hpo_name_col = generate_hpo_id_col(file_names)
-
-    return metric_choice, metric_is_percent, ideal_low, \
-        sheets, hpo_name_col
 
 
 def create_dqm_objects_for_sheet(

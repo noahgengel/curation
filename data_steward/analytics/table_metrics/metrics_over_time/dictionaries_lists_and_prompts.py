@@ -147,7 +147,7 @@ columns_to_document_for_sheet = {
 
     'concept': [
         'observation_success_rate', 'drug_success_rate',
-        'procedure_success_rate', 'condition_success_rate'
+        'procedure_success_rate', 'condition_success_rate',
         'measurement_success_rate', 'visit_success_rate']
 }
 
