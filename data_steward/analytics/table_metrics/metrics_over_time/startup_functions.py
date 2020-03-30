@@ -2,11 +2,22 @@
 Python file is intended to be used for the 'startup' of the
 metrics_over_time script. This includes prompting the user
 to specify his/her analysis target and loading applicable files.
+
+ASSUMPTIONS
+-----------
+1. The 'concept' sheet in a dataframe will always have all of
+    the HPOs. There should not be an HPO that exists in another
+    sheet of the same report that does not exist in the
+    'concept' sheet.
 """
+import os
+import pandas as pd
+import sys
 
 from dictionaries_lists_and_prompts import \
     analysis_type_prompt, choice_dict, percentage_dict, \
     target_low
+
 
 def get_user_analysis_choice():
     """
@@ -37,3 +48,149 @@ def get_user_analysis_choice():
     target_low = target_low[analytics_type]
 
     return analytics_type, percent_bool, target_low
+
+
+def load_files(user_choice, file_names):
+    """
+    Function loads the relevant sheets from all of the
+    files in the directory (see 'file_names' list from above).
+
+    'Relevant sheet' is defined by previous user input.
+
+    This function is also designed so it skips over instances where
+    the user's input only exists in some of the defined sheets.
+
+    :parameter
+    user_choice (string): represents the sheet from the analysis reports
+        whose metrics will be compared over time
+
+    file_names (list): list of the user-specified Excel files that are
+        in the current directory. Files are analytics reports to be
+        scanned.
+
+    :returns
+    sheets (list): list of pandas dataframes. each dataframe contains
+        info about data quality for all of the sites for a date.
+
+    NOTE: I recognize that the 'skip sheet' protocol is implemented
+    twice but - since it was only implemented twice - I do not believe
+    it warrants its own separate function.
+    """
+    num_files_indexed = 0
+    cwd = os.getcwd()
+    sheets = []
+
+    while num_files_indexed < len(file_names):
+        file_name = file_names[num_files_indexed]
+
+        try:  # looking for the sheet
+            sheet = pd.read_excel(file_name, sheet_name=user_choice)
+
+            if sheet.empty:
+
+                print("WARNING: No data found in the {user_choice} sheet "
+                      "in dataframe {file_name}".format(
+                       user_choice=user_choice,
+                       file_name=file_name))
+
+                del file_names[num_files_indexed]
+                num_files_indexed -= 1  # skip over the date
+
+            else:
+                sheets.append(sheet)
+
+        except Exception as ex:  # sheet not in specified excel file
+
+            if type(ex).__name__ == "FileNotFoundError":
+                print("{file} not found in the current directory: {cwd}. "
+                      "Please ensure that the file names are "
+                      "consistent between the Python script and the "
+                      "file name in your current directory.".format(
+                        file=file_names[num_files_indexed], cwd=cwd))
+                sys.exit(0)
+
+            else:
+                print("WARNING: No {} sheet found in dataframe {}. "
+                      "This is a(n) {}.".format(
+                        user_choice, file_name, type(ex).__name__))
+
+                print(ex)
+
+                del file_names[num_files_indexed]
+                num_files_indexed -= 1  # skip over the date
+
+        num_files_indexed += 1
+
+    return sheets
+
+
+def generate_hpo_id_col(file_names):
+    """
+    Function is used to distinguish between HPOs that
+    are in all of the data analysis outputs versus HPOs
+    that are only in some of the data analysis outputs.
+
+    This function ensures all of the HPOs are logged
+    for all of the dates and improves consistency.
+
+    Parameters
+    ----------
+    file_names (list): list of the user-specified Excel files that are
+        in the current directory. Files are analytics reports to be
+        scanned.
+
+    Returns
+    --------
+    hpo_id_col (list): list of the strings that should go
+        into an HPO ID column. for use in generating subsequent
+        dataframes.
+
+    NOTES
+    -----
+    This function's efficiency could be improved by simply
+    iterating through all of the hpo_col_names and adding HPOs
+    to a growing list so long as the HPO is not already in the
+    list.
+
+    I chose this approach, however, because the distinction
+    between 'selective' and 'intersection' used to have a purpose
+    in the script. This distinction can also be helpful in
+    future iterations should someone want to leverage it in
+    a certain capacity.
+    """
+
+    # use concept sheet; always has all of the HPO IDs
+    dataframes = load_files('concept', file_names)
+    hpo_col_name = 'src_hpo_id'
+    selective_rows, total_hpo_id_columns = [], []
+
+    for df in dataframes:
+        hpo_id_col_sheet = df[hpo_col_name].values
+        total_hpo_id_columns.append(hpo_id_col_sheet)
+
+    # find the intersection of all the lists
+    in_all_sheets = set(dataframes[0][hpo_col_name].values)
+    for df in dataframes[1:]:
+        hpo_id_col_sheet = set(df[hpo_col_name].values)
+        in_all_sheets.intersection_update(hpo_id_col_sheet)
+
+    # eliminate blank rows
+    in_all_sheets = list(in_all_sheets)
+    in_all_sheets = [row for row in in_all_sheets if isinstance(row, str)]
+
+    # determining rows in some (but not all) of the dataframes
+    for df_num, df in enumerate(dataframes):
+        hpo_id_col_sheet = df[hpo_col_name].values
+        selective = set(in_all_sheets) ^ set(hpo_id_col_sheet)
+        for row in selective:
+            if (row not in selective_rows) and isinstance(row, str):
+                selective_rows.append(row)
+
+    # standardize; all sheets now have the same rows
+    hpo_id_col = in_all_sheets + selective_rows
+    bad_rows = [' Avarage', 'aggregate counts']  # do not include
+
+    hpo_id_col = [x for x in hpo_id_col if x not in bad_rows]
+    hpo_id_col = sorted(hpo_id_col)
+
+    return hpo_id_col

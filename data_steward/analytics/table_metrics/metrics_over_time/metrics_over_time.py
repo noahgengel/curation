@@ -38,8 +38,25 @@ file names of the .xlsx files in the current working directory.
       ex: drug_total_row
 """
 
-from startup_functions import get_user_analysis_choice
+from startup_functions import \
+    get_user_analysis_choice, load_files, generate_hpo_id_col
 
 from data_quality_metric_class import DataQualityMetric
 
 from hpo_class import HPO
+
+
+# UNIONED EHR COMPARISON
+report1 = 'may_10_2019.xlsx'
+report2 = 'july_15_2019.xlsx'
+report3 = 'october_04_2019.xlsx'
+report4 = 'march_19_2019.xlsx'
+
+
+report_names = [report1, report2, report3, report4]
+
+
+def startup():
+    metric_choice, metric_is_percent, ideal_low = get_user_analysis_choice()
+    data_frames = load_files(metric_choice, report_names)
+    hpo_name_col = generate_hpo_id_col(report_names)
