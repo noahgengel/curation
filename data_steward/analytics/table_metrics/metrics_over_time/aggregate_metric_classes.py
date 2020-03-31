@@ -32,7 +32,14 @@ class AggregateMetricAcrossHPOS:
         :param num_total_rows:
         :param num_pertinent_rows:
         """
-        pass
+        self.date = date
+        self.table_name = table_name
+        self.metric_type = metric_type
+        self.num_total_rows = num_total_rows
+        self.num_pertinent_rows = num_pertinent_rows
+        self.overall_rate = round(
+            num_pertinent_rows/num_total_rows * 100,
+            2)
 
 
 class AggregateMetricAcrossTables:
@@ -56,5 +63,12 @@ class AggregateMetricAcrossTables:
         :param num_total_rows:
         :param num_pertinent_rows:
         """
-        pass
+        self.date = date
+        self.hpo_name = hpo_name
+        self.metric_type = metric_type
+        self.num_total_rows = num_total_rows
+        self.num_pertinent_rows = num_pertinent_rows
+        self.overall_rate = round(
+            num_pertinent_rows/num_total_rows * 100,
+            2)
         self.full_hpo_name = full_names[hpo_name]

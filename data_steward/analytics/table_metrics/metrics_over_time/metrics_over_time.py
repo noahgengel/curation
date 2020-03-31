@@ -218,6 +218,5 @@ def main():
         metric_type=user_choice)
 
 
-
 if __name__ == "__main__":
     main()
