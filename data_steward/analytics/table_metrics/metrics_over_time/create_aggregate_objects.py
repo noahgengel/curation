@@ -10,8 +10,8 @@ Please see the AggregateMetric class documentation for
 further information.
 """
 
-from aggregate_metric_class import AggregateMetricAcrossHPOS, \
-    AggregateMetricAcrossTables
+from aggregate_metric_class import AggregateMetricForTable, \
+    AggregateMetricForHPO, AggregateMetricForDate
 
 
 def create_aggregate_dqms_for_metric(
