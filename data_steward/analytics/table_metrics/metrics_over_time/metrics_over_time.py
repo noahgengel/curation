@@ -211,11 +211,13 @@ def main():
         dqm_objects=dqm_list, file_names=file_names, datetimes=datetimes)
 
     metric_dictionary, hpo_dictionary = sort_hpos_into_dicts(
-        hpo_objects=hpo_objects, hpo_names=hpo_names)
+        hpo_objects=hpo_objects, hpo_names=hpo_names,
+        datetimes=datetimes)
 
-    user_choice = understand_sheet_output_type(
+    sheet_output = understand_sheet_output_type(
         hpo_objects=hpo_objects, hpo_names=hpo_names,
         metric_type=user_choice)
+
 
 
 if __name__ == "__main__":

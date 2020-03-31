@@ -211,7 +211,8 @@ def sort_hpos_into_dicts(
     """
     # want to have an aggregate
     metrics_to_instantiate = []
-    metric_dictionary, hpo_dictionary = {}, {}
+    metric_dictionary, hpo_dictionary, date_dict = \
+        {}, {}, {}
 
     # creating the keys for the metric dictionary
     for hpo_obj in hpo_objects:

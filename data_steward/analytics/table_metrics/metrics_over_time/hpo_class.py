@@ -418,32 +418,23 @@ class HPO:
 
         return row_count
 
-    def return_metric_row_count(self, metric, table):
+    def use_string_to_get_relevant_objects(self, metric):
         """
-        Function is used to return the 'row
-        count' for a particular metric. This will be
-        useful for determine 'aggregate metrics' which
-        are contingent upon 'aggregate' successes over
-        totals. This 'row count' could either refer to
-        the number of 'successful' rows or the number
-        of 'failed' rows depending on the nature of the
-        metric that is being investigated.
+        Function is designed to enable someone to use a
+        string to access the relevant objects pertaining
+        to the desire metric.
 
         Parameters
         ----------
         metric (string): the metric (e.g. the concept
             success rate) that is being investigated
 
-        table (string): table whose data quality metrics are
-            to be determined
-
         Returns
         -------
-        row_count (float): total number of rows - merely
-            a multiplier of the two aforementioned
-            number converted from percent to rows
+        relevant_objects (list): list of DataQualityMetric
+            objects that are related to both the HPO
+            and metric provided
         """
-
         if metric == 'Concept ID Success Rate':
             relevant_objects = self.concept_success
 
@@ -471,10 +462,39 @@ class HPO:
         else:
             raise Exception(
                 "The following was identified as a metric: "
-                "{metric} for the following table: "
-                "{table}".format(
-                    metric=metric, table=table)
+                "{metric}".format(metric=metric)
             )
+
+        return relevant_objects
+
+    def return_metric_row_count(self, metric, table):
+        """
+        Function is used to return the 'row
+        count' for a particular metric. This will be
+        useful for determine 'aggregate metrics' which
+        are contingent upon 'aggregate' successes over
+        totals. This 'row count' could either refer to
+        the number of 'successful' rows or the number
+        of 'failed' rows depending on the nature of the
+        metric that is being investigated.
+
+        Parameters
+        ----------
+        metric (string): the metric (e.g. the concept
+            success rate) that is being investigated
+
+        table (string): table whose data quality metrics are
+            to be determined
+
+        Returns
+        -------
+        row_count (float): total number of rows - merely
+            a multiplier of the two aforementioned
+            number converted from percent to rows
+        """
+
+        relevant_objects = self.use_string_to_get_relevant_objects(
+            metric=metric)
 
         row_count = self.get_row_count_from_table_and_metric(
             metric=metric, table=table,
