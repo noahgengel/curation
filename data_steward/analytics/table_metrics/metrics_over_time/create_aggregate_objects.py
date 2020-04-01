@@ -176,8 +176,9 @@ def create_aggregate_metrics_for_tables(
                                     hpo_object.use_table_name_to_find_rows(
                                         table=table, metric=metric_type)
 
-                                total_rows += hpo_total_rows
-                                pertinent_rows += hpo_pert_rows
+                                # float conversion for consistency
+                                total_rows += float(hpo_total_rows)
+                                pertinent_rows += float(hpo_pert_rows)
 
                         hpos_counted.append(hpo_object.name)  # prevent from counting again
 
@@ -271,10 +272,6 @@ def create_aggregate_metrics_for_hpos(
 
                                     total_rows += hpo_total_rows
                                     pertinent_rows += hpo_pert_rows
-
-                                    if total_rows.isnan():
-                                        s = hpo_object.return_attributes_as_string()
-                                        print(s)
 
                                     # prevent double counting
                                     tables_counted.append(dqm.table)
