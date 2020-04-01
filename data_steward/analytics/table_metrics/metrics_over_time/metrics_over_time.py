@@ -197,6 +197,8 @@ def main():
     file_names, datetimes = convert_file_names_to_datetimes(
         file_names=report_names)
 
+    print("\nSetup Complete\n")
+
     dqm_list = []
 
     # creating the DQM objects and assigning to HPOs
@@ -215,13 +217,20 @@ def main():
         hpo_objects=hpo_objects, hpo_names=hpo_names,
         user_choice=user_choice)
 
+    print("HPO Objects Generated")
+
     sheet_output = understand_sheet_output_type(
-        hpo_objects=hpo_objects, hpo_names=hpo_names)
+        hpo_objects=hpo_objects, hpo_names=hpo_names,
+        analytics_type=user_choice)
+
+    print("Creating Aggregate Metrics\n")
 
     aggregate_metrics = create_aggregate_metric_master_function(
         metric_dictionary=metric_dictionary,
         hpo_dictionary=hpo_dictionary,
         sheet_output=sheet_output, datetimes=datetimes)
+
+    print("\nAggregate Metrics Created\n")
 
     for agg_met in aggregate_metrics:
         str = agg_met.return_attributes_str()

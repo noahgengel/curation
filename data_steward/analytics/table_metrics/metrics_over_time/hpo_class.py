@@ -295,7 +295,8 @@ class HPO:
 
         Returns
         -------
-        succ_rate (float): success rate for the particular table
+        rel_rows (float): number of rows that pertain to the
+            particular metric for the table
 
         total_rows (float): the total number of rows for the
             table being queried
@@ -309,7 +310,13 @@ class HPO:
         elif metric == 'Duplicate Records':
             for obj in self.duplicates:
                 if obj.table == table:
+
+                    # FIXME: add date parameter
                     succ_rate = obj.value
+
+                    if self.name == 'nyc_cornell':
+                        obj.print_dqd_attributes()
+                        print(succ_rate)
 
         elif metric == 'End Dates Preceding Start Dates':
             for obj in self.end_before_begin:
@@ -350,16 +357,18 @@ class HPO:
 
         if table == "Measurement":
             total_rows = self.num_measurement_rows
-        elif table == "Visit":
+        elif table == "Visit Occurrence":
             total_rows = self.num_visit_rows
-        elif table == "Procedure":
+        elif table == "Procedure Occurrence":
             total_rows = self.num_procedure_rows
-        elif table == "Condition":
+        elif table == "Condition Occurrence":
             total_rows = self.num_condition_rows
-        elif table == "Drug":
+        elif table == "Drug Exposure":
             total_rows = self.num_drug_rows
         elif table == "Observation":
             total_rows = self.num_observation_rows
+        elif table == "Device Exposure":  # do not want to deal with this
+            total_rows = 0
         else:
             raise Exception(
                 "Unexpected table type:"
@@ -367,7 +376,13 @@ class HPO:
                     table=table, metric=metric
                 ))
 
-        return succ_rate, total_rows
+        if metric == 'Duplicate Records':
+            rel_rows = succ_rate  # want to report out the total #
+            print(rel_rows)
+        else:
+            rel_rows = total_rows * (succ_rate / 100)
+
+        return rel_rows, total_rows
 
     def get_row_count_from_table_and_metric(
             self, metric, table, relevant_objects):
@@ -403,12 +418,9 @@ class HPO:
             dqm_table = dqm.table
 
             if dqm_table == table:  # discovered
-                succ_rate, total_rows = \
+                row_count, total_rows = \
                     self.use_table_name_to_find_rows(
                         table=table, metric=metric)
-
-                # convert from percent
-                row_count = total_rows * succ_rate / 100
 
         # making sure we could calculate the row_count
         assert row_count is not None, "The row count for the following " \

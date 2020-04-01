@@ -95,11 +95,14 @@ def find_relevant_tables(
     tables_for_metric = []
 
     for hpo_object in hpo_object_list:
-        relevant_metrics = hpo_object.use_string_to_get_relevant_objects(
+        relevant_dqms= hpo_object.use_string_to_get_relevant_objects(
             metric=metric_type)
-        for metric in relevant_metrics:
-            table = metric.table
-            tables_for_metric.append(table)
+
+        for dqm in relevant_dqms:
+            table = dqm.table
+
+            if table not in tables_for_metric:
+                tables_for_metric.append(table)
 
     return tables_for_metric
 
@@ -135,24 +138,26 @@ def create_aggregate_metrics_for_tables(
 
     new_agg_metrics = []
 
-    # A
+    # A - really will only go into for applicable metric
     for metric_type, hpo_object_list in metric_dictionary.items():
-
 
         tables_for_metric = find_relevant_tables(
             hpo_object_list=hpo_object_list, metric_type=metric_type)
         # now we know the tables and dates for all of the metrics
 
+        hpos_counted = []  # need to prevent double-counting
+
         # B.
         for date in datetimes:
 
-            #C
+            # C
             for table in tables_for_metric:
                 # to add to the new object's attributes
                 total_rows, pertinent_rows = 0, 0
 
                 # now we need to find the relevant DataQualityMetric objects
                 for hpo_object in hpo_object_list:
+
                     relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
                         metric=metric_type)
 
@@ -163,16 +168,24 @@ def create_aggregate_metrics_for_tables(
                         if (dqm.metric_type == metric_type and
                             dqm.date == date and
                             dqm.table == table) and \
-                                (hpo_object.date == date):
+                                (hpo_object.date == date) and \
+                                hpo_object.name not in hpos_counted:
 
-                            hpo_succ_rate, hpo_total_rows = \
+                            hpo_pert_rows, hpo_total_rows = \
                                 hpo_object.use_table_name_to_find_rows(
                                     table=table, metric=metric_type)
 
-                            hpo_pert_rows = hpo_succ_rate * hpo_total_rows / 100
-
                             total_rows += hpo_total_rows
                             pertinent_rows += hpo_pert_rows
+
+                            if hpo_object.name == 'nyc_cornell':
+                                s = hpo_object.return_attributes_as_string()
+                                print(s)
+                                print(dqm.table)
+                                print(hpo_pert_rows)
+                                print(hpo_total_rows)
+
+                    hpos_counted.append(hpo_object.name)  # prevent from counting again
 
                 # actually create the metric - culled for all three dimensions
                 new_am = AggregateMetricForTable(
@@ -231,6 +244,8 @@ def create_aggregate_metrics_for_hpos(
             # C.
             for metric in metric_dictionary:
 
+                tables_counted = []  # need to prevent double-counting
+
                 total_rows, pertinent_rows = 0, 0
 
                 # need to specify - only check the relevant metric
@@ -247,20 +262,21 @@ def create_aggregate_metrics_for_hpos(
                             if (dqm.date == date and
                                 dqm.hpo == hpo and
                                 dqm.metric_type == metric) and \
-                                    (hpo.date == date):
+                                    (hpo.date == date) and \
+                                    dqm.table not in tables_counted:
 
                                 table = dqm.table
                                 metric_type = dqm.metric_type
 
-                                hpo_succ_rate, hpo_total_rows = \
+                                hpo_pert_rows, hpo_total_rows = \
                                     hpo_object.use_table_name_to_find_rows(
-                                    table=table, metric=metric_type)
-
-                                hpo_pert_rows = hpo_succ_rate * hpo_total_rows / 100
+                                        table=table, metric=metric_type)
 
                                 total_rows += hpo_total_rows
                                 pertinent_rows += hpo_pert_rows
 
+                                # prevent double counting
+                                tables_counted.append(dqm.table)
 
                 new_agg_metric = AggregateMetricForHPO(
                     date=date, hpo_name=hpo, metric_type=metric,
@@ -268,7 +284,6 @@ def create_aggregate_metrics_for_hpos(
                     num_pertinent_rows=pertinent_rows)
 
                 new_agg_metrics.append(new_agg_metric)
-
 
     # finished the loop - now has all the aggregate metrics
     return new_agg_metrics

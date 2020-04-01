@@ -54,9 +54,13 @@ class AggregateMetricForTable:
         self.metric_type = metric_type
         self.num_total_rows = num_total_rows
         self.num_pertinent_rows = num_pertinent_rows
-        self.overall_rate = round(
-            num_pertinent_rows/num_total_rows * 100,
-            2)
+
+        try:
+            self.overall_rate = round(
+                num_pertinent_rows/num_total_rows * 100,
+                2)
+        except ZeroDivisionError:
+            self.overall_rate = 0
 
     def return_attributes_str(self):
         """
@@ -139,10 +143,14 @@ class AggregateMetricForHPO:
         self.metric_type = metric_type
         self.num_total_rows = num_total_rows
         self.num_pertinent_rows = num_pertinent_rows
-        self.overall_rate = round(
-            num_pertinent_rows/num_total_rows * 100,
-            2)
         self.full_hpo_name = full_names[hpo_name]
+
+        try:
+            self.overall_rate = round(
+                num_pertinent_rows/num_total_rows * 100,
+                2)
+        except ZeroDivisionError:
+            self.overall_rate = 0
 
     def return_attributes_str(self):
         """
@@ -221,6 +229,10 @@ class AggregateMetricForDate:
         self.metric_type = metric_type
         self.num_total_rows = num_total_rows
         self.num_pertinent_rows = num_pertinent_rows
-        self.overall_rate = round(
-            num_pertinent_rows/num_total_rows * 100,
-            2)
+
+        try:
+            self.overall_rate = round(
+                num_pertinent_rows/num_total_rows * 100,
+                2)
+        except ZeroDivisionError:
+            self.overall_rate = 0

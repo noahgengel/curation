@@ -20,7 +20,7 @@ import datetime
 
 from dictionaries_lists_and_prompts import \
     analysis_type_prompt, choice_dict, percentage_dict, \
-    target_low_dict
+    target_low_dict, metric_type_to_english_dict
 
 
 def get_user_analysis_choice():
@@ -286,7 +286,7 @@ def startup(file_names):
         sheets, hpo_name_col
 
 
-def understand_sheet_output_type(hpo_objects, hpo_names):
+def understand_sheet_output_type(hpo_objects, hpo_names, analytics_type):
     """
     Function used to determine what kind out output formatting
     the user would want for the generated Excel files.
@@ -300,6 +300,9 @@ def understand_sheet_output_type(hpo_objects, hpo_names):
         put into dataframes (either as the titles of the
         dataframe or the rows of a dataframe)
 
+    analytics_type (string): the type of analytics report
+        (e.g. duplicates) that the user wants to scan and compile
+
     Return
     ------
     user_choice (string): determines which variable (either
@@ -308,9 +311,16 @@ def understand_sheet_output_type(hpo_objects, hpo_names):
     """
     tables = []
 
+    # convert to 'human readable' form
+    analytics_type = metric_type_to_english_dict[analytics_type]
+
     for hpo in hpo_objects:
-        if hpo.table not in tables:
-            tables.append(hpo.table)
+        relevant_dqm_objects = hpo.use_string_to_get_relevant_objects(
+            metric=analytics_type)
+
+        for dqm in relevant_dqm_objects:
+            if dqm.table not in tables:
+                tables.append(dqm.table)
 
     num_names, num_tables = (len(hpo_names) + 1), (len(tables))
 
