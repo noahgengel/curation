@@ -46,8 +46,14 @@ def create_aggregate_metric_master_function(
 
     Returns
     -------
-    # FIXME:
+    aggregate_metrics (list): list of metrics objects
+        (AggregateMetricForTable or
+        AggregateMetricForHPO & AggregateMetricForDate)
+        that contain all of the 'aggregate metrics' to be displayed
     """
+    # FIXME: need to change the 'aggregate metrics' for integration metrics
+    #  they should NOT be weighted by site/table row count
+
     if sheet_output == 'table_sheets':
         aggregate_metrics = create_aggregate_metrics_for_tables(
             metric_dictionary=metric_dictionary,
@@ -195,6 +201,83 @@ def create_aggregate_metrics_for_tables(
     return new_agg_metrics
 
 
+def cycle_through_dqms_for_hpo(
+        hpo_object, metric, date, hpo_name, tables_counted,
+        total_rows, pertinent_rows):
+    """
+    Function is used once an HPO is found and warrants its own
+    AggregateMetricForHPO because it has a unique set of date
+    and metric parameters.
+
+    Parameters
+    ----------
+
+    hpo_object (HPO): object of class HPO that has all the
+        information we want to sort across (and ultimately
+        average across all of the applicable tables)
+
+    metric (string): represents the kind of metric that
+        is to be investigated (e.g. duplicates)
+
+    date (datetime): the datetime that should be unique
+        for the AggregateMetricForHPO to be created.
+
+    hpo_name (string): name of the HPO object
+
+    tables_counted (list): list of tables that should not
+        be counted in the 'overall tally'. this is used to
+        prevent the same table from being counted more than
+        once
+
+    total_rows (float): starts at zero. goal is to add the
+        total number of rows that span the
+        HPO across all of the tables
+
+    pertinent_rows (float): starts at zero. goal is to add
+        the total number of rows that either
+        contribute to either the 'success' or failure rate
+
+    Returns
+    -------
+    total_rows (float): total number of rows that span the
+        HPO across all of the tables
+
+    pertinent_rows (float): total number of rows that either
+        contribute to either the 'success' or failure rate
+
+    tables_counted (list): list of tables that should not
+        be counted in the 'overall tally'. now also contains
+        the tables that contributed to the overall tally for
+        the particular HPO on the particular date
+    """
+    relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
+                                metric=metric)
+
+    for dqm in relevant_dqms:
+
+        # regardless of dqm.table
+        if (dqm.date == date and
+            dqm.hpo == hpo_name and
+            dqm.metric_type == metric) and \
+                (hpo_object.date == date) and \
+                dqm.table not in tables_counted:
+
+            table = dqm.table
+            metric_type = dqm.metric_type
+
+            hpo_pert_rows, hpo_total_rows = \
+                hpo_object.use_table_name_to_find_rows(
+                    table=table, metric=metric_type)
+
+            total_rows += float(hpo_total_rows)
+            pertinent_rows += float(hpo_pert_rows)
+
+            # prevent double counting
+            tables_counted.append(dqm.table)
+
+    return total_rows, pertinent_rows, tables_counted
+
+
 def create_aggregate_metrics_for_hpos(
         hpo_dictionary, datetimes, metric_dictionary):
     """
@@ -253,30 +336,13 @@ def create_aggregate_metrics_for_hpos(
 
                         if hpo_object.date == date:
 
-                            relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
-                                metric=metric)
-
-                            for dqm in relevant_dqms:
-
-                                # regardless of dqm.table
-                                if (dqm.date == date and
-                                    dqm.hpo == hpo and
-                                    dqm.metric_type == metric) and \
-                                        (hpo_object.date == date) and \
-                                        dqm.table not in tables_counted:
-
-                                    table = dqm.table
-                                    metric_type = dqm.metric_type
-
-                                    hpo_pert_rows, hpo_total_rows = \
-                                        hpo_object.use_table_name_to_find_rows(
-                                            table=table, metric=metric_type)
-
-                                    total_rows += hpo_total_rows
-                                    pertinent_rows += hpo_pert_rows
-
-                                    # prevent double counting
-                                    tables_counted.append(dqm.table)
+                            total_rows, pertinent_rows, tables_counted = \
+                                cycle_through_dqms_for_hpo(
+                                    hpo_object=hpo_object, metric=metric,
+                                    date = date, hpo_name=hpo_object.name,
+                                    tables_counted=tables_counted,
+                                    total_rows=total_rows,
+                                    pertinent_rows=pertinent_rows)
 
                 new_agg_metric = AggregateMetricForHPO(
                     date=date, hpo_name=hpo, metric_type=metric,

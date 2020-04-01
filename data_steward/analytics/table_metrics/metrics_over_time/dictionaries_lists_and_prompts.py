@@ -161,10 +161,7 @@ columns_to_document_for_sheet = {
 
 
 table_based_on_column_provided = {
-    'total_unit_success_rate': 'Measurement',
-    'total_route_success_rate': 'Drug Exposure',
-    'all_drugs': 'Drug Exposure',
-    'All_Measurements': 'Measurement',
+    # canonical columns
     'visit_occurrence': 'Visit Occurrence',
     'condition_occurrence': 'Condition Occurrence',
     'drug_exposure': 'Drug Exposure',
@@ -172,12 +169,33 @@ table_based_on_column_provided = {
     'measurement': 'Measurement',
     'procedure_occurrence': 'Procedure Occurrence',
     'observation': 'Observation',
+
+    # general concept success rate columns
     'observation_success_rate': 'Observation',
     'drug_success_rate': 'Drug Exposure',
     'procedure_success_rate': 'Procedure Occurrence',
     'condition_success_rate': 'Condition Occurrence',
     'measurement_success_rate': 'Measurement',
-    'visit_success_rate': 'Visit Occurrence'
+    'visit_success_rate': 'Visit Occurrence',
+
+    # field concept success rate columns
+    'total_unit_success_rate': 'Measurement',
+    'total_route_success_rate': 'Drug Exposure',
+
+    # drug integration columns
+    'all_drugs': 'Drug Exposure',
+    'ace_inhibitors': 'Drug Exposure',
+    'painnsaids': 'Drug Exposure',
+    'msknsaids': 'Drug Exposure',
+    'statins': 'Drug Exposure',
+    'antibiotics': 'Drug Exposure',
+    'opioids': 'Drug Exposure',
+    'oralhypoglycemics': 'Drug Exposure',
+    'vaccine': 'Drug Exposure',
+    'ccb': 'Drug Exposure',
+    'diuretics': 'Drug Exposure',
+
+    'All_Measurements': 'Measurement'
 }
 
 data_quality_dimension_dict = {

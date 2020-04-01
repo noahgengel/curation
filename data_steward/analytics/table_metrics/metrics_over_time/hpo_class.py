@@ -328,17 +328,17 @@ class HPO:
                     succ_rate = obj.value
 
         elif metric == 'Drug Ingredient Integration':
-            for obj in self.measurement_integration:
+            for obj in self.ingredient_integration:
                 if obj.table == table:
                     succ_rate = obj.value
 
         elif metric == 'Route Concept ID Success Rate':
-            for obj in self.measurement_integration:
+            for obj in self.route_success:
                 if obj.table == table:
                     succ_rate = obj.value
 
         elif metric == 'Unit Concept ID Success Rate':
-            for obj in self.measurement_integration:
+            for obj in self.unit_success:
                 if obj.table == table:
                     succ_rate = obj.value
 
