@@ -132,6 +132,54 @@ def create_dqm_objects_for_sheet(
     return dqm_objects, columns
 
 
+def create_dqm_list(dfs, file_names, datetimes, user_choice,
+    percent_bool, target_low):
+    """
+    Function is used to create all of the possible 'DataQualityMetric'
+    objects that are needed given all of the inputted data.
+
+    Parameters
+    ----------
+    dfs (list): list of pandas dataframes. each dataframe contains
+        info about data quality for all of the sites for a date. each
+        index of the list should represent a particular date's metrics.
+
+    file_names (list): list of the user-specified Excel files that are
+        in the current directory. Files are analytics reports to be
+        scanned.
+
+    datetimes (list): list of datetime objects that
+        represent the dates of the files that are being
+        ingested
+
+    user_choies (string): represents the sheet from the analysis reports
+        whose metrics will be compared over time
+
+    percent_bool (bool): determines whether the data will be seen
+        as 'percentage complete' or individual instances of a
+        particular error
+
+    target_low (bool): determines whether the number displayed should
+        be considered a desirable or undesirable characteristic
+
+    Return
+    -------
+    dqm_list (lst): list of DataQualityMetric objects
+    """
+    dqm_list = []
+
+    # creating the DQM objects and assigning to HPOs
+    for dataframe, file_name, date in zip(dfs, file_names, datetimes):
+        dqm_objects, col_names = create_dqm_objects_for_sheet(
+            dataframe=dataframe, hpo_names=hpo_names,
+            user_choice=user_choice, metric_is_percent=percent_bool,
+            target_low=target_low, date=date)
+
+        dqm_list.extend(dqm_objects)
+
+    return dqm_list
+
+
 def create_hpo_objects(dqm_objects, file_names, datetimes):
     """
     Function is used to create the various 'HPO' objects
@@ -197,18 +245,10 @@ def main():
     file_names, datetimes = convert_file_names_to_datetimes(
         file_names=report_names)
 
-    print("\nSetup Complete.\n")
-
-    dqm_list = []
-
-    # creating the DQM objects and assigning to HPOs
-    for dataframe, file_name, date in zip(dfs, file_names, datetimes):
-        dqm_objects, col_names = create_dqm_objects_for_sheet(
-            dataframe=dataframe, hpo_names=hpo_names,
-            user_choice=user_choice, metric_is_percent=percent_bool,
-            target_low=target_low, date=date)
-
-        dqm_list.extend(dqm_objects)
+    dqm_list = create_dqm_list(
+        dfs=dfs, file_names=file_names, datetimes=datetimes,
+        user_choice=user_choice, percent_bool=percent_bool,
+        target_low=target_low)
 
     hpo_objects = create_hpo_objects(
         dqm_objects=dqm_list, file_names=file_names, datetimes=datetimes)
@@ -217,20 +257,15 @@ def main():
         hpo_objects=hpo_objects, hpo_names=hpo_names,
         user_choice=user_choice)
 
-    print("HPO Objects Generated.")
-
     sheet_output = understand_sheet_output_type(
         hpo_objects=hpo_objects, hpo_names=hpo_names,
         analytics_type=user_choice)
 
-    print("Creating Aggregate Metrics...\n")
-
     aggregate_metrics = create_aggregate_metric_master_function(
         metric_dictionary=metric_dictionary,
         hpo_dictionary=hpo_dictionary,
-        sheet_output=sheet_output, datetimes=datetimes)
-
-    print("\nAggregate Metrics Created.\n")
+        sheet_output=sheet_output, datetimes=datetimes,
+        metric_choice=user_choice)
 
     for agg_met in aggregate_metrics:
         str = agg_met.return_attributes_str()

@@ -227,6 +227,13 @@ metric_type_to_english_dict = {
     'duplicates': 'Duplicate Records'
 }
 
+metrics_to_weight = [
+    'Unit Concept ID Success Rate', 'Route Concept ID Success Rate',
+    'End Dates Preceding Start Dates', 'Data After Death',
+    'Concept ID Success Rate', 'Duplicate Records'
+
+]
+
 full_names = {
     "saou_uab_selma": "UAB Selma",
     "saou_uab_hunt": "UAB Huntsville",

@@ -13,10 +13,11 @@ further information.
 from aggregate_metric_classes import AggregateMetricForTable, \
     AggregateMetricForHPO, AggregateMetricForDate
 
+from dictionaries_lists_and_prompts import metrics_to_weight
 
 def create_aggregate_metric_master_function(
         metric_dictionary, hpo_dictionary,
-        sheet_output, datetimes):
+        sheet_output, datetimes, metric_choice):
     """
     Function is used to identify which type of AggregateMetric
     object to make. The type of AggregateMetric object to create
@@ -44,6 +45,10 @@ def create_aggregate_metric_master_function(
         represent the dates of the files that are being
         ingested
 
+    metric_choice (str): the type of analysis that the user
+        wishes to perform. used to triage whether the function will
+        create a 'weighted' or unweighted' metric
+
     Returns
     -------
     aggregate_metrics (list): list of metrics objects
@@ -54,27 +59,30 @@ def create_aggregate_metric_master_function(
     # FIXME: need to change the 'aggregate metrics' for integration metrics
     #  they should NOT be weighted by site/table row count
 
-    if sheet_output == 'table_sheets':
-        aggregate_metrics = create_aggregate_metrics_for_tables(
-            metric_dictionary=metric_dictionary,
-            datetimes=datetimes)
+    if metric_choice in metrics_to_weight:
+        if sheet_output == 'table_sheets':
+            aggregate_metrics = create_aggregate_metrics_for_tables(
+                metric_dictionary=metric_dictionary,
+                datetimes=datetimes)
 
-    elif sheet_output == 'hpo_sheets':
-        aggregate_metrics = create_aggregate_metrics_for_hpos(
-            hpo_dictionary=hpo_dictionary,
-            datetimes=datetimes,
-            metric_dictionary=metric_dictionary)
-    else:
-        raise Exception(
-            """Bad parameter input for function 
-            create_aggregate_master_function. Parameter provided
-            was: {param}""".format(param=sheet_output))
+        elif sheet_output == 'hpo_sheets':
+            aggregate_metrics = create_aggregate_metrics_for_hpos(
+                hpo_dictionary=hpo_dictionary,
+                datetimes=datetimes,
+                metric_dictionary=metric_dictionary)
+        else:
+            raise Exception(
+                """Bad parameter input for function 
+                create_aggregate_master_function. Parameter provided
+                was: {param}""".format(param=sheet_output))
+    else:  # integration metrics
+        pass
 
     return aggregate_metrics
 
 
 def find_relevant_tables(
-        hpo_object_list, metric_type):
+    hpo_object_list, metric_type):
     """
     This function is used to find the tables that should be
     either triaged into separate AggregateMetric objects
@@ -189,7 +197,7 @@ def cycle_through_dqms_for_table(
 
 
 def create_aggregate_metrics_for_tables(
-        metric_dictionary, datetimes):
+    metric_dictionary, datetimes):
     """
     Function is intended to create 'aggregate' data quality
     metrics that can be applied to a specific data quality metric
@@ -262,8 +270,8 @@ def create_aggregate_metrics_for_tables(
 
 
 def cycle_through_dqms_for_hpo(
-        hpo_object, metric, date, hpo_name, tables_counted,
-        total_rows, pertinent_rows):
+    hpo_object, metric, date, hpo_name, tables_counted,
+    total_rows, pertinent_rows):
     """
     Function is used once an HPO is found and warrants its own
     AggregateMetricForHPO because it has a unique set of date
@@ -271,7 +279,6 @@ def cycle_through_dqms_for_hpo(
 
     Parameters
     ----------
-
     hpo_object (HPO): object of class HPO that has all the
         information we want to sort across (and ultimately
         average across all of the applicable tables)
@@ -339,7 +346,7 @@ def cycle_through_dqms_for_hpo(
 
 
 def create_aggregate_metrics_for_hpos(
-        hpo_dictionary, datetimes, metric_dictionary):
+    hpo_dictionary, datetimes, metric_dictionary):
     """
     Function is intended to create 'aggregate' data quality
     metrics that can be applied to a specific data quality metric
@@ -399,7 +406,7 @@ def create_aggregate_metrics_for_hpos(
                             total_rows, pertinent_rows, tables_counted = \
                                 cycle_through_dqms_for_hpo(
                                     hpo_object=hpo_object, metric=metric,
-                                    date = date, hpo_name=hpo_object.name,
+                                    date=date, hpo_name=hpo_object.name,
                                     tables_counted=tables_counted,
                                     total_rows=total_rows,
                                     pertinent_rows=pertinent_rows)
