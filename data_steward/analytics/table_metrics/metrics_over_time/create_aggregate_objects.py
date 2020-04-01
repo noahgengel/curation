@@ -58,10 +58,11 @@ def create_aggregate_metric_master_function(
             hpo_dictionary=hpo_dictionary,
             datetimes=datetimes,
             metric_dictionary=metric_dictionary)
+    else:
         raise Exception(
-            "Bad parameter input for function \
-            create_aggregate_master_function - sheet_output \
-            parameter")
+            """Bad parameter input for function 
+            create_aggregate_master_function. Parameter provided
+            was: {param}""".format(param=sheet_output))
 
     return aggregate_metrics
 
@@ -232,7 +233,7 @@ def create_aggregate_metrics_for_hpos(
     new_agg_metrics = []
 
     # A.
-    for hpo, hpo_objects in hpo_dictionary:
+    for hpo, hpo_objects in hpo_dictionary.items():
 
         # B.
         for date in datetimes:
@@ -247,7 +248,8 @@ def create_aggregate_metrics_for_hpos(
 
                     for hpo_object in hpo_objects:
 
-                        tables_counted = []  # need to prevent double-counting
+                        # want to exclude device exposure for now
+                        tables_counted = ['Device Exposure']  # need to prevent double-counting
 
                         if hpo_object.date == date:
 
@@ -260,7 +262,7 @@ def create_aggregate_metrics_for_hpos(
                                 if (dqm.date == date and
                                     dqm.hpo == hpo and
                                     dqm.metric_type == metric) and \
-                                        (hpo.date == date) and \
+                                        (hpo_object.date == date) and \
                                         dqm.table not in tables_counted:
 
                                     table = dqm.table
