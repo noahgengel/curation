@@ -62,29 +62,71 @@ def create_aggregate_metric_master_function(
         that contain all of the 'aggregate metrics' to be displayed
     """
     if metric_choice in metrics_to_weight:
-        if sheet_output == 'table_sheets':
-            aggregate_metrics = create_weighted_aggregate_metrics_for_tables(
-                metric_dictionary=metric_dictionary,
-                datetimes=datetimes)
+        aggregate_metrics = create_weighted_aggregate_metrics(
+            sheet_output=sheet_output,
+            metric_dictionary=metric_dictionary,
+            datetimes=datetimes, hpo_dictionary=hpo_dictionary)
 
-        elif sheet_output == 'hpo_sheets':
-            aggregate_metrics = create_weighted_aggregate_metrics_for_hpos(
-                hpo_dictionary=hpo_dictionary,
-                datetimes=datetimes,
-                metric_dictionary=metric_dictionary)
-
-            agg_met_for_dates = create_aggregate_metric_for_dates(
-                aggregate_metrics=aggregate_metrics)
-
-            aggregate_metrics.append(agg_met_for_dates)
-
-        else:
-            raise Exception(
-                """Bad parameter input for function 
-                create_aggregate_master_function. Parameter provided
-                was: {param}""".format(param=sheet_output))
     else:  # FIXME: integration metrics - should not be weighted
         aggregate_metrics = []
+
+    return aggregate_metrics
+
+
+def create_weighted_aggregate_metrics(
+    sheet_output, metric_dictionary, datetimes, hpo_dictionary):
+    """
+    Function is used to create 'weighted' aggregate metrics that can
+    be useful in terms of data analysis
+
+    Parameters
+    ---------
+    metric_dictionary (dict): has the following structure
+        keys: all of the different metric_types possible
+        values: all of the HPO objects that
+            have that associated metric_type
+
+    hpo_dictionary (dict): has the following structure
+        keys: all of the different HPO IDs
+        values: all of the associated HPO objects that
+            have that associated HPO ID
+
+    sheet_output (string): determines the type of 'output'
+        to be generated (e.g. the sheets are HPOs or the
+        sheets are tables)
+
+    datetimes (list): list of datetime objects that
+        represent the dates of the files that are being
+        ingested
+
+    Returns
+    -------
+    aggregate_metrics (list): list of metrics objects
+        (AggregateMetricForTable or
+        AggregateMetricForHPO & AggregateMetricForDate)
+        that contain all of the 'aggregate metrics' to be displayed
+    """
+    if sheet_output == 'table_sheets':
+        aggregate_metrics = create_weighted_aggregate_metrics_for_tables(
+            metric_dictionary=metric_dictionary,
+            datetimes=datetimes)
+
+    elif sheet_output == 'hpo_sheets':
+        aggregate_metrics = create_weighted_aggregate_metrics_for_hpos(
+            hpo_dictionary=hpo_dictionary,
+            datetimes=datetimes,
+            metric_dictionary=metric_dictionary)
+
+        agg_met_for_dates = create_aggregate_metric_for_dates(
+            aggregate_metrics=aggregate_metrics)
+
+        aggregate_metrics.append(agg_met_for_dates)
+
+    else:
+        raise Exception(
+            """Bad parameter input for function 
+            create_aggregate_master_function. Parameter provided
+            was: {param}""".format(param=sheet_output))
 
     return aggregate_metrics
 
