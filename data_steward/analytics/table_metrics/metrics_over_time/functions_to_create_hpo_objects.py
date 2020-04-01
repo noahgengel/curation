@@ -94,12 +94,14 @@ def add_dqm_to_hpo_objects(dqm_objects, hpo_objects):
     for dqm in dqm_objects:
         hpo_name_for_metric = dqm.hpo
         metric_name = dqm.metric_type
+        date_for_metric = dqm.date
 
         for hpo in hpo_objects:
-            if hpo.name == hpo_name_for_metric:
-                hpo.add_metric_with_string(
-                    metric=metric_name,
-                    dq_object=dqm)
+            if hpo.name == hpo_name_for_metric and \
+               hpo.date == date_for_metric:
+                    hpo.add_metric_with_string(
+                        metric=metric_name,
+                        dq_object=dqm)
 
     return hpo_objects
 

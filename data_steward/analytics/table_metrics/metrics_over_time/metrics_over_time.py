@@ -236,7 +236,7 @@ def main():
         str = agg_met.return_attributes_str()
         print(str)
 
-        asfdjkl
+    asfdjkl
 
 if __name__ == "__main__":
     main()

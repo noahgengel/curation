@@ -310,13 +310,7 @@ class HPO:
         elif metric == 'Duplicate Records':
             for obj in self.duplicates:
                 if obj.table == table:
-
-                    # FIXME: add date parameter
                     succ_rate = obj.value
-
-                    if self.name == 'nyc_cornell':
-                        obj.print_dqd_attributes()
-                        print(succ_rate)
 
         elif metric == 'End Dates Preceding Start Dates':
             for obj in self.end_before_begin:
@@ -378,7 +372,7 @@ class HPO:
 
         if metric == 'Duplicate Records':
             rel_rows = succ_rate  # want to report out the total #
-            print(rel_rows)
+
         else:
             rel_rows = total_rows * (succ_rate / 100)
 

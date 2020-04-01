@@ -145,8 +145,6 @@ def create_aggregate_metrics_for_tables(
             hpo_object_list=hpo_object_list, metric_type=metric_type)
         # now we know the tables and dates for all of the metrics
 
-        hpos_counted = []  # need to prevent double-counting
-
         # B.
         for date in datetimes:
 
@@ -155,39 +153,36 @@ def create_aggregate_metrics_for_tables(
                 # to add to the new object's attributes
                 total_rows, pertinent_rows = 0, 0
 
+                hpos_counted = []  # need to prevent double-counting
+
                 # now we need to find the relevant DataQualityMetric objects
                 for hpo_object in hpo_object_list:
 
-                    relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
-                        metric=metric_type)
+                    if hpo_object.date == date:
 
-                    for dqm in relevant_dqms:
+                        relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
+                            metric=metric_type)
 
-                        # regardless of dqm.hpo
-                        # warrants 'counting' towards the metric to create
-                        if (dqm.metric_type == metric_type and
-                            dqm.date == date and
-                            dqm.table == table) and \
-                                (hpo_object.date == date) and \
-                                hpo_object.name not in hpos_counted:
+                        for dqm in relevant_dqms:
 
-                            hpo_pert_rows, hpo_total_rows = \
-                                hpo_object.use_table_name_to_find_rows(
-                                    table=table, metric=metric_type)
+                            # regardless of dqm.hpo
+                            # warrants 'counting' towards the metric to create
+                            if (dqm.metric_type == metric_type and
+                                dqm.date == date and
+                                dqm.table == table) and \
+                                    hpo_object.name not in hpos_counted:
 
-                            total_rows += hpo_total_rows
-                            pertinent_rows += hpo_pert_rows
+                                hpo_pert_rows, hpo_total_rows = \
+                                    hpo_object.use_table_name_to_find_rows(
+                                        table=table, metric=metric_type)
 
-                            if hpo_object.name == 'nyc_cornell':
-                                s = hpo_object.return_attributes_as_string()
-                                print(s)
-                                print(dqm.table)
-                                print(hpo_pert_rows)
-                                print(hpo_total_rows)
+                                total_rows += hpo_total_rows
+                                pertinent_rows += hpo_pert_rows
 
-                    hpos_counted.append(hpo_object.name)  # prevent from counting again
+                        hpos_counted.append(hpo_object.name)  # prevent from counting again
 
                 # actually create the metric - culled for all three dimensions
+
                 new_am = AggregateMetricForTable(
                     date=date, table_name=table, metric_type=metric_type,
                     num_total_rows=total_rows, num_pertinent_rows=pertinent_rows)
@@ -244,8 +239,6 @@ def create_aggregate_metrics_for_hpos(
             # C.
             for metric in metric_dictionary:
 
-                tables_counted = []  # need to prevent double-counting
-
                 total_rows, pertinent_rows = 0, 0
 
                 # need to specify - only check the relevant metric
@@ -253,30 +246,38 @@ def create_aggregate_metrics_for_hpos(
 
                     for hpo_object in hpo_objects:
 
-                        relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
-                            metric=metric)
+                        tables_counted = []  # need to prevent double-counting
 
-                        for dqm in relevant_dqms:
+                        if hpo_object.date == date:
 
-                            # regardless of dqm.table
-                            if (dqm.date == date and
-                                dqm.hpo == hpo and
-                                dqm.metric_type == metric) and \
-                                    (hpo.date == date) and \
-                                    dqm.table not in tables_counted:
+                            relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
+                                metric=metric)
 
-                                table = dqm.table
-                                metric_type = dqm.metric_type
+                            for dqm in relevant_dqms:
 
-                                hpo_pert_rows, hpo_total_rows = \
-                                    hpo_object.use_table_name_to_find_rows(
-                                        table=table, metric=metric_type)
+                                # regardless of dqm.table
+                                if (dqm.date == date and
+                                    dqm.hpo == hpo and
+                                    dqm.metric_type == metric) and \
+                                        (hpo.date == date) and \
+                                        dqm.table not in tables_counted:
 
-                                total_rows += hpo_total_rows
-                                pertinent_rows += hpo_pert_rows
+                                    table = dqm.table
+                                    metric_type = dqm.metric_type
 
-                                # prevent double counting
-                                tables_counted.append(dqm.table)
+                                    hpo_pert_rows, hpo_total_rows = \
+                                        hpo_object.use_table_name_to_find_rows(
+                                            table=table, metric=metric_type)
+
+                                    total_rows += hpo_total_rows
+                                    pertinent_rows += hpo_pert_rows
+
+                                    if total_rows.isnan():
+                                        s = hpo_object.return_attributes_as_string()
+                                        print(s)
+
+                                    # prevent double counting
+                                    tables_counted.append(dqm.table)
 
                 new_agg_metric = AggregateMetricForHPO(
                     date=date, hpo_name=hpo, metric_type=metric,
