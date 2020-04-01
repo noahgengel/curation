@@ -228,11 +228,9 @@ metric_type_to_english_dict = {
 }
 
 metrics_to_weight = [
-    'Unit Concept ID Success Rate', 'Route Concept ID Success Rate',
-    'End Dates Preceding Start Dates', 'Data After Death',
-    'Concept ID Success Rate', 'Duplicate Records'
-
-]
+    'measurement_units', 'drug_routes',
+    'end_before_begin', 'data_after_death',
+    'concept', 'duplicates']
 
 full_names = {
     "saou_uab_selma": "UAB Selma",

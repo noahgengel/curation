@@ -133,7 +133,7 @@ def create_dqm_objects_for_sheet(
 
 
 def create_dqm_list(dfs, file_names, datetimes, user_choice,
-    percent_bool, target_low):
+    percent_bool, target_low, hpo_names):
     """
     Function is used to create all of the possible 'DataQualityMetric'
     objects that are needed given all of the inputted data.
@@ -161,6 +161,10 @@ def create_dqm_list(dfs, file_names, datetimes, user_choice,
 
     target_low (bool): determines whether the number displayed should
         be considered a desirable or undesirable characteristic
+
+    hpo_names (list): list of the strings that should go
+        into an HPO ID column. for use in generating subsequent
+        dataframes.
 
     Return
     -------
@@ -248,7 +252,7 @@ def main():
     dqm_list = create_dqm_list(
         dfs=dfs, file_names=file_names, datetimes=datetimes,
         user_choice=user_choice, percent_bool=percent_bool,
-        target_low=target_low)
+        target_low=target_low, hpo_names=hpo_names)
 
     hpo_objects = create_hpo_objects(
         dqm_objects=dqm_list, file_names=file_names, datetimes=datetimes)
@@ -266,10 +270,6 @@ def main():
         hpo_dictionary=hpo_dictionary,
         sheet_output=sheet_output, datetimes=datetimes,
         metric_choice=user_choice)
-
-    for agg_met in aggregate_metrics:
-        str = agg_met.return_attributes_str()
-        print(str)
 
 
 if __name__ == "__main__":

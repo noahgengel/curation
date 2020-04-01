@@ -236,3 +236,33 @@ class AggregateMetricForDate:
                 2)
         except ZeroDivisionError:
             self.overall_rate = 0
+
+    def return_attributes_str(self):
+        """
+        Function is used to return a string that can easily
+        display the components of an AggregateMetricForDate
+        object.
+
+        Return
+        ------
+        attributes_str (string): displays all the components
+            of the AggregateMetricForDate object in an easily-
+            readable fashion.
+        """
+        time = self.date.strftime('%m/%d/%Y')
+
+        attributes_str = """
+        Date: {date}\n
+        Metric Type: {metric_type}\n
+        Number of Total Rows: {total_rows}\n
+        Number of Pertinent Rows: {pert_rows}\n
+        Overall Rate: {rate}\n
+        """.format(
+            date=time,
+            metric_type=self.metric_type,
+            total_rows=self.num_total_rows,
+            pert_rows=self.num_pertinent_rows,
+            rate=self.overall_rate
+        )
+
+        return attributes_str

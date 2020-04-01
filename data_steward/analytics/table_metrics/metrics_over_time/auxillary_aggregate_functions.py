@@ -35,7 +35,7 @@ def find_relevant_tables(
     tables_for_metric = []
 
     for hpo_object in hpo_object_list:
-        relevant_dqms= hpo_object.use_string_to_get_relevant_objects(
+        relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
             metric=metric_type)
 
         for dqm in relevant_dqms:
@@ -195,3 +195,42 @@ def cycle_through_dqms_for_table(
     hpos_counted.append(hpo_object.name)  # prevent from counting again
 
     return hpos_counted, total_rows, pertinent_rows
+
+
+def find_unique_dates_and_metrics(aggregate_metrics):
+    """
+    Function is used to find all of the unique dates
+    and metrics. Each date/metric combination should
+    warrant its own AggregateMetricForDate object.
+
+    Parameter
+    ---------
+    aggregate_metrics (list): contains AggregateMetricForHPO
+        objects that reflect each date, metric, and HPO combination
+        (regardless of table)
+
+    Return
+    ------
+    dates (list): list of the unique dates
+
+    metrics (list): list of the metric
+
+    agg_metrics_for_dates: blank list to add AggregateMetricForHPO
+        objects. will ultimately be the length of
+        len(dates) x len(metrics)
+    """
+    # C + D - determine the number to make
+    dates, metrics = [], []
+
+    for agg_hpo_metric in aggregate_metrics:
+        metric_date = agg_hpo_metric.date
+        metric_type = agg_hpo_metric.metric_type
+
+        if metric_date not in dates:
+            dates.append(metric_date)
+        if metric_type not in metrics:
+            metrics.append(metric_type)
+
+    agg_metrics_for_dates = []
+
+    return dates, metrics, agg_metrics_for_dates

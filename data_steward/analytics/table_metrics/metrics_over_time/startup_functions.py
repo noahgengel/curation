@@ -277,6 +277,10 @@ def startup(file_names):
     sheets (list): list of pandas dataframes. each dataframe contains
         info about data quality for all of the sites for a date. each
         index of the list should represent a particular date's metrics.
+
+    hpo_name_col (list): list of the strings that should go
+        into an HPO ID column. for use in generating subsequent
+        dataframes.
     """
     metric_choice, metric_is_percent, ideal_low = get_user_analysis_choice()
     sheets = load_files(metric_choice, file_names)

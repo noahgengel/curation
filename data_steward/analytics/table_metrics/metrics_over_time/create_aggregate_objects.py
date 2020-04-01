@@ -16,7 +16,8 @@ from aggregate_metric_classes import AggregateMetricForTable, \
 from dictionaries_lists_and_prompts import metrics_to_weight
 
 from auxillary_aggregate_functions import find_relevant_tables, \
-    cycle_through_dqms_for_table, cycle_through_dqms_for_hpo
+    cycle_through_dqms_for_table, cycle_through_dqms_for_hpo, \
+    find_unique_dates_and_metrics
 
 
 def create_aggregate_metric_master_function(
@@ -60,9 +61,6 @@ def create_aggregate_metric_master_function(
         AggregateMetricForHPO & AggregateMetricForDate)
         that contain all of the 'aggregate metrics' to be displayed
     """
-    # FIXME: need to change the 'aggregate metrics' for integration metrics
-    #  they should NOT be weighted by site/table row count
-
     if metric_choice in metrics_to_weight:
         if sheet_output == 'table_sheets':
             aggregate_metrics = create_weighted_aggregate_metrics_for_tables(
@@ -74,13 +72,19 @@ def create_aggregate_metric_master_function(
                 hpo_dictionary=hpo_dictionary,
                 datetimes=datetimes,
                 metric_dictionary=metric_dictionary)
+
+            agg_met_for_dates = create_aggregate_metric_for_dates(
+                aggregate_metrics=aggregate_metrics)
+
+            aggregate_metrics.append(agg_met_for_dates)
+
         else:
             raise Exception(
                 """Bad parameter input for function 
                 create_aggregate_master_function. Parameter provided
                 was: {param}""".format(param=sheet_output))
-    else:  # integration metrics
-        pass
+    else:  # FIXME: integration metrics - should not be weighted
+        aggregate_metrics = []
 
     return aggregate_metrics
 
@@ -235,3 +239,53 @@ def create_weighted_aggregate_metrics_for_hpos(
     return new_agg_metrics
 
 
+def create_aggregate_metric_for_dates(aggregate_metrics):
+    """
+    This function is designed to create a special 'total'
+    AggregateMetricForDate for a particular metric for each date.
+
+    This is intended to show the relative
+    count/success rate/failure rate:
+        a. across all tables
+        b. across all HPOs
+        c. on the same date
+        d. on the same metric type
+
+    Parameters
+    ----------
+    aggregate_metrics (list): contains AggregateMetricForHPO
+        objects that reflect each date, metric, and HPO combination
+        (regardless of table)
+
+    Return
+    ------
+    agg_metrics_for_dates (list): contains the
+        AggregateMetricForDate objects that we laid out above.
+    """
+    dates, metrics, agg_metrics_for_dates = \
+        find_unique_dates_and_metrics(aggregate_metrics=aggregate_metrics)
+
+    # should ultimately be len(dates) x len(metrics) AMFD objects
+    for date in dates:
+        for metric in metrics:
+            num_pertinent_rows, num_total_rows = 0, 0
+
+            # find the relevant metrics - add if relevant
+            for agg_hpo_metric in aggregate_metrics:
+                if agg_hpo_metric.date == date \
+                        and agg_hpo_metric.metric_type == metric:
+
+                    hpo_total_rows = agg_hpo_metric.num_total_rows
+                    hpo_pert_rows = agg_hpo_metric.num_pertinent_rows
+
+                    num_pertinent_rows += hpo_pert_rows
+                    num_total_rows += hpo_total_rows
+
+            amfd = AggregateMetricForDate(
+                date=date, metric_type=metric,
+                num_total_rows=num_total_rows,
+                num_pertinent_rows=num_pertinent_rows)
+
+            agg_metrics_for_dates.append(amfd)
+
+    return agg_metrics_for_dates
