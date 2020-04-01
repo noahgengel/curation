@@ -114,6 +114,80 @@ def find_relevant_tables(
     return tables_for_metric
 
 
+def cycle_through_dqms_for_table(
+    hpo_object, metric_type, date, table, hpos_counted,
+    total_rows, pertinent_rows):
+    """
+    Function is used once an HPO is found and warrants its own
+    AggregateMetricForHPO because it has a unique set of date
+    and metric parameters.
+
+    Parameters
+    ----------
+    hpo_object (HPO): object of class HPO that has all the
+        information we want to sort across (and ultimately
+        average across all of the applicable tables)
+
+    metric (string): represents the kind of metric that
+        is to be investigated (e.g. duplicates)
+
+    date (datetime): the datetime that should be unique
+        for the AggregateMetricForTable to be created.
+
+    hpo_name (string): name of the HPO object
+
+    hpos_counted (list): list of HPOs that should not
+        be counted in the 'overall tally'. this is used to
+        prevent the same HPO from being counted more than
+        once
+
+    total_rows (float): starts at zero. goal is to add the
+        total number of rows that span the
+        table across all of the HPOs
+
+    pertinent_rows (float): starts at zero. goal is to add
+        the total number of rows that either
+        contribute to either the 'success' or failure rate
+
+    Returns
+    -------
+    total_rows (float): total number of rows that span the
+        table across all of the HPOs
+
+    pertinent_rows (float): total number of rows that either
+        contribute to either the 'success' or failure rate
+
+    hpos_counted (list): list of HPOs that should not
+        be counted in the 'overall tally'. now also contains
+        the HPOs that contributed to the overall tally for
+        the particular HPO on the particular date
+    """
+
+    relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
+        metric=metric_type)
+
+    for dqm in relevant_dqms:
+
+        # regardless of dqm.hpo
+        # warrants 'counting' towards the metric to create
+        if (dqm.metric_type == metric_type and
+            dqm.date == date and
+            dqm.table == table) and \
+                hpo_object.name not in hpos_counted:
+
+            hpo_pert_rows, hpo_total_rows = \
+                hpo_object.use_table_name_to_find_rows(
+                    table=table, metric=metric_type)
+
+            # float conversion for consistency
+            total_rows += float(hpo_total_rows)
+            pertinent_rows += float(hpo_pert_rows)
+
+    hpos_counted.append(hpo_object.name)  # prevent from counting again
+
+    return hpos_counted, total_rows, pertinent_rows
+
+
 def create_aggregate_metrics_for_tables(
         metric_dictionary, datetimes):
     """
@@ -166,28 +240,14 @@ def create_aggregate_metrics_for_tables(
                 for hpo_object in hpo_object_list:
 
                     if hpo_object.date == date:
-
-                        relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
-                            metric=metric_type)
-
-                        for dqm in relevant_dqms:
-
-                            # regardless of dqm.hpo
-                            # warrants 'counting' towards the metric to create
-                            if (dqm.metric_type == metric_type and
-                                dqm.date == date and
-                                dqm.table == table) and \
-                                    hpo_object.name not in hpos_counted:
-
-                                hpo_pert_rows, hpo_total_rows = \
-                                    hpo_object.use_table_name_to_find_rows(
-                                        table=table, metric=metric_type)
-
-                                # float conversion for consistency
-                                total_rows += float(hpo_total_rows)
-                                pertinent_rows += float(hpo_pert_rows)
-
-                        hpos_counted.append(hpo_object.name)  # prevent from counting again
+                        hpos_counted, total_rows, pertinent_rows = \
+                            cycle_through_dqms_for_table(
+                                hpo_object=hpo_object,
+                                metric_type=metric_type,
+                                date=date, table=table,
+                                hpos_counted=hpos_counted,
+                                total_rows=total_rows,
+                                pertinent_rows=pertinent_rows)
 
                 # actually create the metric - culled for all three dimensions
 
