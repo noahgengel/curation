@@ -58,6 +58,38 @@ class AggregateMetricForTable:
             num_pertinent_rows/num_total_rows * 100,
             2)
 
+    def return_attributes_str(self):
+        """
+        Function is used to return a string that can easily
+        display the components of an AggregateMetricForTable
+        object.
+
+        Return
+        ------
+        attributes_str (string): displays all the components
+            of the AggregateMetricForTable object in an easily-
+            readable fashion.
+        """
+        time = self.date.strftime('%m/%d/%Y')
+
+        attributes_str = """
+        Table Name: {table_name}\n
+        Date: {date}\n
+        Metric Type: {metric_type}\n
+        Number of Total Rows: {total_rows}\n
+        Number of Pertinent Rows: {pert_rows}\n
+        Overall Rate: {rate}\n
+        """.format(
+            table_name=self.table_name,
+            date=time,
+            metric_type=self.metric_type,
+            total_rows=self.num_total_rows,
+            pert_rows=self.num_pertinent_rows,
+            rate=self.overall_rate
+        )
+
+        return attributes_str
+
 
 class AggregateMetricForHPO:
     """
@@ -111,6 +143,38 @@ class AggregateMetricForHPO:
             num_pertinent_rows/num_total_rows * 100,
             2)
         self.full_hpo_name = full_names[hpo_name]
+
+    def return_attributes_str(self):
+        """
+        Function is used to return a string that can easily
+        display the components of an AggregateMetricForHPO
+        object.
+
+        Return
+        ------
+        attributes_str (string): displays all the components
+            of the AggregateMetricForTable object in an easily-
+            readable fashion.
+        """
+        time = self.date.strftime('%m/%d/%Y')
+
+        attributes_str = """
+        Date: {date}\n
+        HPO Name: {hpo_name}\n
+        Metric Type: {metric_type}\n
+        Number of Total Rows: {total_rows}\n
+        Number of Pertinent Rows: {pert_rows}\n
+        Overall Rate: {rate}\n
+        """.format(
+            hpo_name=self.hpo_name,
+            date=time,
+            metric_type=self.metric_type,
+            total_rows=self.num_total_rows,
+            pert_rows=self.num_pertinent_rows,
+            rate=self.overall_rate
+        )
+
+        return attributes_str
 
 
 class AggregateMetricForDate:

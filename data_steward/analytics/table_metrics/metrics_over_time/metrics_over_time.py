@@ -57,7 +57,8 @@ from functions_to_create_hpo_objects import establish_hpo_objects, \
     add_dqm_to_hpo_objects, add_number_total_rows_for_hpo_and_date, \
     sort_hpos_into_dicts
 
-from create_aggregate_objects import create_aggregate_dqms
+from create_aggregate_objects import \
+    create_aggregate_metric_master_function
 
 
 def create_dqm_objects_for_sheet(
@@ -212,13 +213,21 @@ def main():
 
     metric_dictionary, hpo_dictionary = sort_hpos_into_dicts(
         hpo_objects=hpo_objects, hpo_names=hpo_names,
-        datetimes=datetimes)
+        user_choice=user_choice)
 
     sheet_output = understand_sheet_output_type(
-        hpo_objects=hpo_objects, hpo_names=hpo_names,
-        metric_type=user_choice)
+        hpo_objects=hpo_objects, hpo_names=hpo_names)
 
+    aggregate_metrics = create_aggregate_metric_master_function(
+        metric_dictionary=metric_dictionary,
+        hpo_dictionary=hpo_dictionary,
+        sheet_output=sheet_output, datetimes=datetimes)
 
+    for agg_met in aggregate_metrics:
+        str = agg_met.return_attributes_str()
+        print(str)
+
+        asfdjkl
 
 if __name__ == "__main__":
     main()

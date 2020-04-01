@@ -11,6 +11,7 @@ from functions_to_create_dqm_objects import find_hpo_row, \
     get_info
 import datetime
 
+from dictionaries_lists_and_prompts import metric_type_to_english_dict
 
 def establish_hpo_objects(dqm_objects):
     """
@@ -176,7 +177,7 @@ def add_number_total_rows_for_hpo_and_date(
 
 
 def sort_hpos_into_dicts(
-        hpo_objects, hpo_names):
+        hpo_objects, hpo_names, user_choice):
     """
     Function is used to sort the newly-created HPO objects
     into dictionaries where the keys can be used to access
@@ -197,13 +198,11 @@ def sort_hpos_into_dicts(
         put into dataframes (either as the titles of the
         dataframe or the rows of a dataframe)
 
+    user_choice (str): the data quality metric the user wants to
+        investigate
+
     Returns
     -------
-    metric_dictionary (dict): has the following structure
-        keys: all of the different metric_types possible
-        values: all of the HPO objects that
-            have that associated metric_type
-
     hpo_dictionary (dict): has the following structure
         keys: all of the different HPO IDs
         values: all of the associated HPO objects that
@@ -211,23 +210,30 @@ def sort_hpos_into_dicts(
     """
     # want to have an aggregate
     metrics_to_instantiate = []
-    metric_dictionary, hpo_dictionary, date_dict = \
-        {}, {}, {}
+    metric_dictionary, hpo_dictionary = {}, {}
+    metric = metric_type_to_english_dict[user_choice]
 
     # creating the keys for the metric dictionary
     for hpo_obj in hpo_objects:
-        hpo_metric = hpo_obj.metric_type
-        if hpo_metric not in metrics_to_instantiate:
-            metrics_to_instantiate.append(hpo_metric)
+        dqm_lst = hpo_obj.use_string_to_get_relevant_objects(
+            metric=metric)
+        for dqm in dqm_lst:
+            metric_type = dqm.metric_type
+            if metric_type not in metrics_to_instantiate:
+                metrics_to_instantiate.append(metric_type)
 
     # create the 'metric key' dictionary
     for metric_type in metrics_to_instantiate:
         relevant_hpo_objs = []
         for hpo_obj in hpo_objects:
-            hpo_metric = hpo_obj.metric_type
+            dqm_lst = hpo_obj.use_string_to_get_relevant_objects(
+                metric=metric)
 
-            if hpo_metric == metric_type:
-                relevant_hpo_objs.append(hpo_obj)
+            for dqm in dqm_lst:
+                dqm_metric = dqm.metric_type
+
+                if dqm_metric == metric_type:
+                    relevant_hpo_objs.append(hpo_obj)
 
         metric_dictionary[metric_type] = relevant_hpo_objs
 
