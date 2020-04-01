@@ -174,7 +174,7 @@ table_based_on_column_provided = {
     'observation': 'Observation',
     'observation_success_rate': 'Observation',
     'drug_success_rate': 'Drug Exposure',
-    'procedure_success_rate': 'Procedure',
+    'procedure_success_rate': 'Procedure Occurrence',
     'condition_success_rate': 'Condition Occurrence',
     'measurement_success_rate': 'Measurement',
     'visit_success_rate': 'Visit Occurrence'
