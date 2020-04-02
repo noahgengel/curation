@@ -195,7 +195,13 @@ table_based_on_column_provided = {
     'ccb': 'Drug Exposure',
     'diuretics': 'Drug Exposure',
 
-    'All_Measurements': 'Measurement'
+    # measurement integration columns
+    'All_Measurements': 'Measurement',
+    "Physical_Measurement": 'Measurement',
+    'CMP': 'Measurement',
+    'CBCwDiff': 'Measurement',
+    'CBC': 'Measurement',
+    'Lipid': 'Measurement'
 }
 
 data_quality_dimension_dict = {

@@ -127,8 +127,8 @@ def cycle_through_dqms_for_table(
     hpo_object, metric_type, date, table, hpos_counted,
     total_rows, pertinent_rows):
     """
-    Function is used once an HPO is found and warrants its own
-    AggregateMetricForHPO because it has a unique set of date
+    Function is used once an table is found and warrants its own
+    AggregateMetricForTable because it has a unique set of date
     and metric parameters.
 
     Parameters
@@ -139,6 +139,9 @@ def cycle_through_dqms_for_table(
 
     metric (string): represents the kind of metric that
         is to be investigated (e.g. duplicates)
+
+    table (string): the table whose 'aggregate metric'
+        is being calculated
 
     date (datetime): the datetime that should be unique
         for the AggregateMetricForTable to be created.
@@ -234,3 +237,71 @@ def find_unique_dates_and_metrics(aggregate_metrics):
     agg_metrics_for_dates = []
 
     return dates, metrics, agg_metrics_for_dates
+
+
+def get_stats_for_unweighted_table_aggregate_metric(
+    hpo_object, metric_type, date, table, hpos_counted,
+    unweighted_metrics_for_hpos):
+    """
+    Function is used once a table is found and warrants its own
+    AggregateMetricForTable because it has a unique set of date
+    and metric parameters.
+
+    NOTE: this is similar to 'cycle_through_dqms_for_table'
+        but DOES NOT give different weights to HPOs
+
+    Parameters
+    ----------
+    hpo_object (HPO): object of class HPO that has all the
+        information we want to sort across (and ultimately
+        average across all of the applicable tables)
+
+    metric_type (string): represents the kind of metric that
+        is to be investigated (e.g. duplicates)
+
+    date (datetime): the datetime that should be unique
+        for the AggregateMetricForTable to be created.
+
+    table (string): the table whose 'aggregate metric'
+        is being calculated
+
+    hpos_counted (list): list of HPOs that should not
+        be counted in the 'overall tally'. this is used to
+        prevent the same HPO from being counted more than
+        once
+
+    unweighted_metrics_for_hpos (list): growing list of
+        unweighted metrics (across all the HPOs) that
+        could be used for the ultimate calculation
+
+    Returns
+    -------
+    unweighted_metrics_for_hpos (list): list of the
+        DataQualityMetric objects' values. This will
+        eventually be averaged to create a 'total
+        unweighted' aggregate metric
+
+    hpos_counted (list): list of HPOs that should not
+        be counted in the 'overall tally'. now also contains
+        the HPOs that contributed to the overall tally for
+        the particular HPO on the particular date
+    """
+
+    relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
+        metric=metric_type)
+
+    for dqm in relevant_dqms:
+
+        # regardless of dqm.hpo
+        # warrants 'counting' towards the metric to create
+        if (dqm.metric_type == metric_type and
+            dqm.date == date and
+            dqm.table == table) and \
+                hpo_object.name not in hpos_counted:
+
+            value = dqm.value
+            unweighted_metrics_for_hpos.append(value)
+
+    hpos_counted.append(hpo_object.name)
+
+    return unweighted_metrics_for_hpos, hpos_counted
