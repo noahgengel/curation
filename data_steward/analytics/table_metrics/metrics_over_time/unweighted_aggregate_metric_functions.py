@@ -90,3 +90,81 @@ def create_unweighted_aggregate_metrics_for_tables(
     return new_agg_metrics
 
 
+def create_unweighted_aggregate_metrics_for_hpos(
+    hpo_dictionary, datetimes, metric_dictionary):
+    """
+    Function is intended to create 'aggregate' data quality
+    metrics that can be applied to a specific data quality metric
+    for a particular HPO (across all tables).
+
+    These metrics, however, should NOT be weighted. Each HPO
+    should contribute equally regardless of the number of
+    rows.
+
+    Parameters
+    ----------
+    hpo_dictionary (dict): has the following structure
+        keys: all of the different HPO IDs
+        values: all of the associated HPO objects that
+            have that associated HPO ID
+
+    datetimes (list): list of datetime objects that
+        represent the dates of the files that are being
+        ingested
+
+    metric_dictionary (dict): has the following structure
+        keys: all of the different metric_types possible
+        values: all of the HPO objects that
+            have that associated metric_type
+
+    Returns
+    -------
+    new_aggregate_metrics (list): contains AggregateMetricForHPO
+        objects that reflect each date, metric, and HPO combination
+        (regardless of table). Again, this is unweighted.
+    """
+
+    # create a metric type for each
+    #    a. HPO
+    #    b. date
+    #    b. metric
+
+    new_agg_metrics = []
+
+    # A.
+    for hpo, hpo_objects in hpo_dictionary.items():
+
+        # B.
+        for date in datetimes:
+
+            # C.
+            for metric in metric_dictionary:
+
+                total_rows, pertinent_rows = 0, 0
+
+                # need to specify - only check the relevant metric
+                if len(hpo_objects) > 0:
+
+                    for hpo_object in hpo_objects:
+
+                        # want to exclude device exposure for now
+                        tables_counted = ['Device Exposure']  # need to prevent double-counting
+
+                        if hpo_object.date == date:
+
+                            pass  # FIXME
+
+                # setting these equal to 0 to differentiate these as a metric
+                total_rows = 0
+                pertinent_rows = 0
+
+                new_agg_metric = AggregateMetricForHPO(
+                    date=date, hpo_name=hpo, metric_type=metric,
+                    num_total_rows=total_rows,
+                    num_pertinent_rows=pertinent_rows)
+
+                new_agg_metrics.append(new_agg_metric)
+
+    # finished the loop - now has all the aggregate metrics
+    return new_agg_metrics
+

@@ -70,12 +70,14 @@ def create_aggregate_metric_master_function(
 
     else:  # FIXME: integration metrics - should not be weighted
         aggregate_metrics = create_unweighted_aggregate_metrics(
+            sheet_output=sheet_output,
             metric_dictionary=metric_dictionary,
-            datetimes=datetimes)
+            datetimes=datetimes,
+            hpo_dictionary=hpo_dictionary)
 
-        for aggregate_metric in aggregate_metrics:
-            s = aggregate_metric.return_attributes_str()
-            print(s)
+    for aggregate_metric in aggregate_metrics:
+        s = aggregate_metric.return_attributes_str()
+        print(s)
 
         aggregate_metrics = []
 

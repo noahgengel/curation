@@ -19,6 +19,7 @@ from auxillary_aggregate_functions import find_relevant_tables, \
     find_unique_dates_and_metrics, \
     get_stats_for_unweighted_table_aggregate_metric
 
+
 def create_weighted_aggregate_metrics_for_tables(
     metric_dictionary, datetimes):
     """
@@ -93,6 +94,7 @@ def create_weighted_aggregate_metrics_for_tables(
 
     # finished the loop - now has all the aggregate metrics
     return new_agg_metrics
+
 
 def create_weighted_aggregate_metrics_for_hpos(
     hpo_dictionary, datetimes, metric_dictionary):
