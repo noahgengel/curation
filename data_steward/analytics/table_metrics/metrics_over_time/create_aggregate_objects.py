@@ -12,7 +12,8 @@ further information.
 
 from unweighted_aggregate_metric_functions import \
     create_unweighted_aggregate_metrics_for_tables, \
-    create_unweighted_aggregate_metrics_for_hpos
+    create_unweighted_aggregate_metrics_for_hpos, \
+    create_unweighted_aggregate_metric_for_dates
 
 from weighted_aggregate_metric_functions import \
     create_aggregate_metric_for_dates,\
@@ -69,7 +70,7 @@ def create_aggregate_metric_master_function(
             metric_dictionary=metric_dictionary,
             datetimes=datetimes, hpo_dictionary=hpo_dictionary)
 
-    else:  # FIXME: integration metrics - should not be weighted
+    else:
         aggregate_metrics = create_unweighted_aggregate_metrics(
             sheet_output=sheet_output,
             metric_dictionary=metric_dictionary,
@@ -185,6 +186,11 @@ def create_unweighted_aggregate_metrics(
         aggregate_metrics = create_unweighted_aggregate_metrics_for_hpos(
             hpo_dictionary=hpo_dictionary,
             datetimes=datetimes, metric_dictionary=metric_dictionary)
+
+        agg_met_for_dates = create_unweighted_aggregate_metric_for_dates(
+            aggregate_metrics=aggregate_metrics)
+
+        aggregate_metrics.append(agg_met_for_dates)
 
     else:
         raise Exception(

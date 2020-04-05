@@ -15,7 +15,8 @@ from aggregate_metric_classes import AggregateMetricForTable, \
 
 from auxillary_aggregate_functions import find_relevant_tables, \
     get_stats_for_unweighted_table_aggregate_metric, \
-    get_stats_for_unweighted_hpo_aggregate_metric
+    get_stats_for_unweighted_hpo_aggregate_metric, \
+    find_unique_dates_and_metrics
 
 
 def create_unweighted_aggregate_metrics_for_tables(
@@ -180,3 +181,66 @@ def create_unweighted_aggregate_metrics_for_hpos(
     # finished the loop - now has all the aggregate metrics
     return new_agg_metrics
 
+
+def create_unweighted_aggregate_metric_for_dates(
+        aggregate_metrics):
+    """
+    This function is designed to create a special 'total'
+    AggregateMetricForDate for a particular metric for each date.
+
+    This is intended to show the relative
+    count/success rate/failure rate:
+        a. across all tables
+        b. across all HPOs
+        c. on the same date
+        d. on the same metric type
+
+    This 'unweighted' metric is intended to not give more
+    preference to either tables or HPOs that have higher
+    row counts.
+
+    Parameters
+    ----------
+    aggregate_metrics (list): contains AggregateMetricForHPO
+        objects that reflect each date, metric, and HPO combination
+        (regardless of table). These are 'unweighted' objects and
+        have 0s for their 'pertinent' and 'total' row counts.
+
+    Return
+    ------
+    agg_metrics_for_dates (list): contains the
+        AggregateMetricForDate objects that we laid out above.
+    """
+    dates, metrics, agg_metrics_for_dates = \
+        find_unique_dates_and_metrics(aggregate_metrics=aggregate_metrics)
+
+    # should ultimately be len(dates) x len(metrics) AMFD objects
+    for date in dates:
+        for metric in metrics:
+
+            # set these as 0s to delineate that these are 'unweighted'
+            num_total_rows, num_pertinent_rows = 0, 0
+            values = []  # collect all of the values
+
+            # find the relevant metrics - add if relevant
+            for agg_hpo_metric in aggregate_metrics:
+                if agg_hpo_metric.date == date \
+                        and agg_hpo_metric.metric_type == metric:
+
+                    value_for_hpo = agg_hpo_metric.value
+
+                    values.append(value_for_hpo)
+
+            # here's where the 'unweighted' aspect comes in - simple mean
+            overall_rate = sum(values) / len(values)
+
+            amfd = AggregateMetricForDate(
+                date=date, metric_type=metric,
+                num_total_rows=num_total_rows,
+                num_pertinent_rows=num_pertinent_rows)
+
+            amfd.manually_set_overall_rate(rate=overall_rate)
+
+            agg_metrics_for_dates.append(amfd)
+
+    return agg_metrics_for_dates
