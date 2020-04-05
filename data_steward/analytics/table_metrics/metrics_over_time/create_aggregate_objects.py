@@ -11,7 +11,8 @@ further information.
 """
 
 from unweighted_aggregate_metric_functions import \
-    create_unweighted_aggregate_metrics_for_tables
+    create_unweighted_aggregate_metrics_for_tables, \
+    create_unweighted_aggregate_metrics_for_hpos
 
 from weighted_aggregate_metric_functions import \
     create_aggregate_metric_for_dates,\
@@ -181,7 +182,9 @@ def create_unweighted_aggregate_metrics(
             datetimes=datetimes)
 
     elif sheet_output == 'hpo_sheets':
-        pass
+        aggregate_metrics = create_unweighted_aggregate_metrics_for_hpos(
+            hpo_dictionary=hpo_dictionary,
+            datetimes=datetimes, metric_dictionary=metric_dictionary)
 
     else:
         raise Exception(

@@ -305,3 +305,75 @@ def get_stats_for_unweighted_table_aggregate_metric(
     hpos_counted.append(hpo_object.name)
 
     return unweighted_metrics_for_hpos, hpos_counted
+
+
+def get_stats_for_unweighted_hpo_aggregate_metric(
+    hpo_object, metric, date, hpo_name,
+    tables_counted, statistics_to_average):
+    """
+    Function is used once an HPO is found and warrants its own
+    AggregateMetricForHPO because it has a unique set of date
+    and metric parameters.
+
+    This function, however, differs from
+    cycle_through_dqms_for_hpo in that it weights all of the
+    different classes equally. The other function instead
+    creates an 'aggregate' metric and weights the tables
+    / categories by their relative row contributions.
+
+    Parameters
+    ----------
+    hpo_object (HPO): object of class HPO that has all the
+        information we want to sort across (and ultimately
+        average across all of the applicable tables)
+
+    metric (string): represents the kind of metric that
+        is to be investigated (e.g. duplicates)
+
+    date (datetime): the datetime that should be unique
+        for the AggregateMetricForHPO to be created.
+
+    hpo_name (string): name of the HPO object
+
+    tables_counted (list): list of tables that should not
+        be counted in the 'overall tally'. this is used to
+        prevent the same table from being counted more than
+        once
+
+    statistics_to_average (list): list of the 'values'
+        associated with various DQM objects. this is
+        to grow across the metric (through all tables)
+        for the HPO.
+
+    Returns
+    -------
+    statistics_to_average (list): list of the 'values'
+        associated with the HPO object for the relevant
+        data quality metrics. these will all ultimately
+        be averaged to create an 'aggregate unweighted'
+        data quality metric for the HPO.
+
+    tables_counted (list): list of tables that should not
+        be counted in the 'overall tally'. now also contains
+        the tables that contributed to the overall tally for
+        the particular HPO on the particular date
+    """
+    relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
+                                metric=metric)
+
+    for dqm in relevant_dqms:
+
+        # regardless of dqm.table
+        if (dqm.date == date and
+            dqm.hpo == hpo_name and
+            dqm.metric_type == metric) and \
+                (hpo_object.date == date) and \
+                dqm.table not in tables_counted:
+
+            # add the value
+            statistics_to_average.append(dqm.value)
+
+            # prevent double counting
+            tables_counted.append(dqm.table)
+
+    return statistics_to_average, tables_counted

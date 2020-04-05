@@ -14,9 +14,8 @@ from aggregate_metric_classes import AggregateMetricForTable, \
 
 
 from auxillary_aggregate_functions import find_relevant_tables, \
-    cycle_through_dqms_for_table, cycle_through_dqms_for_hpo, \
-    find_unique_dates_and_metrics, \
-    get_stats_for_unweighted_table_aggregate_metric
+    get_stats_for_unweighted_table_aggregate_metric, \
+    get_stats_for_unweighted_hpo_aggregate_metric
 
 
 def create_unweighted_aggregate_metrics_for_tables(
@@ -140,28 +139,41 @@ def create_unweighted_aggregate_metrics_for_hpos(
             # C.
             for metric in metric_dictionary:
 
-                total_rows, pertinent_rows = 0, 0
+                # where all of the statistics for the metric
+                # (across all tables) will be housed
+                statistics_to_average = []
 
                 # need to specify - only check the relevant metric
                 if len(hpo_objects) > 0:
 
                     for hpo_object in hpo_objects:
 
+                        # tables_counted to avoid double-counting
                         # want to exclude device exposure for now
-                        tables_counted = ['Device Exposure']  # need to prevent double-counting
+                        tables_counted = ['Device Exposure']
 
                         if hpo_object.date == date:
 
-                            pass  # FIXME
+                            statistics_to_average, tables_counted = \
+                                get_stats_for_unweighted_hpo_aggregate_metric(
+                                    hpo_object=hpo_object, metric=metric,
+                                    date=date, hpo_name=hpo.name,
+                                    tables_counted=tables_counted,
+                                    statistics_to_average=statistics_to_average)
 
                 # setting these equal to 0 to differentiate these as a metric
-                total_rows = 0
-                pertinent_rows = 0
+                total_rows, pertinent_rows = 0, 0
+
+                # here's where the 'unweighted' aspect comes in - simple mean
+                overall_rate = sum(statistics_to_average) / len(statistics_to_average)
 
                 new_agg_metric = AggregateMetricForHPO(
                     date=date, hpo_name=hpo, metric_type=metric,
                     num_total_rows=total_rows,
                     num_pertinent_rows=pertinent_rows)
+
+                new_agg_metric.manually_set_overall_rate(
+                    rate=overall_rate)
 
                 new_agg_metrics.append(new_agg_metric)
 

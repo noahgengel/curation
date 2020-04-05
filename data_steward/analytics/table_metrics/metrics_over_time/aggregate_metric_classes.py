@@ -200,6 +200,23 @@ class AggregateMetricForHPO:
 
         return attributes_str
 
+    def manually_set_overall_rate(self, rate):
+        """
+        Function is used to manually set the overall rate
+        for the AggregateMetricForHPO. This is a function
+        that is useful when the pertinent rows and total
+        rows are not informative to the 'overall' rate (namely
+        in instances where the aggregate metric is weighted
+        equally across all of the HPOs).
+
+        Parameters
+        ----------
+        rate (float): the value to set as the overall rate
+            for the AggregateMetricForTable object
+        """
+        self.overall_rate = rate
+
+
 
 class AggregateMetricForDate:
     """
