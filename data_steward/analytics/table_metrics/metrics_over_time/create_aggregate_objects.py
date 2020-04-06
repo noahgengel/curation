@@ -148,7 +148,7 @@ def create_unweighted_aggregate_metrics(
     sheet_output, metric_dictionary, datetimes, hpo_dictionary):
     """
     Function is used to create 'weighted' aggregate metrics that can
-    be useful in terms of data =analysis
+    be useful in terms of data analysis.
 
     Parameters
     ---------
@@ -178,23 +178,6 @@ def create_unweighted_aggregate_metrics(
         that contain all of the 'aggregate metrics' to be displayed
     """
     if sheet_output == 'table_sheets':
-
-        #FIXME: Seems like not instantiating DQM objects properly
-        #FIXME: The tables that are associated with the DQM objects
-        #are always 'drug exposure' rather than the class of ingredient
-
-        for metric_value, hpo_list in metric_dictionary.items():
-            for hpo in hpo_list:
-                ingredient_metrics = hpo.use_string_to_get_relevant_objects(
-                    metric='Drug Ingredient Integration')
-
-                print(len(ingredient_metrics))
-
-                for met in ingredient_metrics:
-                    met.print_dqd_attributes()
-
-                iuefiou
-
         aggregate_metrics = create_unweighted_aggregate_metrics_for_tables(
             metric_dictionary=metric_dictionary,
             datetimes=datetimes)

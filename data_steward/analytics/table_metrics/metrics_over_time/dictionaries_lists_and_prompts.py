@@ -183,25 +183,25 @@ table_based_on_column_provided = {
     'total_route_success_rate': 'Drug Exposure',
 
     # drug integration columns
-    'all_drugs': 'Drug Exposure',
-    'ace_inhibitors': 'Drug Exposure',
-    'painnsaids': 'Drug Exposure',
-    'msknsaids': 'Drug Exposure',
-    'statins': 'Drug Exposure',
-    'antibiotics': 'Drug Exposure',
-    'opioids': 'Drug Exposure',
-    'oralhypoglycemics': 'Drug Exposure',
-    'vaccine': 'Drug Exposure',
-    'ccb': 'Drug Exposure',
-    'diuretics': 'Drug Exposure',
+    'all_drugs': 'All Drugs',
+    'ace_inhibitors': 'ACE Inhibitors',
+    'painnsaids': 'Pain NSAIDS',
+    'msknsaids': 'MSK NSAIDS',
+    'statins': 'Statins',
+    'antibiotics': 'Antibiotics',
+    'opioids': 'Opioids',
+    'oralhypoglycemics': 'Oral Hypoglycemics',
+    'vaccine': 'Vaccine',
+    'ccb': 'Calcium Channel Blockers',
+    'diuretics': 'Diuretics',
 
     # measurement integration columns
-    'All_Measurements': 'Measurement',
-    "Physical_Measurement": 'Measurement',
-    'CMP': 'Measurement',
-    'CBCwDiff': 'Measurement',
-    'CBC': 'Measurement',
-    'Lipid': 'Measurement'
+    'All_Measurements': 'All Measurements',
+    "Physical_Measurement": 'Physical Measurements',
+    'CMP': 'Comprehensive Metabolic Panel',
+    'CBCwDiff': 'Complete Blood Count (CBC) with Differential',
+    'CBC': 'Complete Blood Count (CBC)',
+    'Lipid': 'Lipid'
 }
 
 data_quality_dimension_dict = {
