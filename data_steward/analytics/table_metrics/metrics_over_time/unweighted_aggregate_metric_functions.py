@@ -14,7 +14,8 @@ from aggregate_metric_classes import \
     AggregateMetricForHPO, AggregateMetricForDate
 
 
-from auxillary_aggregate_functions import find_relevant_tables, \
+from auxillary_aggregate_functions import \
+    find_relevant_tables_or_classes, \
     get_stats_for_unweighted_table_aggregate_metric, \
     get_stats_for_unweighted_hpo_aggregate_metric, \
     find_unique_dates_and_metrics
@@ -51,7 +52,7 @@ def create_unweighted_aggregate_metrics_for_tables(
     # A - really will only go into for applicable metric
     for metric_type, hpo_object_list in metric_dictionary.items():
 
-        tables_for_metric = find_relevant_tables(
+        tables_for_metric = find_relevant_tables_or_classes(
             hpo_object_list=hpo_object_list, metric_type=metric_type)
         # now we know the tables and dates for all of the metrics
 
@@ -85,7 +86,7 @@ def create_unweighted_aggregate_metrics_for_tables(
                     overall_rate = sum(unweighted_metrics_for_hpos) / len(unweighted_metrics_for_hpos)
 
                     new_uw_agg_metric = AggregateMetricForTableOrClass(
-                        date=date, table_or_class=table_or_class, metric_type=metric_type,
+                        date=date, table_or_class_name=table_or_class, metric_type=metric_type,
                         num_total_rows=total_rows, num_pertinent_rows=pertinent_rows)
 
                     new_uw_agg_metric.manually_set_overall_rate(rate=overall_rate)
@@ -164,7 +165,7 @@ def create_unweighted_aggregate_metrics_for_hpos(
                             tables_and_classes_counted = \
                                 get_stats_for_unweighted_hpo_aggregate_metric(
                                     hpo_object=hpo_object, metric=metric,
-                                    date=date, hpo_name=hpo.name,
+                                    date=date, hpo_name=hpo_object.name,
                                     tables_and_classes_counted=tables_and_classes_counted,
                                     statistics_to_average=statistics_to_average)
 
@@ -233,7 +234,7 @@ def create_unweighted_aggregate_metric_for_dates(
                 if agg_hpo_metric.date == date \
                         and agg_hpo_metric.metric_type == metric:
 
-                    value_for_hpo = agg_hpo_metric.value
+                    value_for_hpo = agg_hpo_metric.overall_rate
 
                     values.append(value_for_hpo)
 

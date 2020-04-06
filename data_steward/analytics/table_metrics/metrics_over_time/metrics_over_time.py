@@ -120,10 +120,11 @@ def create_dqm_objects_for_sheet(
 
         # for each table / class (column) in the dataframe
         for table, data in data_dict.items():
-            table_name = table_based_on_column_provided[table]
+            table_or_class_name = table_based_on_column_provided[table]
 
             new_dqm_object = DataQualityMetric(
-                hpo=name, table=table_name, metric_type=metric_type,
+                hpo=name, table_or_class=table_or_class_name,
+                metric_type=metric_type,
                 value=data, data_quality_dimension=dqm_type,
                 date=date)
 
@@ -270,9 +271,6 @@ def main():
         hpo_dictionary=hpo_dictionary,
         sheet_output=sheet_output, datetimes=datetimes,
         metric_choice=user_choice)
-
-    for am in aggregate_metrics:
-
 
 
 if __name__ == "__main__":

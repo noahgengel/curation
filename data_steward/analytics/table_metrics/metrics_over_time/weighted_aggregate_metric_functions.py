@@ -66,7 +66,7 @@ def create_weighted_aggregate_metrics_for_tables(
         for date in datetimes:
 
             # C
-            for table_or_class in tables_or_classes_for_metric:
+            for table_or_class_name in tables_or_classes_for_metric:
                 # to add to the new object's attributes
                 total_rows, pertinent_rows = 0, 0
 
@@ -81,7 +81,7 @@ def create_weighted_aggregate_metrics_for_tables(
                                 hpo_object=hpo_object,
                                 metric_type=metric_type,
                                 date=date,
-                                table_or_class=table_or_class,
+                                table_or_class=table_or_class_name,
                                 hpos_counted=hpos_counted,
                                 total_rows=total_rows,
                                 pertinent_rows=pertinent_rows)
@@ -89,7 +89,7 @@ def create_weighted_aggregate_metrics_for_tables(
                 # actually create the metric - culled for all three dimensions
 
                 new_am = AggregateMetricForTableOrClass(
-                    date=date, table_or_class=table_or_class, metric_type=metric_type,
+                    date=date, table_or_class_name=table_or_class_name, metric_type=metric_type,
                     num_total_rows=total_rows, num_pertinent_rows=pertinent_rows)
 
                 new_agg_metrics.append(new_am)
@@ -152,7 +152,7 @@ def create_weighted_aggregate_metrics_for_hpos(
                     for hpo_object in hpo_objects:
 
                         # want to exclude device exposure for now
-                        tables_counted = ['Device Exposure']  # need to prevent double-counting
+                        tables_or_classes_counted = ['Device Exposure']  # need to prevent double-counting
 
                         if hpo_object.date == date:
 
@@ -160,7 +160,8 @@ def create_weighted_aggregate_metrics_for_hpos(
                                 cycle_through_dqms_for_hpo(
                                     hpo_object=hpo_object, metric=metric,
                                     date=date, hpo_name=hpo_object.name,
-                                    tables_counted=tables_counted,
+                                    tables_or_classes_counted=
+                                    tables_or_classes_counted,
                                     total_rows=total_rows,
                                     pertinent_rows=pertinent_rows)
 

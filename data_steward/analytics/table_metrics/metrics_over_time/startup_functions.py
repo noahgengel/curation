@@ -313,7 +313,7 @@ def understand_sheet_output_type(hpo_objects, hpo_names, analytics_type):
         distinct site or distinct table) will serve as a
         'anchor' to separate out the sheets
     """
-    tables = []
+    tables_or_classes = []
 
     # convert to 'human readable' form
     analytics_type = metric_type_to_english_dict[analytics_type]
@@ -323,10 +323,10 @@ def understand_sheet_output_type(hpo_objects, hpo_names, analytics_type):
             metric=analytics_type)
 
         for dqm in relevant_dqm_objects:
-            if dqm.table not in tables:
-                tables.append(dqm.table)
+            if dqm.table_or_class not in tables_or_classes:
+                tables_or_classes.append(dqm.table_or_class)
 
-    num_names, num_tables = (len(hpo_names) + 1), (len(tables))
+    num_names, num_tables = (len(hpo_names) + 1), (len(tables_or_classes))
 
     output_prompt = \
         "\nWould you prefer to generate: \n" \
