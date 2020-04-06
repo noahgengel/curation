@@ -13,7 +13,7 @@ be able to store information about
 from dictionaries_lists_and_prompts import full_names
 
 
-class AggregateMetricForTable:
+class AggregateMetricForTableOrClass:
     """
     Class is intended to store information regarding data quality
     across what would normally be triaged across many different
@@ -24,7 +24,7 @@ class AggregateMetricForTable:
         for a particular table
     """
     def __init__(
-            self, date, table_name, metric_type,
+            self, date, table_or_class_name, metric_type,
             num_total_rows, num_pertinent_rows):
         """
         Initializes the attributes of the class.
@@ -35,8 +35,10 @@ class AggregateMetricForTable:
             other words, the corresponding analytics
             report from which it hails)
 
-        table_name (string): name of the table whose data quality
-            metric is being determined (e.g. Measurement)
+        table_or_class_name (string): name of the table
+            or class whose data quality metric is
+            being determined (e.g. Measurement,
+            ACE Inhibitor)
 
         metric_type (string): name of the metric that is being
             determined (e.g. duplicates)
@@ -50,7 +52,7 @@ class AggregateMetricForTable:
             for the particular date
         """
         self.date = date
-        self.table_name = table_name
+        self.table_or_class_name = table_or_class_name
         self.metric_type = metric_type
         self.num_total_rows = num_total_rows
         self.num_pertinent_rows = num_pertinent_rows
@@ -71,14 +73,14 @@ class AggregateMetricForTable:
         time = self.date.strftime('%m/%d/%Y')
 
         attributes_str = """
-        Table Name: {table_name}\n
+        Table/Class Name: {table_or_class_name}\n
         Date: {date}\n
         Metric Type: {metric_type}\n
         Number of Total Rows: {total_rows}\n
         Number of Pertinent Rows: {pert_rows}\n
         Overall Rate: {rate}\n
         """.format(
-            table_name=self.table_name,
+            table_or_class_name=self.table_or_class_name,
             date=time,
             metric_type=self.metric_type,
             total_rows=self.num_total_rows,

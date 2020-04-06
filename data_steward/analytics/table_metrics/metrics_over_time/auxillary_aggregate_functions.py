@@ -6,7 +6,7 @@ file remains uncluttered and readable.
 """
 
 
-def find_relevant_tables(
+def find_relevant_tables_or_classes(
     hpo_object_list, metric_type):
     """
     This function is used to find the tables that should be
@@ -32,23 +32,23 @@ def find_relevant_tables(
     """
 
     # need to create tables for each metric - varies by metric
-    tables_for_metric = []
+    tables_or_classes_for_metric = []
 
     for hpo_object in hpo_object_list:
         relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
             metric=metric_type)
 
         for dqm in relevant_dqms:
-            table = dqm.table
+            table_or_class = dqm.table_or_class
 
-            if table not in tables_for_metric:
-                tables_for_metric.append(table)
+            if table_or_class not in tables_or_classes_for_metric:
+                tables_or_classes_for_metric.append(table_or_class)
 
-    return tables_for_metric
+    return tables_or_classes_for_metric
 
 
 def cycle_through_dqms_for_hpo(
-    hpo_object, metric, date, hpo_name, tables_counted,
+    hpo_object, metric, date, hpo_name, tables_or_classes_counted,
     total_rows, pertinent_rows):
     """
     Function is used once an HPO is found and warrants its own
@@ -69,10 +69,10 @@ def cycle_through_dqms_for_hpo(
 
     hpo_name (string): name of the HPO object
 
-    tables_counted (list): list of tables that should not
-        be counted in the 'overall tally'. this is used to
-        prevent the same table from being counted more than
-        once
+    tables_or_classes_counted (list): list of tables that
+        should not be counted in the 'overall tally'. 
+        this is used to prevent the same table from being
+        counted more than once
 
     total_rows (float): starts at zero. goal is to add the
         total number of rows that span the
@@ -100,31 +100,32 @@ def cycle_through_dqms_for_hpo(
 
     for dqm in relevant_dqms:
 
-        # regardless of dqm.table
+        # regardless of dqm.table_or_class
         if (dqm.date == date and
             dqm.hpo == hpo_name and
             dqm.metric_type == metric) and \
                 (hpo_object.date == date) and \
-                dqm.table not in tables_counted:
+                dqm.table_or_class not in tables_or_classes_counted:
 
-            table = dqm.table
+            table_or_class = dqm.table_or_class
             metric_type = dqm.metric_type
 
             hpo_pert_rows, hpo_total_rows = \
-                hpo_object.use_table_name_to_find_rows(
-                    table=table, metric=metric_type)
+                hpo_object.use_table_or_class_name_to_find_rows(
+                    table_or_class=table_or_class,
+                    metric=metric_type)
 
             total_rows += float(hpo_total_rows)
             pertinent_rows += float(hpo_pert_rows)
 
             # prevent double counting
-            tables_counted.append(dqm.table)
+            tables_or_classes_counted.append(dqm.table_or_class)
 
-    return total_rows, pertinent_rows, tables_counted
+    return total_rows, pertinent_rows, tables_or_classes_counted
 
 
 def cycle_through_dqms_for_table(
-    hpo_object, metric_type, date, table, hpos_counted,
+    hpo_object, metric_type, date, table_or_class, hpos_counted,
     total_rows, pertinent_rows):
     """
     Function is used once an table is found and warrants its own
@@ -140,11 +141,13 @@ def cycle_through_dqms_for_table(
     metric (string): represents the kind of metric that
         is to be investigated (e.g. duplicates)
 
-    table (string): the table whose 'aggregate metric'
-        is being calculated
+    table_or_class (string): the table or class whose
+        'aggregate metric' is being calculated
+        (e.g. 'Drug Exposure' or 'ACE Inhibitor')
 
     date (datetime): the datetime that should be unique
-        for the AggregateMetricForTable to be created.
+        for the AggregateMetricForTableOrClass
+        to be created.
 
     hpo_name (string): name of the HPO object
 
@@ -184,12 +187,13 @@ def cycle_through_dqms_for_table(
         # warrants 'counting' towards the metric to create
         if (dqm.metric_type == metric_type and
             dqm.date == date and
-            dqm.table == table) and \
+            dqm.table_or_class == table_or_class) and \
                 hpo_object.name not in hpos_counted:
 
             hpo_pert_rows, hpo_total_rows = \
-                hpo_object.use_table_name_to_find_rows(
-                    table=table, metric=metric_type)
+                hpo_object.use_table_or_class_name_to_find_rows(
+                    table_or_class=table_or_class,
+                    metric=metric_type)
 
             # float conversion for consistency
             total_rows += float(hpo_total_rows)
@@ -240,8 +244,8 @@ def find_unique_dates_and_metrics(aggregate_metrics):
 
 
 def get_stats_for_unweighted_table_aggregate_metric(
-    hpo_object, metric_type, date, table, hpos_counted,
-    unweighted_metrics_for_hpos):
+    hpo_object, metric_type, date, table_or_class,
+    hpos_counted, unweighted_metrics_for_hpos):
     """
     Function is used once a table is found and warrants its own
     AggregateMetricForTable because it has a unique set of date
@@ -262,8 +266,8 @@ def get_stats_for_unweighted_table_aggregate_metric(
     date (datetime): the datetime that should be unique
         for the AggregateMetricForTable to be created.
 
-    table (string): the table whose 'aggregate metric'
-        is being calculated
+    table_or_class (string): the table whose 'aggregate
+        metric' is being calculated
 
     hpos_counted (list): list of HPOs that should not
         be counted in the 'overall tally'. this is used to
@@ -296,7 +300,7 @@ def get_stats_for_unweighted_table_aggregate_metric(
         # warrants 'counting' towards the metric to create
         if (dqm.metric_type == metric_type and
             dqm.date == date and
-            dqm.table == table) and \
+            dqm.table_or_class == table_or_class) and \
                 hpo_object.name not in hpos_counted:
 
             value = dqm.value
@@ -309,7 +313,7 @@ def get_stats_for_unweighted_table_aggregate_metric(
 
 def get_stats_for_unweighted_hpo_aggregate_metric(
     hpo_object, metric, date, hpo_name,
-    tables_counted, statistics_to_average):
+    tables_and_classes_counted, statistics_to_average):
     """
     Function is used once an HPO is found and warrants its own
     AggregateMetricForHPO because it has a unique set of date
@@ -353,27 +357,28 @@ def get_stats_for_unweighted_hpo_aggregate_metric(
         be averaged to create an 'aggregate unweighted'
         data quality metric for the HPO.
 
-    tables_counted (list): list of tables that should not
-        be counted in the 'overall tally'. now also contains
-        the tables that contributed to the overall tally for
-        the particular HPO on the particular date
+    tables_and_classes_counted (list): list of tables that
+        should not be counted in the 'overall tally'.
+        now also contains the tables that contributed to
+        the overall tally for the particular HPO on the
+        particular date
     """
     relevant_dqms = hpo_object.use_string_to_get_relevant_objects(
                                 metric=metric)
 
     for dqm in relevant_dqms:
 
-        # regardless of dqm.table
+        # regardless of dqm.table_or_class
         if (dqm.date == date and
             dqm.hpo == hpo_name and
             dqm.metric_type == metric) and \
                 (hpo_object.date == date) and \
-                dqm.table not in tables_counted:
+                dqm.table_or_class not in tables_and_classes_counted:
 
             # add the value
             statistics_to_average.append(dqm.value)
 
             # prevent double counting
-            tables_counted.append(dqm.table)
+            tables_and_classes_counted.append(dqm.table_or_class)
 
-    return statistics_to_average, tables_counted
+    return statistics_to_average, tables_and_classes_counted

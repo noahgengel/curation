@@ -9,7 +9,8 @@ the create_aggregate_objects file and harness many of the
 functions in the auxillary_aggregate_functions file.
 """
 
-from aggregate_metric_classes import AggregateMetricForTable, \
+from aggregate_metric_classes import \
+    AggregateMetricForTableOrClass, \
     AggregateMetricForHPO, AggregateMetricForDate
 
 
@@ -58,7 +59,7 @@ def create_unweighted_aggregate_metrics_for_tables(
         for date in datetimes:
 
             # C
-            for table in tables_for_metric:
+            for table_or_class in tables_for_metric:
 
                 # need to specify - only check the relevant metric
                 if len(hpo_object_list) > 0:
@@ -72,7 +73,8 @@ def create_unweighted_aggregate_metrics_for_tables(
                             get_stats_for_unweighted_table_aggregate_metric(
                                 hpo_object=hpo_object,
                                 metric_type=metric_type, date=date,
-                                table=table, hpos_counted=hpos_counted,
+                                table_or_class=table_or_class,
+                                hpos_counted=hpos_counted,
                                 unweighted_metrics_for_hpos=unweighted_metrics_for_hpos)
 
                     # setting these equal to 0 to differentiate these as a metric
@@ -82,8 +84,8 @@ def create_unweighted_aggregate_metrics_for_tables(
                     # here's where the 'unweighted' aspect comes in - simple mean
                     overall_rate = sum(unweighted_metrics_for_hpos) / len(unweighted_metrics_for_hpos)
 
-                    new_uw_agg_metric = AggregateMetricForTable(
-                        date=date, table_name=table, metric_type=metric_type,
+                    new_uw_agg_metric = AggregateMetricForTableOrClass(
+                        date=date, table_or_class=table_or_class, metric_type=metric_type,
                         num_total_rows=total_rows, num_pertinent_rows=pertinent_rows)
 
                     new_uw_agg_metric.manually_set_overall_rate(rate=overall_rate)
@@ -154,15 +156,16 @@ def create_unweighted_aggregate_metrics_for_hpos(
 
                         # tables_counted to avoid double-counting
                         # want to exclude device exposure for now
-                        tables_counted = ['Device Exposure']
+                        tables_and_classes_counted = ['Device Exposure']
 
                         if hpo_object.date == date:
 
-                            statistics_to_average, tables_counted = \
+                            statistics_to_average, \
+                            tables_and_classes_counted = \
                                 get_stats_for_unweighted_hpo_aggregate_metric(
                                     hpo_object=hpo_object, metric=metric,
                                     date=date, hpo_name=hpo.name,
-                                    tables_counted=tables_counted,
+                                    tables_and_classes_counted=tables_and_classes_counted,
                                     statistics_to_average=statistics_to_average)
 
                     # setting these equal to 0 to differentiate these as a metric

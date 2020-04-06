@@ -277,7 +277,8 @@ class HPO:
                 table=table, hpo=self.name))
             sys.exit(0)
 
-    def use_table_name_to_find_rows(self, table, metric):
+    def use_table_or_class_name_to_find_rows(
+            self, table_or_class, metric):
         """
         Function is intended to use the table name to find
         the 'total number of rows' associated with said
@@ -286,8 +287,9 @@ class HPO:
 
         Parameters
         ----------
-        table (string): table whose data quality metrics are
-            to be determined
+        table_or_class (string): table (e.g. 'Measurement) or
+            class (e.g. 'ACE Inhibitors') whose data quality
+            metrics are to be determined
 
         metric (string): the metric (e.g. the concept
             success rate) that is being investigated
@@ -303,71 +305,70 @@ class HPO:
 
         if metric == 'Concept ID Success Rate':
             for obj in self.concept_success:
-                if obj.table == table:
+                if obj.table_or_class == table_or_class:
                     succ_rate = obj.value
 
         elif metric == 'Duplicate Records':
             for obj in self.duplicates:
-                if obj.table == table:
+                if obj.table_or_class == table_or_class:
                     succ_rate = obj.value
 
         elif metric == 'End Dates Preceding Start Dates':
             for obj in self.end_before_begin:
-                if obj.table == table:
+                if obj.table_or_class == table_or_class:
                     succ_rate = obj.value
 
         elif metric == 'Data After Death':
             for obj in self.data_after_death:
-                if obj.table == table:
+                if obj.table_or_class == table_or_class:
                     succ_rate = obj.value
 
         elif metric == 'Measurement Integration':
             for obj in self.measurement_integration:
-                if obj.table == table:
+                if obj.table_or_class == table_or_class:
                     succ_rate = obj.value
 
         elif metric == 'Drug Ingredient Integration':
             for obj in self.ingredient_integration:
-                if obj.table == table:
+                if obj.table_or_class == table_or_class:
                     succ_rate = obj.value
 
         elif metric == 'Route Concept ID Success Rate':
             for obj in self.route_success:
-                if obj.table == table:
+                if obj.table_or_class == table_or_class:
                     succ_rate = obj.value
 
         elif metric == 'Unit Concept ID Success Rate':
             for obj in self.unit_success:
-                if obj.table == table:
+                if obj.table_or_class == table_or_class:
                     succ_rate = obj.value
 
         else:
             raise Exception(
                 "Unexpected metric type:"
-                "{metric} found for table {table}".format(
-                    metric=metric, table=table
-                ))
+                "{metric} found for table or class"
+                "{table_or_class}".format(
+                    metric=metric, table_or_class=table_or_class))
 
-        if table == "Measurement":
+        if table_or_class == "Measurement":
             total_rows = self.num_measurement_rows
-        elif table == "Visit Occurrence":
+        elif table_or_class == "Visit Occurrence":
             total_rows = self.num_visit_rows
-        elif table == "Procedure Occurrence":
+        elif table_or_class == "Procedure Occurrence":
             total_rows = self.num_procedure_rows
-        elif table == "Condition Occurrence":
+        elif table_or_class == "Condition Occurrence":
             total_rows = self.num_condition_rows
-        elif table == "Drug Exposure":
+        elif table_or_class == "Drug Exposure":
             total_rows = self.num_drug_rows
-        elif table == "Observation":
+        elif table_or_class == "Observation":
             total_rows = self.num_observation_rows
-        elif table == "Device Exposure":  # do not want to deal with this
+        elif table_or_class == "Device Exposure":  # do not want to deal with this
             total_rows = 0
         else:
             raise Exception(
                 "Unexpected table type:"
-                "{table} found for metric {metric}".format(
-                    table=table, metric=metric
-                ))
+                "{table_or_class} found for metric {metric}".format(
+                    table_or_class=table_or_class, metric=metric))
 
         if metric == 'Duplicate Records':
             rel_rows = succ_rate  # want to report out the total #
@@ -378,7 +379,7 @@ class HPO:
         return rel_rows, total_rows
 
     def get_row_count_from_table_and_metric(
-            self, metric, table, relevant_objects):
+            self, metric, table_or_class, relevant_objects):
         """
         Function is used to get the number of rows (either the
         amount of 'successful' or 'failed') for a particular
@@ -391,7 +392,7 @@ class HPO:
         metric (string): the metric (e.g. the concept
             success rate) that is being investigated
 
-        table (string): table whose data quality metrics are
+        table_or_class (string): table whose data quality metrics are
             to be determined
 
         relevant_objects (lst): list of DataQualityMetric
@@ -408,18 +409,19 @@ class HPO:
         row_count = None
 
         for dqm in relevant_objects:
-            dqm_table = dqm.table
+            dqm_table = dqm.table_or_class
 
-            if dqm_table == table:  # discovered
+            if dqm_table == table_or_class:  # discovered
                 row_count, total_rows = \
                     self.use_table_name_to_find_rows(
-                        table=table, metric=metric)
+                        table_or_class=table_or_class,
+                        metric=metric)
 
         # making sure we could calculate the row_count
         assert row_count is not None, "The row count for the following " \
             "data quality metric could not be found for the " \
-            "table {table} and the metric {metric}".format(
-                table=table, metric=metric)
+            "table {table_or_class} and the metric {metric}".format(
+                table_or_class=table_or_class, metric=metric)
 
         return row_count
 
@@ -501,7 +503,7 @@ class HPO:
             metric=metric)
 
         row_count = self.get_row_count_from_table_and_metric(
-            metric=metric, table=table,
+            metric=metric, table_or_class=table,
             relevant_objects=relevant_objects)
 
         return row_count

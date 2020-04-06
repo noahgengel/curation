@@ -10,11 +10,12 @@ functions in the auxillary_aggregate_functions file.
 """
 
 
-from aggregate_metric_classes import AggregateMetricForTable, \
+from aggregate_metric_classes import AggregateMetricForTableOrClass, \
     AggregateMetricForHPO, AggregateMetricForDate
 
 
-from auxillary_aggregate_functions import find_relevant_tables, \
+from auxillary_aggregate_functions import \
+    find_relevant_tables_or_classes, \
     cycle_through_dqms_for_table, cycle_through_dqms_for_hpo, \
     find_unique_dates_and_metrics, \
     get_stats_for_unweighted_table_aggregate_metric
@@ -57,7 +58,7 @@ def create_weighted_aggregate_metrics_for_tables(
     # A - really will only go into for applicable metric
     for metric_type, hpo_object_list in metric_dictionary.items():
 
-        tables_for_metric = find_relevant_tables(
+        tables_or_classes_for_metric = find_relevant_tables_or_classes(
             hpo_object_list=hpo_object_list, metric_type=metric_type)
         # now we know the tables and dates for all of the metrics
 
@@ -65,7 +66,7 @@ def create_weighted_aggregate_metrics_for_tables(
         for date in datetimes:
 
             # C
-            for table in tables_for_metric:
+            for table_or_class in tables_or_classes_for_metric:
                 # to add to the new object's attributes
                 total_rows, pertinent_rows = 0, 0
 
@@ -79,15 +80,16 @@ def create_weighted_aggregate_metrics_for_tables(
                             cycle_through_dqms_for_table(
                                 hpo_object=hpo_object,
                                 metric_type=metric_type,
-                                date=date, table=table,
+                                date=date,
+                                table_or_class=table_or_class,
                                 hpos_counted=hpos_counted,
                                 total_rows=total_rows,
                                 pertinent_rows=pertinent_rows)
 
                 # actually create the metric - culled for all three dimensions
 
-                new_am = AggregateMetricForTable(
-                    date=date, table_name=table, metric_type=metric_type,
+                new_am = AggregateMetricForTableOrClass(
+                    date=date, table_or_class=table_or_class, metric_type=metric_type,
                     num_total_rows=total_rows, num_pertinent_rows=pertinent_rows)
 
                 new_agg_metrics.append(new_am)

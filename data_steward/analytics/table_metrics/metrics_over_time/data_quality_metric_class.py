@@ -18,7 +18,8 @@ class DataQualityMetric:
     """
 
     def __init__(
-        self, hpo='', table='', metric_type='', value=0,
+        self, hpo='', table_or_class='', metric_type='',
+            value=0,
             data_quality_dimension='',
             date=datetime.datetime.today()
     ):
@@ -32,8 +33,9 @@ class DataQualityMetric:
         hpo (string): name of the HPO being associated with the
             data quality metric in question (e.g. nyc_cu)
 
-        table (string): name of the table whose data quality metric
-            is being determined (e.g. Measurement)
+        table_or_class (string): name of the table/class whose data
+            quality metric is being determined
+            (e.g. Measurement or 'ACE Inhibitors')
 
         metric_type (string): name of the metric that is being
             determined (e.g. duplicates)
@@ -52,7 +54,7 @@ class DataQualityMetric:
         """
 
         self.hpo = hpo
-        self.table = table
+        self.table_or_class = table_or_class
         self.metric_type = metric_type
         self.value = value
         self.data_quality_dimension = data_quality_dimension
@@ -67,12 +69,12 @@ class DataQualityMetric:
         """
         print(
             "HPO: {hpo}\n"
-            "Table: {table}\n"
+            "Table/Class: {table_or_class}\n"
             "Metric Type: {metric_type}\n"
             "Value: {value}\n"
             "Data Quality Dimension: {dqd}\n"
             "Date: {date}\n\n".format(
-                hpo=self.hpo, table=self.table,
+                hpo=self.hpo, table_or_class=self.table_or_class,
                 metric_type=self.metric_type,
                 value=self.value, dqd=self.data_quality_dimension,
                 date=self.date))
@@ -91,7 +93,7 @@ class DataQualityMetric:
         """
 
         attribute_names = [
-            "HPO", "Table", "Metric Type",
+            "HPO", "Table/Class", "Metric Type",
             "Value", "Data Quality Dimension", "Date"]
 
         return attribute_names
@@ -111,7 +113,7 @@ class DataQualityMetric:
         """
 
         attributes = [
-            self.hpo, self.table, self.metric_type, self.value,
+            self.hpo, self.table_or_class, self.metric_type, self.value,
             self.data_quality_dimension, self.date]
 
         return attributes

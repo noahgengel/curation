@@ -60,7 +60,7 @@ def create_aggregate_metric_master_function(
     Returns
     -------
     aggregate_metrics (list): list of metrics objects
-        (AggregateMetricForTable or
+        (AggregateMetricForTableOrClass or
         AggregateMetricForHPO & AggregateMetricForDate)
         that contain all of the 'aggregate metrics' to be displayed
     """
@@ -109,7 +109,7 @@ def create_weighted_aggregate_metrics(
     Returns
     -------
     aggregate_metrics (list): list of metrics objects
-        (AggregateMetricForTable or
+        (AggregateMetricForTableOrClass or
         AggregateMetricForHPO & AggregateMetricForDate)
         that contain all of the 'aggregate metrics' to be displayed
     """
@@ -167,7 +167,7 @@ def create_unweighted_aggregate_metrics(
     Returns
     -------
     aggregate_metrics (list): list of metrics objects
-        (AggregateMetricForTable or
+        (AggregateMetricForTableOrClass or
         AggregateMetricForHPO & AggregateMetricForDate)
         that contain all of the 'aggregate metrics' to be displayed
     """
@@ -177,6 +177,9 @@ def create_unweighted_aggregate_metrics(
             datetimes=datetimes)
 
     elif sheet_output == 'hpo_sheets':
+        # FIXME: Need to not create aggregate metric for 'All Measurements'
+        #  or the 'All Drugs' - that IS the aggregate metric
+
         aggregate_metrics = create_unweighted_aggregate_metrics_for_hpos(
             hpo_dictionary=hpo_dictionary,
             datetimes=datetimes, metric_dictionary=metric_dictionary)
