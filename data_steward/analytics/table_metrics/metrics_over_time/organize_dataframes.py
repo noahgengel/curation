@@ -12,6 +12,8 @@ user.
 
 from setup_dataframes import create_dataframe_skeletons
 
+from dictionaries_lists_and_prompts import metric_type_to_english_dict
+
 
 def organize_dataframes_master_function(
     sheet_output, metric_dictionary, datetimes, hpo_names,
@@ -57,7 +59,19 @@ def organize_dataframes_master_function(
         datetimes=datetimes,
         hpo_names=hpo_names)
 
-    print(dataframes_dict)
+    if sheet_output == 'table_sheets':
+        populate_table_df_rows(
+            metric_dictionary=metric_dictionary,
+            datetimes=datetimes,
+            hpo_names=hpo_names,
+            dataframes_dict=dataframes_dict,
+            metric_choice=metric_choice,
+            hpo_dictionary=hpo_dictionary,
+            tables_or_classes_for_metric=
+            tables_or_classes_for_metric)
+
+    elif sheet_output == 'hpo_sheets':
+        pass
 
 
 def populate_table_df_rows(
@@ -73,10 +87,6 @@ def populate_table_df_rows(
 
     Parameters
     ----------
-    sheet_output (string): determines the type of 'output'
-        to be generated (e.g. the sheets are HPOs or the
-        sheets are tables)
-
     metric_dictionary (dict): has the following structure
         keys: all of the different metric_types possible
         values: all of the HPO objects that
@@ -85,6 +95,10 @@ def populate_table_df_rows(
     datetimes (list): list of datetime objects that
         represent the dates of the files that are being
         ingested
+
+    hpo_names (list): list of the HPO names that are to be
+        put into dataframes (either as the titles of the
+        dataframe or the rows of a dataframe)
 
     dataframes_dict (dict): has the following structure
         key: the 'name' of the dataframe; the name of
@@ -109,13 +123,32 @@ def populate_table_df_rows(
     Returns
     -------
     """
+    metric_choice = metric_type_to_english_dict[metric_choice]
 
     # for each dataframe
     for table_class_name, df in dataframes_dict.items():
 
-        # find the metric selected by the user
-        for metric_title, hpos in metric_dictionary:
-            if len(hpos) > 0:  # the selected metric
+        # row by row - exclude aggregate_info
+        for hpo in hpo_names[:-1]:
+            row_to_place = []
+            relevant_hpos = hpo_dictionary[hpo]
 
-                pass
+            # column by column
+            for date in datetimes:
+
+                for relevant_hpo_object in relevant_hpos:
+                    relevant_dqms = \
+                        relevant_hpo_object.use_string_to_get_relevant_objects(
+                            metric=metric_choice)
+
+                    for dqm in relevant_dqms:
+                        if dqm.date == date and \
+                           dqm.table_or_class == table_class_name:
+                            row_to_place.append(dqm.value)
+
+            df.loc[hpo] = row_to_place
+
+        print(df)
+
+        aslfdjkl
 
