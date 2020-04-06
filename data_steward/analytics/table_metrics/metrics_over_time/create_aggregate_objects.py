@@ -133,7 +133,7 @@ def create_weighted_aggregate_metrics(
         agg_met_for_dates = create_weighted_aggregate_metric_for_dates(
             aggregate_metrics=aggregate_metrics)
 
-        aggregate_metrics.append(agg_met_for_dates)
+        aggregate_metrics.extend(agg_met_for_dates)
 
     else:
         raise Exception(
@@ -262,7 +262,7 @@ def hpo_sheets_chosen_create_uw_ams(
         agg_met_for_dates = create_unweighted_aggregate_metric_for_dates(
             aggregate_metrics=aggregate_metrics)
 
-        aggregate_metrics.append(agg_met_for_dates)
+        aggregate_metrics.extend(agg_met_for_dates)
 
     # want to create AggregateMetricForTableOrClass for each class
     # AND AggregateMetricForDate using DQMs that are inherently
@@ -287,8 +287,8 @@ def hpo_sheets_chosen_create_uw_ams(
                 am_for_date.manually_set_overall_rate(
                     rate=am.overall_rate)
 
-                agg_met_for_dates.append(am_for_date)
+                agg_met_for_dates.extend(am_for_date)
 
-        aggregate_metrics.append(agg_met_for_dates)
+        aggregate_metrics.extend(agg_met_for_dates)
 
     return aggregate_metrics

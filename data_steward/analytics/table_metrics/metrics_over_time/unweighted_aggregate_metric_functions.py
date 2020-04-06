@@ -97,7 +97,7 @@ def create_unweighted_aggregate_metrics_for_tables(
 
                     new_uw_agg_metric.manually_set_overall_rate(rate=overall_rate)
 
-                    new_agg_metrics.append(new_uw_agg_metric)
+                    new_agg_metrics.extend(new_uw_agg_metric)
 
     return new_agg_metrics
 
@@ -189,7 +189,7 @@ def create_unweighted_aggregate_metrics_for_hpos(
                     new_agg_metric.manually_set_overall_rate(
                         rate=overall_rate)
 
-                    new_agg_metrics.append(new_agg_metric)
+                    new_agg_metrics.extend(new_agg_metric)
 
     # finished the loop - now has all the aggregate metrics
     return new_agg_metrics
@@ -242,7 +242,7 @@ def create_unweighted_aggregate_metric_for_dates(
 
                     value_for_hpo = agg_hpo_metric.overall_rate
 
-                    values.append(value_for_hpo)
+                    values.extend(value_for_hpo)
 
             # here's where the 'unweighted' aspect comes in - simple mean
             overall_rate = sum(values) / len(values)
@@ -254,6 +254,6 @@ def create_unweighted_aggregate_metric_for_dates(
 
             amfd.manually_set_overall_rate(rate=overall_rate)
 
-            agg_metrics_for_dates.append(amfd)
+            agg_metrics_for_dates.extend(amfd)
 
     return agg_metrics_for_dates

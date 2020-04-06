@@ -214,28 +214,28 @@ class HPO:
         """
 
         if metric == 'Concept ID Success Rate':
-            self.concept_success.append(dq_object)
+            self.concept_success.extend(dq_object)
 
         elif metric == 'Duplicate Records':
-            self.duplicates.append(dq_object)
+            self.duplicates.extend(dq_object)
 
         elif metric == 'End Dates Preceding Start Dates':
-            self.end_before_begin.append(dq_object)
+            self.end_before_begin.extend(dq_object)
 
         elif metric == 'Data After Death':
-            self.data_after_death.append(dq_object)
+            self.data_after_death.extend(dq_object)
 
         elif metric == 'Measurement Integration':
-            self.measurement_integration.append(dq_object)
+            self.measurement_integration.extend(dq_object)
 
         elif metric == 'Drug Ingredient Integration':
-            self.ingredient_integration.append(dq_object)
+            self.ingredient_integration.extend(dq_object)
 
         elif metric == 'Route Concept ID Success Rate':
-            self.route_success.append(dq_object)
+            self.route_success.extend(dq_object)
 
         elif metric == 'Unit Concept ID Success Rate':
-            self.unit_success.append(dq_object)
+            self.unit_success.extend(dq_object)
 
         else:
             print("Unrecognized metric input: {metric} for {hpo}".format(
@@ -541,37 +541,37 @@ class HPO:
         # need to iterate through a list to get the objects for each table
         for concept_success_obj in self.concept_success:
             if concept_success_obj.value < thresholds['concept_success_min']:
-                failing_metrics.append(concept_success_obj)
+                failing_metrics.extend(concept_success_obj)
 
         for duplicates_obj in self.duplicates:
             if duplicates_obj.value > thresholds['duplicates_max']:
-                failing_metrics.append(duplicates_obj)
+                failing_metrics.extend(duplicates_obj)
 
         for end_before_begin_obj in self.end_before_begin:
             if end_before_begin_obj.value > thresholds['end_before_begin_max']:
-                failing_metrics.append(end_before_begin_obj)
+                failing_metrics.extend(end_before_begin_obj)
 
         for data_after_death_obj in self.data_after_death:
             if data_after_death_obj.value > thresholds['data_after_death_max']:
-                failing_metrics.append(data_after_death_obj)
+                failing_metrics.extend(data_after_death_obj)
 
         for route_obj in self.route_success:
             if route_obj.value < thresholds['route_success_min']:
-                failing_metrics.append(route_obj)
+                failing_metrics.extend(route_obj)
 
         for unit_obj in self.unit_success:
             if unit_obj.value < thresholds['unit_success_min']:
-                failing_metrics.append(unit_obj)
+                failing_metrics.extend(unit_obj)
 
         for measurement_integration_obj in self.measurement_integration:
             if measurement_integration_obj.value < \
                     thresholds['measurement_integration_min']:
-                failing_metrics.append(measurement_integration_obj)
+                failing_metrics.extend(measurement_integration_obj)
 
         for ingredient_integration_obj in self.ingredient_integration:
             if ingredient_integration_obj.value < \
                     thresholds['route_success_min']:
-                failing_metrics.append(ingredient_integration_obj)
+                failing_metrics.extend(ingredient_integration_obj)
 
         if not failing_metrics:  # no errors logged
             return None

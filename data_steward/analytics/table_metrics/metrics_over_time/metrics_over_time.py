@@ -270,6 +270,11 @@ def main():
         sheet_output=sheet_output, datetimes=datetimes,
         metric_choice=user_choice)
 
+    for am in aggregate_metrics:
+        print(type(am))
+        print(am)
+        am.print_attributes()
+
 
 if __name__ == "__main__":
     main()

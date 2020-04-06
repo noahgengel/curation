@@ -42,7 +42,7 @@ def find_relevant_tables_or_classes(
             table_or_class = dqm.table_or_class
 
             if table_or_class not in tables_or_classes_for_metric:
-                tables_or_classes_for_metric.append(table_or_class)
+                tables_or_classes_for_metric.extend(table_or_class)
 
     return tables_or_classes_for_metric
 
@@ -119,7 +119,7 @@ def get_stats_for_weighted_hpo_aggregate_metric(
             pertinent_rows += float(hpo_pert_rows)
 
             # prevent double counting
-            tables_or_classes_counted.append(dqm.table_or_class)
+            tables_or_classes_counted.extend(dqm.table_or_class)
 
     return total_rows, pertinent_rows, tables_or_classes_counted
 
@@ -199,7 +199,7 @@ def get_stats_for_weighted_table_aggregate_metric(
             total_rows += float(hpo_total_rows)
             pertinent_rows += float(hpo_pert_rows)
 
-    hpos_counted.append(hpo_object.name)  # prevent from counting again
+    hpos_counted.extend(hpo_object.name)  # prevent from counting again
 
     return hpos_counted, total_rows, pertinent_rows
 
@@ -234,9 +234,9 @@ def find_unique_dates_and_metrics(aggregate_metrics):
         metric_type = agg_hpo_metric.metric_type
 
         if metric_date not in dates:
-            dates.append(metric_date)
+            dates.extend(metric_date)
         if metric_type not in metrics:
-            metrics.append(metric_type)
+            metrics.extend(metric_type)
 
     agg_metrics_for_dates = []
 
@@ -305,9 +305,9 @@ def get_stats_for_unweighted_table_aggregate_metric(
                 hpo_object.name not in hpos_counted:
 
             value = dqm.value
-            unweighted_metrics_for_hpos.append(value)
+            unweighted_metrics_for_hpos.extend(value)
 
-    hpos_counted.append(hpo_object.name)
+    hpos_counted.extend(hpo_object.name)
 
     return unweighted_metrics_for_hpos, hpos_counted
 
@@ -378,9 +378,9 @@ def get_stats_for_unweighted_hpo_aggregate_metric(
                 dqm.table_or_class not in tables_and_classes_counted:
 
             # add the value
-            statistics_to_average.append(dqm.value)
+            statistics_to_average.extend(dqm.value)
 
             # prevent double counting
-            tables_and_classes_counted.append(dqm.table_or_class)
+            tables_and_classes_counted.extend(dqm.table_or_class)
 
     return statistics_to_average, tables_and_classes_counted

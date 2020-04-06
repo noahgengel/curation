@@ -93,7 +93,7 @@ def create_weighted_aggregate_metrics_for_tables(
                     date=date, table_or_class_name=table_or_class_name, metric_type=metric_type,
                     num_total_rows=total_rows, num_pertinent_rows=pertinent_rows)
 
-                new_agg_metrics.append(new_am)
+                new_agg_metrics.extend(new_am)
 
     # finished the loop - now has all the aggregate metrics
     return new_agg_metrics
@@ -171,7 +171,7 @@ def create_weighted_aggregate_metrics_for_hpos(
                     num_total_rows=total_rows,
                     num_pertinent_rows=pertinent_rows)
 
-                new_agg_metrics.append(new_agg_metric)
+                new_agg_metrics.extend(new_agg_metric)
 
     # finished the loop - now has all the aggregate metrics
     return new_agg_metrics
@@ -224,6 +224,6 @@ def create_weighted_aggregate_metric_for_dates(aggregate_metrics):
                 num_total_rows=num_total_rows,
                 num_pertinent_rows=num_pertinent_rows)
 
-            agg_metrics_for_dates.append(amfd)
+            agg_metrics_for_dates.extend(amfd)
 
     return agg_metrics_for_dates
