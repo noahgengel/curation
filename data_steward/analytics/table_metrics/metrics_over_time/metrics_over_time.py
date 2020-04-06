@@ -58,6 +58,9 @@ from functions_to_create_hpo_objects import establish_hpo_objects, \
 from create_aggregate_objects import \
     create_aggregate_metric_master_function
 
+from organize_dataframes import \
+    organize_dataframes_master_function
+
 
 def create_dqm_objects_for_sheet(
         dataframe, hpo_names, user_choice, metric_is_percent,
@@ -270,8 +273,10 @@ def main():
         sheet_output=sheet_output, datetimes=datetimes,
         metric_choice=user_choice)
 
-    for am in aggregate_metrics:
-        am.print_attributes()
+    organize_dataframes_master_function(
+        sheet_output=sheet_output,
+        metric_dictionary=metric_dictionary,
+        datetimes=datetimes, hpo_names=hpo_names)
 
 
 if __name__ == "__main__":
