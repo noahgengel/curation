@@ -55,6 +55,16 @@ def organize_dataframes_master_function(
         (AggregateMetricForTableOrClass or
         AggregateMetricForHPO & AggregateMetricForDate)
         that contain all of the 'aggregate metrics' to be displayed
+
+    Returns
+    -------
+    dataframes_dict (dict): has the following structure
+        key: the 'name' of the dataframe; the name of
+            the table/class or HPO
+
+        value: the dataframe - now populated with the
+            data from each HPO and the
+            'aggregate metric'
     """
 
     dataframes_dict, tables_or_classes_for_metric = \
@@ -66,27 +76,32 @@ def organize_dataframes_master_function(
 
     if sheet_output == 'table_sheets':
         dataframes_dict = populate_table_df_rows(
-            metric_dictionary=metric_dictionary,
             datetimes=datetimes,
             hpo_names=hpo_names,
             dataframes_dict=dataframes_dict,
             metric_choice=metric_choice,
             hpo_dictionary=hpo_dictionary,
-            tables_or_classes_for_metric=
-            tables_or_classes_for_metric,
             aggregate_metrics=aggregate_metrics)
 
-        print(dataframes_dict)
+    else:  # hpo_sheets - otherwise error in create_dataframe_skeletons
+        dataframes_dict = populate_hpo_df_rows(
+            datetimes=datetimes,
+            tables_or_classes_for_metric=tables_or_classes_for_metric,
+            dataframes_dict=dataframes_dict,
+            metric_choice=metric_choice,
+            hpo_dictionary=hpo_dictionary,
+            aggregate_metrics=aggregate_metrics)
 
-    elif sheet_output == 'hpo_sheets':
-        pass
+        # TODO populate the aggregate info
+        # TODO make the final dataframe for aggregate_info
+
+    return dataframes_dict
 
 
 def populate_table_df_rows(
-    metric_dictionary, datetimes,
+    datetimes,
     hpo_names, dataframes_dict,
     metric_choice, hpo_dictionary,
-    tables_or_classes_for_metric,
     aggregate_metrics):
     """
     Function is used to populate each 'table/class'
@@ -96,11 +111,6 @@ def populate_table_df_rows(
 
     Parameters
     ----------
-    metric_dictionary (dict): has the following structure
-        keys: all of the different metric_types possible
-        values: all of the HPO objects that
-            have that associated metric_type
-
     datetimes (list): list of datetime objects that
         represent the dates of the files that are being
         ingested
@@ -125,10 +135,6 @@ def populate_table_df_rows(
         values: all of the associated HPO objects that
             have that associated HPO ID
 
-    tables_or_classes_for_metric (list): list of the
-        tables or classes that apply to this particular
-        metric
-
     aggregate_metrics (list): list of metrics objects
         (AggregateMetricForTableOrClass)
         that contain all of the 'aggregate metrics' to be displayed
@@ -136,12 +142,12 @@ def populate_table_df_rows(
     Returns
     -------
     dataframes_dict (dict): has the following structure
-    key: the 'name' of the dataframe; the name of
-        the table/class
+        key: the 'name' of the dataframe; the name of
+            the table/class
 
-    value: the dataframe - now populated for each HPO
-        (including the 'aggregate_metric' row) and
-        each datte
+        value: the dataframe - now populated for each HPO
+            (including the 'aggregate_metric' row) and
+            each date
     """
     metric_choice_eng = metric_type_to_english_dict[metric_choice]
 
@@ -176,6 +182,87 @@ def populate_table_df_rows(
 
         # replace
         dataframes_dict[table_class_name] = df
+
+    return dataframes_dict
+
+
+def populate_hpo_df_rows(
+    datetimes,
+    tables_or_classes_for_metric, dataframes_dict,
+    metric_choice, hpo_dictionary,
+    aggregate_metrics):
+    """
+    Function is used to populate each 'table/class'
+    dataframe row-by row. Each row of this dataframe
+    is a different HPO. Each column of this dataframe
+    is a date.
+
+    Parameters
+    ----------
+    datetimes (list): list of datetime objects that
+        represent the dates of the files that are being
+        ingested
+
+    tables_or_classes_for_metric (list): list of the
+        table/class names that are to be
+        put into dataframes (as the rows of a dataframe)
+
+    dataframes_dict (dict): has the following structure
+        key: the 'name' of the dataframe; the name of
+            the table/class
+
+        value: the 'skeleton' of the dataframe to be
+            created
+
+    metric_choice (str): the type of analysis that the user
+        wishes to perform. used to triage whether the function
+        will create a 'weighted' or unweighted' metric
+
+    hpo_dictionary (dict): has the following structure
+        keys: all of the different HPO IDs
+        values: all of the associated HPO objects that
+            have that associated HPO ID
+
+    aggregate_metrics (list): list of metrics objects
+        (AggregateMetricForTableOrClass)
+        that contain all of the 'aggregate metrics' to be
+        displayed
+
+    Returns
+    -------
+    dataframes_dict (dict): has the following structure
+        key: the 'name' of the dataframe; the name of
+            the HPO
+
+        value: the dataframe - now populated for each
+            table/class (including the 'aggregate_metric' row)
+            and each date
+    """
+    metric_choice_eng = metric_type_to_english_dict[metric_choice]
+
+    # for each dataframe
+    for hpo_name, df in dataframes_dict.items():
+
+        hpo_objects = hpo_dictionary[hpo_name]
+
+        # row by row - exclude aggregate_info
+        for table_or_class in tables_or_classes_for_metric[:-1]:
+            row_to_place = []
+
+            # column by column
+            for date in datetimes:
+
+                for relevant_hpo_object in hpo_objects:
+                    relevant_dqms = \
+                        relevant_hpo_object.use_string_to_get_relevant_objects(
+                            metric=metric_choice_eng)
+
+                    for dqm in relevant_dqms:
+                        if dqm.date == date and \
+                           dqm.table_or_class == table_or_class:
+                            row_to_place.append(dqm.value)
+
+            df.loc[table_or_class] = row_to_place
 
     return dataframes_dict
 
@@ -226,6 +313,8 @@ def add_aggregate_to_end_of_table_class_df(
 
         for aggregate_metric in aggregate_metrics:
 
+            # what means that it is the right metric for the
+            # particular row/column combo in the dataframe
             if (aggregate_metric.date == date) and \
                 (aggregate_metric.table_or_class_name ==
                      table_class_name) and \
@@ -233,6 +322,7 @@ def add_aggregate_to_end_of_table_class_df(
 
                 agg_metric_found = True
 
+                # duplicates - want the total number of records
                 if metric_choice == 'Duplicate Records':
                     aggregate_rate = aggregate_metric.num_pertinent_rows
                 else:

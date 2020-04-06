@@ -73,7 +73,13 @@ def create_dataframe_skeletons(
             dataframes_dict[table_or_class_name] = df
 
     elif sheet_output == 'hpo_sheets':
-        for hpo_name in hpo_names:
+
+        # for the bottom of the dataframe
+        tables_or_classes_for_metric.append(
+            'aggregate_info')
+
+        # exclude the 'aggregate_info' name
+        for hpo_name in hpo_names[:-1]:
 
             df = pd.DataFrame(
                 index=tables_or_classes_for_metric,
@@ -128,7 +134,7 @@ def setup_skeleton_function(
     dts_string = [
         date_obj.strftime('%m/%d/%Y') for date_obj in datetimes]
 
-     # for final row or ultimate dataframe
+    # for final row or ultimate dataframe
     hpo_names.append('aggregate_info')
     tables_or_classes_for_metric = []  # start blank
 

@@ -273,13 +273,15 @@ def main():
         sheet_output=sheet_output, datetimes=datetimes,
         metric_choice=user_choice)
 
-    organize_dataframes_master_function(
+    dataframes_dict = organize_dataframes_master_function(
         sheet_output=sheet_output,
         metric_dictionary=metric_dictionary,
         datetimes=datetimes, hpo_names=hpo_names,
         metric_choice=user_choice,
         hpo_dictionary=hpo_dictionary,
         aggregate_metrics=aggregate_metrics)
+
+    print(dataframes_dict)
 
 
 if __name__ == "__main__":
