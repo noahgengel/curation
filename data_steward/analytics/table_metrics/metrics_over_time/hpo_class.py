@@ -145,14 +145,13 @@ class HPO:
         self.num_drug_rows = num_drug_rows,
         self.num_observation_rows = num_observation_rows
 
-    def return_attributes_as_string(self):
+    def print_attributes(self):
         """
         Function is used to generate a string that can be
         used to display the various attributes as a string.
 
-
-        attributes_str (str): lists the attibutes (or the
-            number of attributes) as a string
+        This string is then printed to display on the
+        program.
         """
         attributes_str = """
         HPO ID: {hpo_id}\n
@@ -193,7 +192,7 @@ class HPO:
             observation=self.num_observation_rows
         )
 
-        return attributes_str
+        print(attributes_str)
 
     def add_metric_with_string(self, metric, dq_object):
         """

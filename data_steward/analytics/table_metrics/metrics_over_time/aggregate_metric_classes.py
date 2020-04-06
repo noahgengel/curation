@@ -62,17 +62,11 @@ class AggregateMetricForTable:
         except ZeroDivisionError:
             self.overall_rate = 0
 
-    def return_attributes_str(self):
+    def print_attributes(self):
         """
-        Function is used to return a string that can easily
+        Function is used to print a string that can easily
         display the components of an AggregateMetricForTable
         object.
-
-        Return
-        ------
-        attributes_str (string): displays all the components
-            of the AggregateMetricForTable object in an easily-
-            readable fashion.
         """
         time = self.date.strftime('%m/%d/%Y')
 
@@ -92,7 +86,7 @@ class AggregateMetricForTable:
             rate=self.overall_rate
         )
 
-        return attributes_str
+        print(attributes_str)
 
     def manually_set_overall_rate(self, rate):
         """
@@ -169,17 +163,11 @@ class AggregateMetricForHPO:
         except ZeroDivisionError:
             self.overall_rate = 0
 
-    def return_attributes_str(self):
+    def print_attributes(self):
         """
-        Function is used to return a string that can easily
+        Function is used to print a string that can easily
         display the components of an AggregateMetricForHPO
         object.
-
-        Return
-        ------
-        attributes_str (string): displays all the components
-            of the AggregateMetricForTable object in an easily-
-            readable fashion.
         """
         time = self.date.strftime('%m/%d/%Y')
 
@@ -199,7 +187,7 @@ class AggregateMetricForHPO:
             rate=self.overall_rate
         )
 
-        return attributes_str
+        print(attributes_str)
 
     def manually_set_overall_rate(self, rate):
         """
@@ -271,9 +259,9 @@ class AggregateMetricForDate:
         except ZeroDivisionError:
             self.overall_rate = 0
 
-    def return_attributes_str(self):
+    def print_attributes(self):
         """
-        Function is used to return a string that can easily
+        Function is used to print a string that can easily
         display the components of an AggregateMetricForDate
         object.
 
@@ -299,7 +287,7 @@ class AggregateMetricForDate:
             rate=self.overall_rate
         )
 
-        return attributes_str
+        print(attributes_str)
 
     def manually_set_overall_rate(self, rate):
         """
