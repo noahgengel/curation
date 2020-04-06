@@ -468,8 +468,7 @@ class HPO:
         else:
             raise Exception(
                 "The following was identified as a metric: "
-                "{metric}".format(metric=metric)
-            )
+                "{metric}".format(metric=metric))
 
         return relevant_objects
 
@@ -504,8 +503,7 @@ class HPO:
 
         row_count = self.get_row_count_from_table_and_metric(
             metric=metric, table=table,
-            relevant_objects=relevant_objects
-        )
+            relevant_objects=relevant_objects)
 
         return row_count
 
