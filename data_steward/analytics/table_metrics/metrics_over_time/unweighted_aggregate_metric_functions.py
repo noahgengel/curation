@@ -41,6 +41,12 @@ def create_unweighted_aggregate_metrics_for_tables(
     datetimes (list): list of datetime objects that
         represent the dates of the files that are being
         ingested
+
+    Returns
+    -------
+    new_agg_metrics (list): contains new
+    AggregateMetricForTableOrClass objects that span all of the
+    desired tables.
     """
     # create a metric type for each
     #    a. metric

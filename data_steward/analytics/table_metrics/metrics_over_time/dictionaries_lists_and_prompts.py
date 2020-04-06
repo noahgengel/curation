@@ -50,6 +50,15 @@ Lists
 -----
 row_count_col_names: shows the column names where one can find the
     total row count for a particular date for each table
+
+unweighted_metric_already_integrated_for_hpo: shows which
+    'unweighted metrics' do not need to be calculated for
+    each HPO. these metrics do NOT need to be calculated because
+    there already is an appropriate 'aggregate metric'
+    established in the sheet.
+
+aggregate_metric_class_names: contains the 'names' of the aggregate
+    metric objects that one can use
 """
 
 thresholds = {
@@ -294,3 +303,9 @@ row_count_col_names = [
     'measurement_total_row',
     'visit_total_row'
 ]
+
+unweighted_metric_already_integrated_for_hpo = [
+    'Drug Ingredient Integration',
+    'Measurement Integration']
+
+aggregate_metric_class_names = ['All Measurements', 'All Drugs']

@@ -20,7 +20,12 @@ from weighted_aggregate_metric_functions import \
     create_weighted_aggregate_metrics_for_hpos, \
     create_weighted_aggregate_metrics_for_tables
 
-from dictionaries_lists_and_prompts import metrics_to_weight
+from dictionaries_lists_and_prompts import \
+    metrics_to_weight, \
+    unweighted_metric_already_integrated_for_hpo, \
+    aggregate_metric_class_names
+
+from aggregate_metric_classes import AggregateMetricForDate
 
 
 def create_aggregate_metric_master_function(
@@ -75,7 +80,8 @@ def create_aggregate_metric_master_function(
             sheet_output=sheet_output,
             metric_dictionary=metric_dictionary,
             datetimes=datetimes,
-            hpo_dictionary=hpo_dictionary)
+            hpo_dictionary=hpo_dictionary,
+            metric_choice=metric_choice)
 
     return aggregate_metrics
 
@@ -139,10 +145,11 @@ def create_weighted_aggregate_metrics(
 
 
 def create_unweighted_aggregate_metrics(
-    sheet_output, metric_dictionary, datetimes, hpo_dictionary):
+    sheet_output, metric_dictionary, datetimes, hpo_dictionary,
+    metric_choice):
     """
-    Function is used to create 'weighted' aggregate metrics that can
-    be useful in terms of data analysis.
+    Function is used to create 'unweighted' aggregate metrics
+    that can be useful in terms of data analysis.
 
     Parameters
     ---------
@@ -164,6 +171,11 @@ def create_unweighted_aggregate_metrics(
         represent the dates of the files that are being
         ingested
 
+    metric_choice (str): the type of analysis that the user
+        wishes to perform. used to NOT generate an aggregate
+        HPO metric if there already is an 'all' that exists
+        as a class.
+
     Returns
     -------
     aggregate_metrics (list): list of metrics objects
@@ -177,8 +189,71 @@ def create_unweighted_aggregate_metrics(
             datetimes=datetimes)
 
     elif sheet_output == 'hpo_sheets':
-        # FIXME: Need to not create aggregate metric for 'All Measurements'
-        #  or the 'All Drugs' - that IS the aggregate metric
+
+        # already includes 'AggregateMetricForDate' objects
+        aggregate_metrics = hpo_sheets_chosen_create_uw_ams(
+            metric_choice=metric_choice,
+            hpo_dictionary=hpo_dictionary,
+            datetimes=datetimes,
+            metric_dictionary=metric_dictionary)
+
+    else:
+        raise Exception(
+            """Bad parameter input for function 
+            create_aggregate_master_function. Parameter provided
+            was: {param}""".format(param=sheet_output))
+
+    return aggregate_metrics
+
+
+def hpo_sheets_chosen_create_uw_ams(
+        metric_choice, hpo_dictionary, datetimes, metric_dictionary):
+    """
+    Function is used to triage how to create 'aggregate metrics'
+    for HPO sheets based on the kind of user input provided.
+
+    In cases where the 'aggregate metric' already exists in the
+    DataQualityMetrics (e.g. 'All Measurements' for measurement
+    integration), one should only create aggregate metrics
+    for each class AND use the metrics where the class is an
+    'aggregate metric' to make an 'AggregateMetricForDate'
+    object.
+
+    Otherwise, one should create aggregate dataquality metrics
+    for each HPO that spans every table/class (as opposed to
+    leveraging existing DataQualityMetric objects).
+
+    Parameters
+    ---------
+    metric_dictionary (dict): has the following structure
+        keys: all of the different metric_types possible
+        values: all of the HPO objects that
+            have that associated metric_type
+
+    hpo_dictionary (dict): has the following structure
+        keys: all of the different HPO IDs
+        values: all of the associated HPO objects that
+            have that associated HPO ID
+
+    datetimes (list): list of datetime objects that
+        represent the dates of the files that are being
+        ingested
+
+    metric_choice (str): the type of analysis that the user
+        wishes to perform. used to NOT generate an aggregate
+        HPO metric if there already is an 'all' that exists
+        as a class.
+
+    Returns
+    -------
+    aggregate_metrics (list): list of metrics objects
+        (AggregateMetricForTableOrClass or
+        AggregateMetricForHPO & AggregateMetricForDate)
+        that contain all of the 'aggregate metrics' to be displayed
+    """
+
+    # case where the metric already does not already exist as a DQM object
+    if metric_choice not in unweighted_metric_already_integrated_for_hpo:
 
         aggregate_metrics = create_unweighted_aggregate_metrics_for_hpos(
             hpo_dictionary=hpo_dictionary,
@@ -189,11 +264,28 @@ def create_unweighted_aggregate_metrics(
 
         aggregate_metrics.append(agg_met_for_dates)
 
+    # want to create AggregateMetricForTableOrClass for each class
+    # AND AggregateMetricForDate using DQMs that are inherently
+    # already 'aggregate' by nature
     else:
-        raise Exception(
-            """Bad parameter input for function 
-            create_aggregate_master_function. Parameter provided
-            was: {param}""".format(param=sheet_output))
+        aggregate_metrics = create_unweighted_aggregate_metrics_for_tables(
+            metric_dictionary=metric_dictionary, datetimes=datetimes)
+
+        agg_met_for_dates = []
+
+        # now we just need to find the table that applies 'all' and convert
+        # to an AggregateMetricForDate - serves as proxy for entire date
+        for am in aggregate_metrics:
+            if am.table_or_class_name in aggregate_metric_class_names:
+                am_for_date = AggregateMetricForDate(
+                    date=am.date, metric_type=am.metric_type,
+                    num_total_rows=0, num_pertinent_rows=0)
+
+                am_for_date.manually_set_overall_rate(
+                    rate=am.overall_rate)
+
+                agg_met_for_dates.append(am_for_date)
+
+        aggregate_metrics.append(agg_met_for_dates)
 
     return aggregate_metrics
-
