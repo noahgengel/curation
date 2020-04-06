@@ -276,7 +276,9 @@ def main():
     organize_dataframes_master_function(
         sheet_output=sheet_output,
         metric_dictionary=metric_dictionary,
-        datetimes=datetimes, hpo_names=hpo_names)
+        datetimes=datetimes, hpo_names=hpo_names,
+        metric_choice=user_choice,
+        hpo_dictionary=hpo_dictionary)
 
 
 if __name__ == "__main__":

@@ -54,6 +54,10 @@ def create_dataframe_skeletons(
 
         value: the 'skeleton' of the dataframe to be
             created
+
+    tables_or_classes_for_metric (list): list of the
+        tables or classes that apply to this particular
+        metric
     """
 
     dts_string, tables_or_classes_for_metric, dataframes_dict = \
@@ -83,7 +87,7 @@ def create_dataframe_skeletons(
             organize_dataframes_master_function. Parameter provided
             was: {param}""".format(param=sheet_output))
 
-    return dataframes_dict
+    return dataframes_dict, tables_or_classes_for_metric
 
 
 def setup_skeleton_function(
