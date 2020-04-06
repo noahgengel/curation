@@ -126,7 +126,7 @@ def setup_skeleton_function(
         be populated
     """
     dts_string = [
-        date_obj.strftime('%Y/%m/%d') for date_obj in datetimes]
+        date_obj.strftime('%m/%d/%Y') for date_obj in datetimes]
 
      # for final row or ultimate dataframe
     hpo_names.append('aggregate_info')

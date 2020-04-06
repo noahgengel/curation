@@ -278,7 +278,8 @@ def main():
         metric_dictionary=metric_dictionary,
         datetimes=datetimes, hpo_names=hpo_names,
         metric_choice=user_choice,
-        hpo_dictionary=hpo_dictionary)
+        hpo_dictionary=hpo_dictionary,
+        aggregate_metrics=aggregate_metrics)
 
 
 if __name__ == "__main__":

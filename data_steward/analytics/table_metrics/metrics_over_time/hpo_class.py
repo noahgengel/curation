@@ -413,7 +413,7 @@ class HPO:
 
             if dqm_table == table_or_class:  # discovered
                 row_count, total_rows = \
-                    self.use_table_name_to_find_rows(
+                    self.use_table_or_class_name_to_find_rows(
                         table_or_class=table_or_class,
                         metric=metric)
 
