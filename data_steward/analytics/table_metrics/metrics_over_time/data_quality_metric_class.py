@@ -58,9 +58,9 @@ class DataQualityMetric:
         self.data_quality_dimension = data_quality_dimension
         self.date = date
 
-    def print_dqd_attributes(self):
+    def print_attributes(self):
         """
-        Function is used to print out some of the attributes
+        Function is used to print out the attributes
         of a DataQualityMetric object in a manner that enables
         all of the information to be displayed in a
         human-readable format.
