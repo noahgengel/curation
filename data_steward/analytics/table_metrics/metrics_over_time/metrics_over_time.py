@@ -271,8 +271,6 @@ def main():
         metric_choice=user_choice)
 
     for am in aggregate_metrics:
-        print(type(am))
-        print(am)
         am.print_attributes()
 
 
