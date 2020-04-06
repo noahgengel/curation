@@ -16,7 +16,8 @@ from aggregate_metric_classes import AggregateMetricForTableOrClass, \
 
 from auxillary_aggregate_functions import \
     find_relevant_tables_or_classes, \
-    cycle_through_dqms_for_table, cycle_through_dqms_for_hpo, \
+    get_stats_for_weighted_table_aggregate_metric, \
+    get_stats_for_weighted_hpo_aggregate_metric, \
     find_unique_dates_and_metrics, \
     get_stats_for_unweighted_table_aggregate_metric
 
@@ -77,7 +78,7 @@ def create_weighted_aggregate_metrics_for_tables(
 
                     if hpo_object.date == date:
                         hpos_counted, total_rows, pertinent_rows = \
-                            cycle_through_dqms_for_table(
+                            get_stats_for_weighted_table_aggregate_metric(
                                 hpo_object=hpo_object,
                                 metric_type=metric_type,
                                 date=date,
@@ -157,7 +158,7 @@ def create_weighted_aggregate_metrics_for_hpos(
                         if hpo_object.date == date:
 
                             total_rows, pertinent_rows, tables_counted = \
-                                cycle_through_dqms_for_hpo(
+                                get_stats_for_weighted_hpo_aggregate_metric(
                                     hpo_object=hpo_object, metric=metric,
                                     date=date, hpo_name=hpo_object.name,
                                     tables_or_classes_counted=
@@ -176,7 +177,7 @@ def create_weighted_aggregate_metrics_for_hpos(
     return new_agg_metrics
 
 
-def create_aggregate_metric_for_dates(aggregate_metrics):
+def create_weighted_aggregate_metric_for_dates(aggregate_metrics):
     """
     This function is designed to create a special 'total'
     AggregateMetricForDate for a particular metric for each date.

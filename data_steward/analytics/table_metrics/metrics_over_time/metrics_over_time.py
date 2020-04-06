@@ -44,8 +44,6 @@ from startup_functions import \
 
 from data_quality_metric_class import DataQualityMetric
 
-from hpo_class import HPO
-
 from functions_to_create_dqm_objects import find_hpo_row, \
     get_info
 

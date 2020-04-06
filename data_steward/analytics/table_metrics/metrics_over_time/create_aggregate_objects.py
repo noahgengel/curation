@@ -16,7 +16,7 @@ from unweighted_aggregate_metric_functions import \
     create_unweighted_aggregate_metric_for_dates
 
 from weighted_aggregate_metric_functions import \
-    create_aggregate_metric_for_dates,\
+    create_weighted_aggregate_metric_for_dates,\
     create_weighted_aggregate_metrics_for_hpos, \
     create_weighted_aggregate_metrics_for_tables
 
@@ -124,7 +124,7 @@ def create_weighted_aggregate_metrics(
             datetimes=datetimes,
             metric_dictionary=metric_dictionary)
 
-        agg_met_for_dates = create_aggregate_metric_for_dates(
+        agg_met_for_dates = create_weighted_aggregate_metric_for_dates(
             aggregate_metrics=aggregate_metrics)
 
         aggregate_metrics.append(agg_met_for_dates)

@@ -47,7 +47,7 @@ def find_relevant_tables_or_classes(
     return tables_or_classes_for_metric
 
 
-def cycle_through_dqms_for_hpo(
+def get_stats_for_weighted_hpo_aggregate_metric(
     hpo_object, metric, date, hpo_name, tables_or_classes_counted,
     total_rows, pertinent_rows):
     """
@@ -124,7 +124,7 @@ def cycle_through_dqms_for_hpo(
     return total_rows, pertinent_rows, tables_or_classes_counted
 
 
-def cycle_through_dqms_for_table(
+def get_stats_for_weighted_table_aggregate_metric(
     hpo_object, metric_type, date, table_or_class, hpos_counted,
     total_rows, pertinent_rows):
     """
@@ -251,7 +251,8 @@ def get_stats_for_unweighted_table_aggregate_metric(
     AggregateMetricForTable because it has a unique set of date
     and metric parameters.
 
-    NOTE: this is similar to 'cycle_through_dqms_for_table'
+    NOTE: this is similar to
+        'get_stats_for_weighted_table_aggregate_metric'
         but DOES NOT give different weights to HPOs
 
     Parameters
@@ -320,10 +321,11 @@ def get_stats_for_unweighted_hpo_aggregate_metric(
     and metric parameters.
 
     This function, however, differs from
-    cycle_through_dqms_for_hpo in that it weights all of the
-    different classes equally. The other function instead
-    creates an 'aggregate' metric and weights the tables
-    / categories by their relative row contributions.
+    get_stats_for_weighted_hpo_aggregate_metric in that it
+    weights all of the different classes equally.
+    The other function instead creates an 'aggregate'
+    metric and weights the tables/categories by their
+    relative row contributions.
 
     Parameters
     ----------
