@@ -277,6 +277,9 @@ def hpo_sheets_chosen_create_uw_ams(
         # to an AggregateMetricForDate - serves as proxy for entire date
         for am in aggregate_metrics:
             if am.table_or_class_name in aggregate_metric_class_names:
+
+                # setting the total and pertinent rows to 0 - delineate
+                # that it is unweighted
                 am_for_date = AggregateMetricForDate(
                     date=am.date, metric_type=am.metric_type,
                     num_total_rows=0, num_pertinent_rows=0)
