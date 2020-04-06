@@ -77,12 +77,6 @@ def create_aggregate_metric_master_function(
             datetimes=datetimes,
             hpo_dictionary=hpo_dictionary)
 
-    for aggregate_metric in aggregate_metrics:
-        s = aggregate_metric.return_attributes_str()
-        print(s)
-
-        aggregate_metrics = []
-
     return aggregate_metrics
 
 

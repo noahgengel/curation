@@ -108,7 +108,8 @@ class AggregateMetricForTable:
         rate (float): the value to set as the overall rate
             for the AggregateMetricForTable object
         """
-        self.overall_rate = rate
+        # round by 2 to create metric consistency
+        self.overall_rate = round(rate, 2)
 
 
 class AggregateMetricForHPO:
@@ -214,7 +215,8 @@ class AggregateMetricForHPO:
         rate (float): the value to set as the overall rate
             for the AggregateMetricForTable object
         """
-        self.overall_rate = rate
+        # round by 2 to create metric consistency
+        self.overall_rate = round(rate, 2)
 
 
 class AggregateMetricForDate:
@@ -313,4 +315,5 @@ class AggregateMetricForDate:
         rate (float): the value to set as the overall rate
             for the AggregateMetricForTable object
         """
-        self.overall_rate = rate
+        # round by 2 to create metric consistency
+        self.overall_rate = round(rate, 2)
