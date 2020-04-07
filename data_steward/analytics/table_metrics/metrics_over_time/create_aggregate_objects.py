@@ -252,12 +252,20 @@ def hpo_sheets_chosen_create_uw_ams(
         that contain all of the 'aggregate metrics' to be displayed
     """
 
+    #FIXME: the logic should be to create the aggregate metrics for the tables
+    # then put those 
+
     # case where the metric already does not already exist as a DQM object
     if metric_choice not in unweighted_metric_already_integrated_for_hpo:
 
         aggregate_metrics = create_unweighted_aggregate_metrics_for_hpos(
             hpo_dictionary=hpo_dictionary,
             datetimes=datetimes, metric_dictionary=metric_dictionary)
+
+        # FIXME: need aggregate metrics for each date AND table
+
+        # FIXME: this next part (agg_met_for_dates) should be bypased
+        # FIXME: in cases where metric choice is in ____)
 
         agg_met_for_dates = create_unweighted_aggregate_metric_for_dates(
             aggregate_metrics=aggregate_metrics)
