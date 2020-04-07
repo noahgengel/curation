@@ -282,7 +282,8 @@ def hpo_sheets_chosen_create_uw_ams(
                 # that it is unweighted
                 am_for_date = AggregateMetricForDate(
                     date=am.date, metric_type=am.metric_type,
-                    num_total_rows=0, num_pertinent_rows=0)
+                    num_total_rows=0, num_pertinent_rows=0,
+                    table_or_class=am.table_or_class_name)
 
                 am_for_date.manually_set_overall_rate(
                     rate=am.overall_rate)

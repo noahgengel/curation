@@ -179,6 +179,9 @@ def create_weighted_aggregate_metrics_for_hpos(
     return new_agg_metrics
 
 
+# FIXME: Created weighted aggregate metric - not regardless
+#  of tables
+
 def create_weighted_aggregate_metric_for_dates(aggregate_metrics):
     """
     This function is designed to create a special 'total'
@@ -223,7 +226,8 @@ def create_weighted_aggregate_metric_for_dates(aggregate_metrics):
             amfd = AggregateMetricForDate(
                 date=date, metric_type=metric,
                 num_total_rows=num_total_rows,
-                num_pertinent_rows=num_pertinent_rows)
+                num_pertinent_rows=num_pertinent_rows,
+                table_or_class='aggregate_info')
 
             agg_metrics_for_dates.append(amfd)
 

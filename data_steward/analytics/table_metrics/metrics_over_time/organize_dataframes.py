@@ -506,7 +506,8 @@ def create_aggregate_info_df(
                 if isinstance(
                         aggregate_metric, AggregateMetricForDate) and \
                     (aggregate_metric.date == date) and \
-                        (aggregate_metric.metric_type == metric_choice_eng):
+                        (aggregate_metric.metric_type == metric_choice_eng) \
+                        and (aggregate_metric.table_or_class == table_or_class):
 
                     agg_metric_found = True
 
@@ -523,7 +524,7 @@ def create_aggregate_info_df(
                 "AggregateMetricForDate object not found for the " \
                 "following combination:\n\tDate: {date}" \
                 "\n\tMetric Type: {metric_type}".format(
-                    date=date, metric_type=metric_choice)
+                    date=date, metric_type=metric_choice_eng)
 
         df_of_interest.loc[table_or_class] = new_row
 
