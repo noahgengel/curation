@@ -78,8 +78,7 @@ def create_dataframe_skeletons(
         tables_or_classes_for_metric.append(
             'aggregate_info')
 
-        # exclude the 'aggregate_info' name
-        for hpo_name in hpo_names[:-1]:
+        for hpo_name in hpo_names:
 
             df = pd.DataFrame(
                 index=tables_or_classes_for_metric,

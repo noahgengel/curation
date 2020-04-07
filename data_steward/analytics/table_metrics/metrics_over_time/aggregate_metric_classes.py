@@ -224,7 +224,8 @@ class AggregateMetricForDate:
     """
     def __init__(
             self, date, metric_type,
-            num_total_rows, num_pertinent_rows):
+            num_total_rows, num_pertinent_rows,
+            table_or_class):
         """
         Initializes the attributes of the class.
 
@@ -248,11 +249,16 @@ class AggregateMetricForDate:
         overall_rate (float): shows the overall 'success'
             or failure rate based on the aforementioned
             parameters
+
+        table_or_class (string): the table or class that
+            the object is referrring to (e.g. 'Measurement'
+            or 'ACE Inhibitors')
         """
         self.date = date
         self.metric_type = metric_type
         self.num_total_rows = num_total_rows
         self.num_pertinent_rows = num_pertinent_rows
+        self.table_or_class = table_or_class
 
         try:
             self.overall_rate = round(
