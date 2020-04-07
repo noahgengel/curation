@@ -135,7 +135,7 @@ def create_dqm_objects_for_sheet(
 
 
 def create_dqm_list(dfs, file_names, datetimes, user_choice,
-    percent_bool, target_low, hpo_names):
+                    percent_bool, target_low, hpo_names):
     """
     Function is used to create all of the possible 'DataQualityMetric'
     objects that are needed given all of the inputted data.

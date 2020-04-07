@@ -20,7 +20,7 @@ from auxillary_aggregate_functions import find_relevant_tables_or_classes
 
 
 def create_dataframe_skeletons(
-    sheet_output, metric_dictionary, datetimes, hpo_names):
+        sheet_output, metric_dictionary, datetimes, hpo_names):
     """
     Function is used to create the 'skeletons' of the dataframes
     that will ultimately be produced. These dataframes are
@@ -89,8 +89,8 @@ def create_dataframe_skeletons(
 
     else:
         raise Exception(
-            """Bad parameter input for function 
-            organize_dataframes_master_function. Parameter provided
+            """Bad parameter input for function
+             organize_dataframes_master_function. Parameter provided
             was: {param}""".format(param=sheet_output))
 
     return dataframes_dict, tables_or_classes_for_metric
@@ -144,9 +144,9 @@ def setup_skeleton_function(
 
         if len(hpo_objs) > 0:  # relevant_metric
             tables_or_classes_for_metric = \
-            find_relevant_tables_or_classes(
-                hpo_object_list=hpo_objs,
-                metric_type=metric)
+                find_relevant_tables_or_classes(
+                    hpo_object_list=hpo_objs,
+                    metric_type=metric)
 
     # double check that the tables exist
     assert tables_or_classes_for_metric, \

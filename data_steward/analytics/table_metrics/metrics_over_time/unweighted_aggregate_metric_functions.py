@@ -22,7 +22,7 @@ from auxillary_aggregate_functions import \
 
 
 def create_unweighted_aggregate_metrics_for_tables(
-    metric_dictionary, datetimes):
+        metric_dictionary, datetimes):
     """
     Function is intended to create 'aggregate' data quality
     metrics that can be applied to a specific data quality metric
@@ -82,20 +82,23 @@ def create_unweighted_aggregate_metrics_for_tables(
                                 metric_type=metric_type, date=date,
                                 table_or_class=table_or_class,
                                 hpos_counted=hpos_counted,
-                                unweighted_metrics_for_hpos=unweighted_metrics_for_hpos)
+                                unweighted_metrics_for_hpos=
+                                unweighted_metrics_for_hpos)
 
-                    # setting these equal to 0 to differentiate these as a metric
-                    total_rows = 0
-                    pertinent_rows = 0
+                    # setting = 0 to show unweighted
+                    total_rows, pertinent_rows = 0, 0
 
-                    # here's where the 'unweighted' aspect comes in - simple mean
-                    overall_rate = sum(unweighted_metrics_for_hpos) / len(unweighted_metrics_for_hpos)
+                    # 'unweighted' aspect comes in - simple mean
+                    overall_rate = sum(unweighted_metrics_for_hpos) / \
+                        len(unweighted_metrics_for_hpos)
 
                     new_uw_agg_metric = AggregateMetricForTableOrClass(
-                        date=date, table_or_class_name=table_or_class, metric_type=metric_type,
-                        num_total_rows=total_rows, num_pertinent_rows=pertinent_rows)
+                        date=date, table_or_class_name=table_or_class,
+                        metric_type=metric_type, num_total_rows=total_rows,
+                        num_pertinent_rows=pertinent_rows)
 
-                    new_uw_agg_metric.manually_set_overall_rate(rate=overall_rate)
+                    new_uw_agg_metric.manually_set_overall_rate(
+                        rate=overall_rate)
 
                     new_agg_metrics.append(new_uw_agg_metric)
 
@@ -103,7 +106,7 @@ def create_unweighted_aggregate_metrics_for_tables(
 
 
 def create_unweighted_aggregate_metrics_for_hpos(
-    hpo_dictionary, datetimes, metric_dictionary):
+        hpo_dictionary, datetimes, metric_dictionary):
     """
     Function is intended to create 'aggregate' data quality
     metrics that can be applied to a specific data quality metric
@@ -168,18 +171,21 @@ def create_unweighted_aggregate_metrics_for_hpos(
                         if hpo_object.date == date:
 
                             statistics_to_average, \
-                            tables_and_classes_counted = \
+                                tables_and_classes_counted = \
                                 get_stats_for_unweighted_hpo_aggregate_metric(
                                     hpo_object=hpo_object, metric=metric,
                                     date=date, hpo_name=hpo_object.name,
-                                    tables_and_classes_counted=tables_and_classes_counted,
-                                    statistics_to_average=statistics_to_average)
+                                    tables_and_classes_counted=
+                                    tables_and_classes_counted,
+                                    statistics_to_average=
+                                    statistics_to_average)
 
-                    # setting these equal to 0 to differentiate these as a metric
+                    # setting = 0 to show unweighted
                     total_rows, pertinent_rows = 0, 0
 
-                    # here's where the 'unweighted' aspect comes in - simple mean
-                    overall_rate = sum(statistics_to_average) / len(statistics_to_average)
+                    # 'unweighted' aspect comes in - simple mean
+                    overall_rate = sum(statistics_to_average) / \
+                        len(statistics_to_average)
 
                     new_agg_metric = AggregateMetricForHPO(
                         date=date, hpo_name=hpo, metric_type=metric,

@@ -16,8 +16,8 @@ from dictionaries_lists_and_prompts import metric_type_to_english_dict
 
 
 def organize_dataframes_master_function(
-    sheet_output, metric_dictionary, datetimes, hpo_names,
-    metric_choice, hpo_dictionary, aggregate_metrics):
+        sheet_output, metric_dictionary, datetimes, hpo_names,
+        metric_choice, hpo_dictionary, aggregate_metrics):
     """
     Function is used to carry out the act of creating the
     dataframes with the data quality metrics that were
@@ -68,11 +68,11 @@ def organize_dataframes_master_function(
     """
 
     dataframes_dict, tables_or_classes_for_metric = \
-    create_dataframe_skeletons(
-        sheet_output=sheet_output,
-        metric_dictionary=metric_dictionary,
-        datetimes=datetimes,
-        hpo_names=hpo_names)
+        create_dataframe_skeletons(
+            sheet_output=sheet_output,
+            metric_dictionary=metric_dictionary,
+            datetimes=datetimes,
+            hpo_names=hpo_names)
 
     if sheet_output == 'table_sheets':
         dataframes_dict = populate_table_df_rows(
@@ -99,10 +99,10 @@ def organize_dataframes_master_function(
 
 
 def populate_table_df_rows(
-    datetimes,
-    hpo_names, dataframes_dict,
-    metric_choice, hpo_dictionary,
-    aggregate_metrics):
+        datetimes,
+        hpo_names, dataframes_dict,
+        metric_choice, hpo_dictionary,
+        aggregate_metrics):
     """
     Function is used to populate each 'table/class'
     dataframe row-by row. Each row of this dataframe
@@ -187,10 +187,10 @@ def populate_table_df_rows(
 
 
 def populate_hpo_df_rows(
-    datetimes,
-    tables_or_classes_for_metric, dataframes_dict,
-    metric_choice, hpo_dictionary,
-    aggregate_metrics):
+        datetimes,
+        tables_or_classes_for_metric, dataframes_dict,
+        metric_choice, hpo_dictionary,
+        aggregate_metrics):
     """
     Function is used to populate each 'table/class'
     dataframe row-by row. Each row of this dataframe
@@ -268,8 +268,8 @@ def populate_hpo_df_rows(
 
 
 def add_aggregate_to_end_of_table_class_df(
-    datetimes, aggregate_metrics, table_class_name,
-    metric_choice, df):
+        datetimes, aggregate_metrics, table_class_name,
+        metric_choice, df):
     """
     Function is used to add the 'aggregate metrics'
     to the bottom of a dataframe where:
@@ -317,7 +317,7 @@ def add_aggregate_to_end_of_table_class_df(
             # particular row/column combo in the dataframe
             if (aggregate_metric.date == date) and \
                 (aggregate_metric.table_or_class_name ==
-                     table_class_name) and \
+                    table_class_name) and \
                     (aggregate_metric.metric_type == metric_choice):
 
                 agg_metric_found = True
@@ -341,4 +341,3 @@ def add_aggregate_to_end_of_table_class_df(
     df.loc['aggregate_info'] = row_to_place
 
     return df
-

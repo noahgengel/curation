@@ -9,10 +9,8 @@ the create_aggregate_objects file and harness many of the
 functions in the auxillary_aggregate_functions file.
 """
 
-
 from aggregate_metric_classes import AggregateMetricForTableOrClass, \
     AggregateMetricForHPO, AggregateMetricForDate
-
 
 from auxillary_aggregate_functions import \
     find_relevant_tables_or_classes, \
@@ -23,7 +21,7 @@ from auxillary_aggregate_functions import \
 
 
 def create_weighted_aggregate_metrics_for_tables(
-    metric_dictionary, datetimes):
+        metric_dictionary, datetimes):
     """
     Function is intended to create 'aggregate' data quality
     metrics that can be applied to a specific data quality metric
@@ -90,8 +88,11 @@ def create_weighted_aggregate_metrics_for_tables(
                 # actually create the metric - culled for all three dimensions
 
                 new_am = AggregateMetricForTableOrClass(
-                    date=date, table_or_class_name=table_or_class_name, metric_type=metric_type,
-                    num_total_rows=total_rows, num_pertinent_rows=pertinent_rows)
+                    date=date,
+                    table_or_class_name=table_or_class_name,
+                    metric_type=metric_type,
+                    num_total_rows=total_rows,
+                    num_pertinent_rows=pertinent_rows)
 
                 new_agg_metrics.append(new_am)
 
@@ -100,7 +101,7 @@ def create_weighted_aggregate_metrics_for_tables(
 
 
 def create_weighted_aggregate_metrics_for_hpos(
-    hpo_dictionary, datetimes, metric_dictionary):
+        hpo_dictionary, datetimes, metric_dictionary):
     """
     Function is intended to create 'aggregate' data quality
     metrics that can be applied to a specific data quality metric
@@ -153,11 +154,12 @@ def create_weighted_aggregate_metrics_for_hpos(
                     for hpo_object in hpo_objects:
 
                         # want to exclude device exposure for now
-                        tables_or_classes_counted = ['Device Exposure']  # need to prevent double-counting
+                        tables_or_classes_counted = ['Device Exposure']
 
                         if hpo_object.date == date:
 
-                            total_rows, pertinent_rows, tables_counted = \
+                            total_rows, pertinent_rows, \
+                                tables_or_classes_counted = \
                                 get_stats_for_weighted_hpo_aggregate_metric(
                                     hpo_object=hpo_object, metric=metric,
                                     date=date, hpo_name=hpo_object.name,
@@ -212,7 +214,6 @@ def create_weighted_aggregate_metric_for_dates(aggregate_metrics):
             for agg_hpo_metric in aggregate_metrics:
                 if agg_hpo_metric.date == date \
                         and agg_hpo_metric.metric_type == metric:
-
                     hpo_total_rows = agg_hpo_metric.num_total_rows
                     hpo_pert_rows = agg_hpo_metric.num_pertinent_rows
 

@@ -362,7 +362,7 @@ class HPO:
             total_rows = self.num_drug_rows
         elif table_or_class == "Observation":
             total_rows = self.num_observation_rows
-        elif table_or_class == "Device Exposure":  # do not want to deal with this
+        elif table_or_class == "Device Exposure":  # ignore for now
             total_rows = 0
         else:
             raise Exception(

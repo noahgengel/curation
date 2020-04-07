@@ -7,7 +7,7 @@ file remains uncluttered and readable.
 
 
 def find_relevant_tables_or_classes(
-    hpo_object_list, metric_type):
+        hpo_object_list, metric_type):
     """
     This function is used to find the tables that should be
     either triaged into separate AggregateMetric objects
@@ -48,8 +48,8 @@ def find_relevant_tables_or_classes(
 
 
 def get_stats_for_weighted_hpo_aggregate_metric(
-    hpo_object, metric, date, hpo_name, tables_or_classes_counted,
-    total_rows, pertinent_rows):
+        hpo_object, metric, date, hpo_name, tables_or_classes_counted,
+        total_rows, pertinent_rows):
     """
     Function is used once an HPO is found and warrants its own
     AggregateMetricForHPO because it has a unique set of date
@@ -70,7 +70,7 @@ def get_stats_for_weighted_hpo_aggregate_metric(
     hpo_name (string): name of the HPO object
 
     tables_or_classes_counted (list): list of tables that
-        should not be counted in the 'overall tally'. 
+        should not be counted in the 'overall tally'.
         this is used to prevent the same table from being
         counted more than once
 
@@ -125,8 +125,8 @@ def get_stats_for_weighted_hpo_aggregate_metric(
 
 
 def get_stats_for_weighted_table_aggregate_metric(
-    hpo_object, metric_type, date, table_or_class, hpos_counted,
-    total_rows, pertinent_rows):
+        hpo_object, metric_type, date, table_or_class, hpos_counted,
+        total_rows, pertinent_rows):
     """
     Function is used once an table is found and warrants its own
     AggregateMetricForTable because it has a unique set of date
@@ -244,8 +244,8 @@ def find_unique_dates_and_metrics(aggregate_metrics):
 
 
 def get_stats_for_unweighted_table_aggregate_metric(
-    hpo_object, metric_type, date, table_or_class,
-    hpos_counted, unweighted_metrics_for_hpos):
+        hpo_object, metric_type, date, table_or_class,
+        hpos_counted, unweighted_metrics_for_hpos):
     """
     Function is used once a table is found and warrants its own
     AggregateMetricForTable because it has a unique set of date
@@ -313,8 +313,8 @@ def get_stats_for_unweighted_table_aggregate_metric(
 
 
 def get_stats_for_unweighted_hpo_aggregate_metric(
-    hpo_object, metric, date, hpo_name,
-    tables_and_classes_counted, statistics_to_average):
+        hpo_object, metric, date, hpo_name,
+        tables_and_classes_counted, statistics_to_average):
     """
     Function is used once an HPO is found and warrants its own
     AggregateMetricForHPO because it has a unique set of date

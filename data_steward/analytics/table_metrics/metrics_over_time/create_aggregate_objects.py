@@ -87,7 +87,7 @@ def create_aggregate_metric_master_function(
 
 
 def create_weighted_aggregate_metrics(
-    sheet_output, metric_dictionary, datetimes, hpo_dictionary):
+        sheet_output, metric_dictionary, datetimes, hpo_dictionary):
     """
     Function is used to create 'weighted' aggregate metrics that can
     be useful in terms of data =analysis
@@ -137,16 +137,16 @@ def create_weighted_aggregate_metrics(
 
     else:
         raise Exception(
-            """Bad parameter input for function 
-            create_aggregate_master_function. Parameter provided
+            """Bad parameter input for function
+             create_aggregate_master_function. Parameter provided
             was: {param}""".format(param=sheet_output))
 
     return aggregate_metrics
 
 
 def create_unweighted_aggregate_metrics(
-    sheet_output, metric_dictionary, datetimes, hpo_dictionary,
-    metric_choice):
+        sheet_output, metric_dictionary, datetimes, hpo_dictionary,
+        metric_choice):
     """
     Function is used to create 'unweighted' aggregate metrics
     that can be useful in terms of data analysis.
@@ -199,8 +199,8 @@ def create_unweighted_aggregate_metrics(
 
     else:
         raise Exception(
-            """Bad parameter input for function 
-            create_aggregate_master_function. Parameter provided
+            """Bad parameter input for function
+             create_aggregate_master_function. Parameter provided
             was: {param}""".format(param=sheet_output))
 
     return aggregate_metrics
