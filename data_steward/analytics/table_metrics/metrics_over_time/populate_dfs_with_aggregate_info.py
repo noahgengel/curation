@@ -228,6 +228,10 @@ def create_aggregate_info_df(
 
     metric_choice_eng = metric_type_to_english_dict[metric_choice]
 
+    # will be added later - not an aggregate_metric object
+    if 'aggregate_info' in tables_or_classes_for_metric:
+        tables_or_classes_for_metric.remove('aggregate_info')
+
     # each row
     for table_or_class in tables_or_classes_for_metric:
         new_row = []
@@ -248,7 +252,7 @@ def create_aggregate_info_df(
                         (aggregate_metric.metric_type ==
                          metric_choice_eng) \
                         and \
-                        (aggregate_metric.table_or_class == table_or_class):
+                        (aggregate_metric.table_or_class_name == table_or_class):
 
                     agg_metric_found = True
 
@@ -262,10 +266,12 @@ def create_aggregate_info_df(
                     new_row.append(aggregate_rate)
 
             assert agg_metric_found, \
-                "AggregateMetricForTable object not found for the " \
-                "following combination:\n\tDate: {date}" \
-                "\n\tMetric Type: {metric_type}".format(
-                    date=date, metric_type=metric_choice_eng)
+                "AggregateMetricForTableOrClass object not found for " \
+                "the following combination:\n\tDate: {date}" \
+                "\n\tMetric Type: {metric_type}\n\t" \
+                "Table Or Class: {table_or_class}".format(
+                    date=date, metric_type=metric_choice_eng,
+                    table_or_class=table_or_class)
 
         df_of_interest.loc[table_or_class] = new_row
 

@@ -119,16 +119,18 @@ def create_weighted_aggregate_metrics(
         AggregateMetricForHPO & AggregateMetricForDate)
         that contain all of the 'aggregate metrics' to be displayed
     """
-    if sheet_output == 'table_sheets':
-        aggregate_metrics = create_weighted_aggregate_metrics_for_tables(
+    # will always need the table aggregate_metrics
+    aggregate_metrics = create_weighted_aggregate_metrics_for_tables(
             metric_dictionary=metric_dictionary,
             datetimes=datetimes)
 
-    elif sheet_output == 'hpo_sheets':
-        aggregate_metrics = create_weighted_aggregate_metrics_for_hpos(
+    if sheet_output == 'hpo_sheets':
+        hpo_aggregate_metrics = create_weighted_aggregate_metrics_for_hpos(
             hpo_dictionary=hpo_dictionary,
             datetimes=datetimes,
             metric_dictionary=metric_dictionary)
+
+        aggregate_metrics.extend(hpo_aggregate_metrics)
 
         agg_met_for_dates = create_weighted_aggregate_metric_for_dates(
             aggregate_metrics=aggregate_metrics)
