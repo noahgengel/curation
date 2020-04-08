@@ -46,6 +46,18 @@ Prompts
 analysis_type_prompt: used to determine what data quality metric the user
     would like to analyze
 
+err_message_agg_for_table: displays the appropriate error message when the
+    AggregateMetricForTableOrClass can not be found with the designated
+    attributes
+
+err_message_agg_for_date: displays the appropriate error message when the
+    AggregateMetricForDate can not be found with the designated
+    attributes
+
+err_message_agg_for_hpo: displays the appropriate error message when the
+    AggregateMetricForHPO can not be found with the designated
+    attributes
+
 Lists
 -----
 row_count_col_names: shows the column names where one can find the
@@ -61,6 +73,7 @@ aggregate_metric_class_names: contains the 'names' of the aggregate
     metric objects that one can use
 """
 
+# ---------- Dictionaries ---------- #
 thresholds = {
     'concept_success_min': 90,
     'duplicates_max': 5,
@@ -75,22 +88,6 @@ thresholds = {
     'route_success_min': 85
 }
 
-
-# ----------USED FOR THE STARTUP OF A FILE ---------- #
-analysis_type_prompt = \
-        "\nWhat kind of analysis over time report would you like " \
-        "to generate for each site?\n\n" \
-        "A. Duplicates\n" \
-        "B. Amount of data following death dates\n" \
-        "C. Amount of data with end dates preceding start dates\n" \
-        "D. Success rate for concept_id field\n" \
-        "E. Population of the 'unit' field in the measurement table (" \
-        "only for specified measurements)\n" \
-        "F. Population of the 'route' field in the drug exposure table\n" \
-        "G. Percentage of expected drug ingredients observed\n" \
-        "H. Percentage of expected measurements observed\n" \
-        "I. Date consistency across tables \n\n" \
-        "Please specify your choice by typing the corresponding letter."
 
 choice_dict = {
     'a': 'duplicates',
@@ -304,6 +301,44 @@ row_count_col_names = [
     'visit_total_row'
 ]
 
+# ---------- Prompts ---------- #
+analysis_type_prompt = \
+        "\nWhat kind of analysis over time report would you like " \
+        "to generate for each site?\n\n" \
+        "A. Duplicates\n" \
+        "B. Amount of data following death dates\n" \
+        "C. Amount of data with end dates preceding start dates\n" \
+        "D. Success rate for concept_id field\n" \
+        "E. Population of the 'unit' field in the measurement table (" \
+        "only for specified measurements)\n" \
+        "F. Population of the 'route' field in the drug exposure table\n" \
+        "G. Percentage of expected drug ingredients observed\n" \
+        "H. Percentage of expected measurements observed\n" \
+        "I. Date consistency across tables \n\n" \
+        "Please specify your choice by typing the corresponding letter."
+
+
+err_message_agg_for_table = \
+    "AggregateMetricForTableOrClass object not found for " \
+    "the following combination:" \
+    "\n\tDate: {date}" \
+    "\n\tMetric Type: {metric_type}" \
+    "\n\tTable Or Class: {table_or_class}"
+
+err_message_agg_for_date = \
+    "AggregateMetricForDate object not found for the " \
+    "following combination:" \
+    "\n\tDate: {date}" \
+    "\n\tMetric Type: {metric_type}"
+
+err_message_agg_for_hpo = \
+    "AggregateMetricForHPO object not found for the " \
+    "following combination:" \
+    "\n\tDate: {date}" \
+    "\n\tHPO Name: {hpo_name}" \
+    "\n\tMetric Type: {metric_type}"
+
+# ---------- Lists ---------- #
 unweighted_metric_already_integrated_for_hpo = [
     'Drug Ingredient Integration',
     'Measurement Integration']

@@ -20,7 +20,11 @@ from aggregate_metric_classes import \
     AggregateMetricForHPO, AggregateMetricForDate,\
     AggregateMetricForTableOrClass
 
-from dictionaries_lists_and_prompts import metric_type_to_english_dict
+from dictionaries_lists_and_prompts import \
+    metric_type_to_english_dict, \
+    err_message_agg_for_table, \
+    err_message_agg_for_date, \
+    err_message_agg_for_hpo
 
 
 def add_aggregate_to_end_of_table_class_df(
@@ -87,10 +91,7 @@ def add_aggregate_to_end_of_table_class_df(
                 row_to_place.append(aggregate_rate)
 
         assert agg_metric_found, \
-            "AggregateMetricForTableOrClass object not found for the " \
-            "following combination:\n\tDate: {date}" \
-            "\n\tTable/Class Name: {table_class_name}" \
-            "\n\tMetric Type: {metric_type}".format(
+            err_message_agg_for_table.format(
                 date=date, table_class_name=table_class_name,
                 metric_type=metric_choice)
 
@@ -166,10 +167,7 @@ def add_aggregate_to_end_of_hpo_df(
                 row_to_place.append(aggregate_rate)
 
         assert agg_metric_found, \
-            "AggregateMetricForHPO object not found for the " \
-            "following combination:\n\tDate: {date}" \
-            "\n\tHPO Name: {hpo_name}" \
-            "\n\tMetric Type: {metric_type}".format(
+            err_message_agg_for_hpo.format(
                 date=date, hpo_name=hpo_id,
                 metric_type=metric_choice)
 
@@ -266,10 +264,7 @@ def create_aggregate_info_df(
                     new_row.append(aggregate_rate)
 
             assert agg_metric_found, \
-                "AggregateMetricForTableOrClass object not found for " \
-                "the following combination:\n\tDate: {date}" \
-                "\n\tMetric Type: {metric_type}\n\t" \
-                "Table Or Class: {table_or_class}".format(
+                err_message_agg_for_table.format(
                     date=date, metric_type=metric_choice_eng,
                     table_or_class=table_or_class)
 
@@ -345,9 +340,7 @@ def make_aggregate_row_for_aggregate_df(
 
         # want to ensure every date has a value
         assert agg_metric_found, \
-            "AggregateMetricForDate object not found for the " \
-            "following combination:\n\tDate: {date}" \
-            "\n\tMetric Type: {metric_type}".format(
+            err_message_agg_for_date.format(
                 date=date, metric_type=metric_choice)
 
     return row
