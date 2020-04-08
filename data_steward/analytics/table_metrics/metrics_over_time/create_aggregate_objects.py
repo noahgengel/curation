@@ -20,7 +20,7 @@ from weighted_aggregate_metric_functions import \
     create_weighted_aggregate_metrics_for_hpos, \
     create_weighted_aggregate_metrics_for_tables
 
-from dictionaries_lists_and_prompts import \
+from dictionaries_and_lists import \
     metrics_to_weight, \
     unweighted_metric_already_integrated_for_hpo, \
     aggregate_metric_class_names

@@ -10,7 +10,7 @@ be able to store information about
        for a particular HPO (across all tables)
 """
 
-from dictionaries_lists_and_prompts import full_names
+from dictionaries_and_lists import full_names
 
 
 class AggregateMetricForTableOrClass:

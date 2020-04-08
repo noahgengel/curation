@@ -20,12 +20,13 @@ from aggregate_metric_classes import \
     AggregateMetricForHPO, AggregateMetricForDate,\
     AggregateMetricForTableOrClass
 
-from dictionaries_lists_and_prompts import \
+from dictionaries_and_lists import \
     metric_type_to_english_dict, \
-    err_message_agg_for_table, \
-    err_message_agg_for_date, \
-    err_message_agg_for_hpo, \
     unweighted_metric_already_integrated_for_hpo
+
+from messages import err_message_agg_for_table, \
+    err_message_agg_for_date, \
+    err_message_agg_for_hpo
 
 
 def add_aggregate_to_end_of_table_class_df(

@@ -13,7 +13,7 @@ class. Please familiarize yourself with the aforementioned
 class before learning more about the HPO class.
 """
 
-from dictionaries_lists_and_prompts import thresholds
+from dictionaries_and_lists import thresholds
 import sys
 
 

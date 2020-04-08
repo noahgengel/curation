@@ -18,10 +18,13 @@ import pandas as pd
 import sys
 import datetime
 
-from dictionaries_lists_and_prompts import \
-    analysis_type_prompt, choice_dict, percentage_dict, \
-    target_low_dict, metric_type_to_english_dict, \
-    output_prompt, fnf_error
+from dictionaries_and_lists import \
+    choice_dict, percentage_dict, \
+    target_low_dict, metric_type_to_english_dict
+
+
+from messages import \
+    analysis_type_prompt, output_prompt, fnf_error
 
 
 def get_user_analysis_choice():

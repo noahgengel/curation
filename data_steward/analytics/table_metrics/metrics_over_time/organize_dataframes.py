@@ -12,7 +12,7 @@ user.
 
 from setup_dataframes import create_dataframe_skeletons
 
-from dictionaries_lists_and_prompts import \
+from dictionaries_and_lists import \
     metric_type_to_english_dict, \
     unweighted_metric_already_integrated_for_hpo
 

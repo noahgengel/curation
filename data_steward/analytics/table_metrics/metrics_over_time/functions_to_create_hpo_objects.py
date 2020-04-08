@@ -3,15 +3,13 @@ File is intended to store a number of functions that are
 used to create the HPO objects throughtout the script.
 """
 
-from dictionaries_lists_and_prompts import full_names, \
-    row_count_col_names
+from dictionaries_and_lists import full_names, \
+    row_count_col_names, metric_type_to_english_dict
 from hpo_class import HPO
 from startup_functions import load_files
 from functions_to_create_dqm_objects import find_hpo_row, \
     get_info
 import datetime
-
-from dictionaries_lists_and_prompts import metric_type_to_english_dict
 
 def establish_hpo_objects(dqm_objects):
     """

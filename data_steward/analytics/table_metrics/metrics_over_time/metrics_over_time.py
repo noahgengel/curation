@@ -47,7 +47,7 @@ from data_quality_metric_class import DataQualityMetric
 from functions_to_create_dqm_objects import find_hpo_row, \
     get_info
 
-from dictionaries_lists_and_prompts import \
+from dictionaries_and_lists import \
     metric_type_to_english_dict, data_quality_dimension_dict, \
     columns_to_document_for_sheet, table_based_on_column_provided
 
