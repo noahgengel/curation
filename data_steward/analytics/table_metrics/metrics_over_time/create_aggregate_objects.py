@@ -25,8 +25,6 @@ from dictionaries_lists_and_prompts import \
     unweighted_metric_already_integrated_for_hpo, \
     aggregate_metric_class_names
 
-from aggregate_metric_classes import AggregateMetricForDate
-
 
 def create_aggregate_metric_master_function(
         metric_dictionary, hpo_dictionary,

@@ -46,6 +46,9 @@ Prompts
 analysis_type_prompt: used to determine what data quality metric the user
     would like to analyze
 
+output_prompt: allows the user to decide whether s/he wants 'table-based'
+    sheets or 'HPO-based' sheets
+
 err_message_agg_for_table: displays the appropriate error message when the
     AggregateMetricForTableOrClass can not be found with the designated
     attributes
@@ -57,6 +60,9 @@ err_message_agg_for_date: displays the appropriate error message when the
 err_message_agg_for_hpo: displays the appropriate error message when the
     AggregateMetricForHPO can not be found with the designated
     attributes
+
+fnf_error: error message to display when a FileNotFoundError is
+    encountered
 
 Lists
 -----
@@ -317,6 +323,15 @@ analysis_type_prompt = \
         "I. Date consistency across tables \n\n" \
         "Please specify your choice by typing the corresponding letter."
 
+output_prompt = \
+    "\nWould you prefer to generate: \n" \
+    "A. {} sheets detailing the data quality for each table. " \
+    "The HPO IDs would be displayed as rows. \nor \n" \
+    "B. {} sheets detailing the data quality for each HPO site. " \
+    "The table type would be displayed as rows. This will " \
+    "also include 1-3 table(s) with statistics on the " \
+    "aggregate data for each table type on each date."
+
 
 err_message_agg_for_table = \
     "AggregateMetricForTableOrClass object not found for " \
@@ -337,6 +352,12 @@ err_message_agg_for_hpo = \
     "\n\tDate: {date}" \
     "\n\tHPO Name: {hpo_name}" \
     "\n\tMetric Type: {metric_type}"
+
+fnf_error = \
+    "{file} not found in the current directory: {cwd}. " \
+    "Please ensure that the file names are " \
+    "consistent between the Python script and the " \
+    "file name in your current directory."
 
 # ---------- Lists ---------- #
 unweighted_metric_already_integrated_for_hpo = [

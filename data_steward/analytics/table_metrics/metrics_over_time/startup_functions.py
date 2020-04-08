@@ -20,7 +20,8 @@ import datetime
 
 from dictionaries_lists_and_prompts import \
     analysis_type_prompt, choice_dict, percentage_dict, \
-    target_low_dict, metric_type_to_english_dict
+    target_low_dict, metric_type_to_english_dict, \
+    output_prompt, fnf_error
 
 
 def get_user_analysis_choice():
@@ -109,10 +110,7 @@ def load_files(user_choice, file_names):
         except Exception as ex:  # sheet not in specified excel file
 
             if type(ex).__name__ == "FileNotFoundError":
-                print("{file} not found in the current directory: {cwd}. "
-                      "Please ensure that the file names are "
-                      "consistent between the Python script and the "
-                      "file name in your current directory.".format(
+                print(fnf_error.format(
                         file=file_names[num_files_indexed], cwd=cwd))
                 sys.exit(0)
 
@@ -328,17 +326,9 @@ def understand_sheet_output_type(hpo_objects, hpo_names, analytics_type):
 
     num_names, num_tables = (len(hpo_names) + 1), (len(tables_or_classes))
 
-    output_prompt = \
-        "\nWould you prefer to generate: \n" \
-        "A. {} sheets detailing the data quality for each table. " \
-        "The HPO IDs would be displayed as rows. \nor \n" \
-        "B. {} sheets detailing the data quality for each HPO site. " \
-        "The table type would be displayed as rows. This will " \
-        "also include 1-3 table(s) with statistics on the " \
-        "aggregate data for each table type on each date.". \
-        format(num_tables, num_names)
+    output_txt = output_prompt.format(num_tables, num_names)
 
-    user_input = input(output_prompt).lower()
+    user_input = input(output_txt).lower()
     output_choice_dict = {
         'a': 'table_sheets', 'b': 'hpo_sheets'}
 
