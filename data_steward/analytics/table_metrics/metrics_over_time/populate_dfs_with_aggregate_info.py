@@ -274,7 +274,10 @@ def create_aggregate_info_df(
         datetimes=datetimes, metric_choice=metric_choice_eng,
         aggregate_metrics=aggregate_metrics)
 
-    dataframes_dict['aggregate_info'] = final_row
+    df_of_interest.loc['aggregate_info'] = final_row
+
+    # resetting accordingly
+    dataframes_dict['aggregate_info'] = df_of_interest
 
     return dataframes_dict
 
