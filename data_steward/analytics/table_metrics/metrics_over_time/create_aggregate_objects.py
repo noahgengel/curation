@@ -253,7 +253,10 @@ def hpo_sheets_chosen_create_uw_ams(
     """
 
     #FIXME: the logic should be to create the aggregate metrics for the tables
-    # then put those 
+    # then put those
+
+    aggregate_metrics = create_unweighted_aggregate_metrics_for_tables(
+            metric_dictionary=metric_dictionary, datetimes=datetimes)
 
     # case where the metric already does not already exist as a DQM object
     if metric_choice not in unweighted_metric_already_integrated_for_hpo:
@@ -262,10 +265,7 @@ def hpo_sheets_chosen_create_uw_ams(
             hpo_dictionary=hpo_dictionary,
             datetimes=datetimes, metric_dictionary=metric_dictionary)
 
-        # FIXME: need aggregate metrics for each date AND table
-
-        # FIXME: this next part (agg_met_for_dates) should be bypased
-        # FIXME: in cases where metric choice is in ____)
+        # FIXME: what does the function below do?
 
         agg_met_for_dates = create_unweighted_aggregate_metric_for_dates(
             aggregate_metrics=aggregate_metrics)
@@ -276,8 +276,8 @@ def hpo_sheets_chosen_create_uw_ams(
     # AND AggregateMetricForDate using DQMs that are inherently
     # already 'aggregate' by nature
     else:
-        aggregate_metrics = create_unweighted_aggregate_metrics_for_tables(
-            metric_dictionary=metric_dictionary, datetimes=datetimes)
+
+        # FIXME: don't need - already as a table object
 
         agg_met_for_dates = []
 

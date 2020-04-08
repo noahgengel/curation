@@ -201,9 +201,6 @@ def create_unweighted_aggregate_metrics_for_hpos(
     return new_agg_metrics
 
 
-# FIXME: need the function below but one that generates
-# for every single table/class
-
 def create_unweighted_aggregate_metric_for_dates(
         aggregate_metrics):
     """
