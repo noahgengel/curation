@@ -263,9 +263,10 @@ def create_excel_files(
     """
 
     output_file_name = metric_choice + "_" + sheet_output + \
-                   "_data_analytics.xlsx"
+        "_analytics_report.xlsx"
 
-    writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
+    writer = pd.ExcelWriter(
+        output_file_name, engine='xlsxwriter')
 
     for df_name, dataframe in df_dict.items():
         dataframe.to_excel(writer, sheet_name=df_name)
