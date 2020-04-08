@@ -252,51 +252,24 @@ def hpo_sheets_chosen_create_uw_ams(
         that contain all of the 'aggregate metrics' to be displayed
     """
 
-    #FIXME: the logic should be to create the aggregate metrics for the tables
-    # then put those
-
+    # going to appear in the 'aggregate_information' dataframe
     aggregate_metrics = create_unweighted_aggregate_metrics_for_tables(
             metric_dictionary=metric_dictionary, datetimes=datetimes)
 
     # case where the metric already does not already exist as a DQM object
     if metric_choice not in unweighted_metric_already_integrated_for_hpo:
 
+        # creates what will appear at the bottom of each HPO dataframe
+        # if it already is not a 'baked in' metric
         aggregate_metrics = create_unweighted_aggregate_metrics_for_hpos(
             hpo_dictionary=hpo_dictionary,
             datetimes=datetimes, metric_dictionary=metric_dictionary)
 
-        # FIXME: what does the function below do?
-
+        # below specifically creates what would be at the bottom of the
+        # aggregate dataframe - essentially the aggregate across all
+        # tables, HPOs, and dates for the same metric type
         agg_met_for_dates = create_unweighted_aggregate_metric_for_dates(
             aggregate_metrics=aggregate_metrics)
-
-        aggregate_metrics.extend(agg_met_for_dates)
-
-    # want to create AggregateMetricForTableOrClass for each class
-    # AND AggregateMetricForDate using DQMs that are inherently
-    # already 'aggregate' by nature
-    else:
-
-        # FIXME: don't need - already as a table object
-
-        agg_met_for_dates = []
-
-        # now we just need to find the table that applies 'all' and convert
-        # to an AggregateMetricForDate - serves as proxy for entire date
-        for am in aggregate_metrics:
-            if am.table_or_class_name in aggregate_metric_class_names:
-
-                # setting the total and pertinent rows to 0 - delineate
-                # that it is unweighted
-                am_for_date = AggregateMetricForDate(
-                    date=am.date, metric_type=am.metric_type,
-                    num_total_rows=0, num_pertinent_rows=0,
-                    table_or_class=am.table_or_class_name)
-
-                am_for_date.manually_set_overall_rate(
-                    rate=am.overall_rate)
-
-                agg_met_for_dates.append(am_for_date)
 
         aggregate_metrics.extend(agg_met_for_dates)
 
