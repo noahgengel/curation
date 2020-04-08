@@ -135,7 +135,7 @@ def create_weighted_aggregate_metrics(
 
         aggregate_metrics.extend(agg_met_for_dates)
 
-    else:
+    elif sheet_output != 'table_sheets':
         raise Exception(
             """Bad parameter input for function
              create_aggregate_master_function. Parameter provided
@@ -183,21 +183,23 @@ def create_unweighted_aggregate_metrics(
         AggregateMetricForHPO & AggregateMetricForDate)
         that contain all of the 'aggregate metrics' to be displayed
     """
-    if sheet_output == 'table_sheets':
-        aggregate_metrics = create_unweighted_aggregate_metrics_for_tables(
-            metric_dictionary=metric_dictionary,
-            datetimes=datetimes)
 
-    elif sheet_output == 'hpo_sheets':
+    # going to appear in the 'aggregate_information' dataframe
+    aggregate_metrics = create_unweighted_aggregate_metrics_for_tables(
+        metric_dictionary=metric_dictionary, datetimes=datetimes)
+
+    if sheet_output == 'hpo_sheets':
 
         # already includes 'AggregateMetricForDate' objects
-        aggregate_metrics = hpo_sheets_chosen_create_uw_ams(
+        aggregate_metrics_hpos = hpo_sheets_chosen_create_uw_ams(
             metric_choice=metric_choice,
             hpo_dictionary=hpo_dictionary,
             datetimes=datetimes,
             metric_dictionary=metric_dictionary)
 
-    else:
+        aggregate_metrics.extend(aggregate_metrics_hpos)
+
+    elif sheet_output != 'table_sheets':
         raise Exception(
             """Bad parameter input for function
              create_aggregate_master_function. Parameter provided
@@ -247,14 +249,9 @@ def hpo_sheets_chosen_create_uw_ams(
     Returns
     -------
     aggregate_metrics (list): list of metrics objects
-        (AggregateMetricForTableOrClass or
-        AggregateMetricForHPO & AggregateMetricForDate)
+        (AggregateMetricForHPO & AggregateMetricForDate)
         that contain all of the 'aggregate metrics' to be displayed
     """
-
-    # going to appear in the 'aggregate_information' dataframe
-    aggregate_metrics = create_unweighted_aggregate_metrics_for_tables(
-            metric_dictionary=metric_dictionary, datetimes=datetimes)
 
     # case where the metric already does not already exist as a DQM object
     if metric_choice not in unweighted_metric_already_integrated_for_hpo:
@@ -273,4 +270,8 @@ def hpo_sheets_chosen_create_uw_ams(
 
         aggregate_metrics.extend(agg_met_for_dates)
 
-    return aggregate_metrics
+        return aggregate_metrics
+    else:
+        # information logged in AggregateMetricForTable objects - empty list
+        # to signify that nothing needs to be appended
+        return []

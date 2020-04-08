@@ -12,7 +12,9 @@ user.
 
 from setup_dataframes import create_dataframe_skeletons
 
-from dictionaries_lists_and_prompts import metric_type_to_english_dict
+from dictionaries_lists_and_prompts import \
+    metric_type_to_english_dict, \
+    unweighted_metric_already_integrated_for_hpo
 
 from populate_dfs_with_aggregate_info import \
     create_aggregate_info_df, add_aggregate_to_end_of_table_class_df, \
@@ -181,11 +183,14 @@ def populate_table_df_rows(
 
             df.loc[hpo] = row_to_place
 
-        df = add_aggregate_to_end_of_table_class_df(
-            datetimes=datetimes,
-            aggregate_metrics=aggregate_metrics,
-            table_class_name=table_class_name,
-            metric_choice=metric_choice_eng, df=df)
+        # need to calculate and add the aggregate metric
+        if metric_choice not in \
+                unweighted_metric_already_integrated_for_hpo:
+            df = add_aggregate_to_end_of_table_class_df(
+                datetimes=datetimes,
+                aggregate_metrics=aggregate_metrics,
+                table_class_name=table_class_name,
+                metric_choice=metric_choice_eng, df=df)
 
         # replace
         dataframes_dict[table_class_name] = df
@@ -275,11 +280,14 @@ def populate_hpo_df_rows(
 
             df.loc[table_or_class] = row_to_place
 
-        df = add_aggregate_to_end_of_hpo_df(
-            datetimes=datetimes,
-            aggregate_metrics=aggregate_metrics,
-            hpo_id=hpo_name, metric_choice=metric_choice_eng,
-            df=df)
+        # need to add the 'aggregate metric'
+        if metric_choice not in \
+                unweighted_metric_already_integrated_for_hpo:
+            df = add_aggregate_to_end_of_hpo_df(
+                datetimes=datetimes,
+                aggregate_metrics=aggregate_metrics,
+                hpo_id=hpo_name, metric_choice=metric_choice_eng,
+                df=df)
 
         # replace
         dataframes_dict[hpo_name] = df

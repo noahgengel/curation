@@ -24,7 +24,8 @@ from dictionaries_lists_and_prompts import \
     metric_type_to_english_dict, \
     err_message_agg_for_table, \
     err_message_agg_for_date, \
-    err_message_agg_for_hpo
+    err_message_agg_for_hpo, \
+    unweighted_metric_already_integrated_for_hpo
 
 
 def add_aggregate_to_end_of_table_class_df(
@@ -270,11 +271,18 @@ def create_aggregate_info_df(
 
         df_of_interest.loc[table_or_class] = new_row
 
-    final_row = make_aggregate_row_for_aggregate_df(
-        datetimes=datetimes, metric_choice=metric_choice_eng,
-        aggregate_metrics=aggregate_metrics)
+    # need to separately calculate the aggregate metric
+    # for the day
+    if metric_choice not in \
+            unweighted_metric_already_integrated_for_hpo:
+        final_row = make_aggregate_row_for_aggregate_df(
+            datetimes=datetimes, metric_choice=metric_choice_eng,
+            aggregate_metrics=aggregate_metrics)
 
-    df_of_interest.loc['aggregate_info'] = final_row
+        df_of_interest.loc['aggregate_info'] = final_row
+    else:
+        # no need - already logged
+        df_of_interest = df_of_interest.drop('aggregate_info')
 
     # resetting accordingly
     dataframes_dict['aggregate_info'] = df_of_interest

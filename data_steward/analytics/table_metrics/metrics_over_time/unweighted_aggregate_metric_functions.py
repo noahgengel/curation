@@ -233,6 +233,9 @@ def create_unweighted_aggregate_metric_for_dates(
     dates, metrics, agg_metrics_for_dates = \
         find_unique_dates_and_metrics(aggregate_metrics=aggregate_metrics)
 
+    # show that this is across all tables and HPOs
+    table_or_class = 'aggregate_info'
+
     # should ultimately be len(dates) x len(metrics) AMFD objects
     for date in dates:
         for metric in metrics:
@@ -256,7 +259,8 @@ def create_unweighted_aggregate_metric_for_dates(
             amfd = AggregateMetricForDate(
                 date=date, metric_type=metric,
                 num_total_rows=num_total_rows,
-                num_pertinent_rows=num_pertinent_rows)
+                num_pertinent_rows=num_pertinent_rows,
+                table_or_class=table_or_class)
 
             amfd.manually_set_overall_rate(rate=overall_rate)
 

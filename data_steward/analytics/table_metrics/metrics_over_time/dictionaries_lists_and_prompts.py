@@ -361,7 +361,7 @@ fnf_error = \
 
 # ---------- Lists ---------- #
 unweighted_metric_already_integrated_for_hpo = [
-    'Drug Ingredient Integration',
-    'Measurement Integration']
+    'drug_success',
+    'sites_measurement']
 
 aggregate_metric_class_names = ['All Measurements', 'All Drugs']
