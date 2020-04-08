@@ -61,6 +61,8 @@ from create_aggregate_objects import \
 from organize_dataframes import \
     organize_dataframes_master_function
 
+import pandas as pd
+
 
 def create_dqm_objects_for_sheet(
         dataframe, hpo_names, user_choice, metric_is_percent,
@@ -232,6 +234,45 @@ def create_hpo_objects(dqm_objects, file_names, datetimes):
 
     return hpo_objects
 
+
+def create_excel_files(
+        metric_choice, sheet_output, df_dict):
+    """
+    Function is used to take all of the previously-
+    generated dataframes and output all of them
+    to a singular Excel file. Each dataframe will
+    be represented by a single tab on the Excel file.
+
+    Parameters
+    -----------
+    dataframes_dict (dict): has the following structure
+    key: the 'name' of the dataframe; the name of
+        the table/class or HPO
+
+    value: the dataframe - now populated with the
+        data from each HPO and the
+        'aggregate metric'
+
+    sheet_output (string): determines the type of 'output'
+        to be generated (e.g. the sheets are HPOs or the
+        sheets are tables.
+
+    metric_choice (str): the type of analysis that the user
+        wishes to perform. used to triage whether the function will
+        create a 'weighted' or unweighted' metric
+    """
+
+    output_file_name = metric_choice + "_" + sheet_output + \
+                   "_data_analytics.xlsx"
+
+    writer = pd.ExcelWriter(output_file_name, engine='xlsxwriter')
+
+    for df_name, dataframe in df_dict.items():
+        dataframe.to_excel(writer, sheet_name=df_name)
+
+    writer.save()
+
+
 # UNIONED EHR COMPARISON
 report1 = 'may_10_2019.xlsx'
 report2 = 'july_15_2019.xlsx'
@@ -257,7 +298,8 @@ def main():
         target_low=target_low, hpo_names=hpo_names)
 
     hpo_objects = create_hpo_objects(
-        dqm_objects=dqm_list, file_names=file_names, datetimes=datetimes)
+        dqm_objects=dqm_list, file_names=file_names,
+        datetimes=datetimes)
 
     metric_dictionary, hpo_dictionary = sort_hpos_into_dicts(
         hpo_objects=hpo_objects, hpo_names=hpo_names,
@@ -281,9 +323,10 @@ def main():
         hpo_dictionary=hpo_dictionary,
         aggregate_metrics=aggregate_metrics)
 
-    # TODO: create the actual output files
-
-    print(dataframes_dict)
+    create_excel_files(
+        metric_choice=user_choice,
+        sheet_output=sheet_output,
+        df_dict = dataframes_dict)
 
 
 if __name__ == "__main__":
