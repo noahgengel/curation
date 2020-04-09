@@ -14,7 +14,8 @@ from setup_dataframes import create_dataframe_skeletons
 
 from dictionaries_and_lists import \
     metric_type_to_english_dict, \
-    unweighted_metric_already_integrated_for_hpo
+    unweighted_metric_already_integrated_for_hpo, \
+    no_aggregate_metric_needed_for_hpo_sheets
 
 from populate_dfs_with_aggregate_info import \
     create_aggregate_info_df, add_aggregate_to_end_of_table_class_df, \
@@ -191,6 +192,9 @@ def populate_table_df_rows(
                 aggregate_metrics=aggregate_metrics,
                 table_class_name=table_class_name,
                 metric_choice=metric_choice_eng, df=df)
+        else:
+            # no need - already logged
+            df = df.drop('aggregate_info')
 
         # replace
         dataframes_dict[table_class_name] = df
@@ -282,12 +286,17 @@ def populate_hpo_df_rows(
 
         # need to add the 'aggregate metric'
         if metric_choice not in \
-                unweighted_metric_already_integrated_for_hpo:
+                unweighted_metric_already_integrated_for_hpo\
+                and metric_choice not in \
+                no_aggregate_metric_needed_for_hpo_sheets:
             df = add_aggregate_to_end_of_hpo_df(
                 datetimes=datetimes,
                 aggregate_metrics=aggregate_metrics,
                 hpo_id=hpo_name, metric_choice=metric_choice_eng,
                 df=df)
+        else:
+            # no need - already logged
+            df = df.drop('aggregate_info')
 
         # replace
         dataframes_dict[hpo_name] = df

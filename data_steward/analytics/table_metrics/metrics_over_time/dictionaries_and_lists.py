@@ -188,7 +188,7 @@ table_based_on_column_provided = {
     'All_Measurements': 'All Measurements',
     "Physical_Measurement": 'Physical Measurements',
     'CMP': 'Comprehensive Metabolic Panel',
-    'CBCwDiff': 'Complete Blood Count (CBC) with Differential',
+    'CBCwDiff': 'CBC with Differential',
     'CBC': 'Complete Blood Count (CBC)',
     'Lipid': 'Lipid'
 }
@@ -286,7 +286,10 @@ row_count_col_names = [
 
 # ---------- Lists ---------- #
 unweighted_metric_already_integrated_for_hpo = [
-    'drug_success',
-    'sites_measurement']
+    'drug_routes',
+    'measurement_units']
+
+no_aggregate_metric_needed_for_hpo_sheets = [
+    'drug_success', 'sites_measurement']
 
 aggregate_metric_class_names = ['All Measurements', 'All Drugs']

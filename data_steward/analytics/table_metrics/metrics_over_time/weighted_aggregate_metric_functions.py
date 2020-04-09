@@ -230,5 +230,4 @@ def create_weighted_aggregate_metric_for_dates(aggregate_metrics):
 
             agg_metrics_for_dates.append(amfd)
 
-
     return agg_metrics_for_dates
