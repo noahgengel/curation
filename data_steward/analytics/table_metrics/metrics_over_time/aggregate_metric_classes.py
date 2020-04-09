@@ -50,6 +50,10 @@ class AggregateMetricForTableOrClass:
             table that ultimately contribute to either the
             'success' or 'failure' rate for all of the HPOs
             for the particular date
+
+        unweighted_metric (bool): indicates whether the metric
+            relates to one that is weighted by the number
+            of rows contributed by each HPO
         """
         self.date = date
         self.table_or_class_name = table_or_class_name
@@ -63,6 +67,12 @@ class AggregateMetricForTableOrClass:
                 2)
         except ZeroDivisionError:
             self.overall_rate = 0
+
+        if num_pertinent_rows == 0 and \
+           num_total_rows == 0:
+            self.unweighted_metric = True
+        else:
+            self.unweighted_metric = False
 
     def print_attributes(self):
         """
@@ -79,13 +89,15 @@ class AggregateMetricForTableOrClass:
         Number of Total Rows: {total_rows}\n
         Number of Pertinent Rows: {pert_rows}\n
         Overall Rate: {rate}\n
+        Unweighted Metric?: {uw_metric}
         """.format(
             table_or_class_name=self.table_or_class_name,
             date=time,
             metric_type=self.metric_type,
             total_rows=self.num_total_rows,
             pert_rows=self.num_pertinent_rows,
-            rate=self.overall_rate
+            rate=self.overall_rate,
+            uw_metric=self.unweighted_metric
         )
 
         print(attributes_str)
@@ -150,6 +162,10 @@ class AggregateMetricForHPO:
 
         full_hpo_name (string): full 'human readable' name of
             the HPO in question
+
+        unweighted_metric (bool): indicates whether the metric
+            relates to one that is weighted by the number
+            of rows contributed by each table
         """
         self.date = date
         self.hpo_name = hpo_name
@@ -164,6 +180,12 @@ class AggregateMetricForHPO:
                 2)
         except ZeroDivisionError:
             self.overall_rate = 0
+
+        if num_pertinent_rows == 0 and \
+           num_total_rows == 0:
+            self.unweighted_metric = True
+        else:
+            self.unweighted_metric = False
 
     def print_attributes(self):
         """
@@ -180,14 +202,15 @@ class AggregateMetricForHPO:
         Number of Total Rows: {total_rows}\n
         Number of Pertinent Rows: {pert_rows}\n
         Overall Rate: {rate}\n
+        Unweighted Metric?: {uw_metric}
         """.format(
             hpo_name=self.hpo_name,
             date=time,
             metric_type=self.metric_type,
             total_rows=self.num_total_rows,
             pert_rows=self.num_pertinent_rows,
-            rate=self.overall_rate
-        )
+            rate=self.overall_rate,
+            uw_metric=self.unweighted_metric)
 
         print(attributes_str)
 
@@ -253,6 +276,10 @@ class AggregateMetricForDate:
         table_or_class (string): the table or class that
             the object is referrring to (e.g. 'Measurement'
             or 'ACE Inhibitors')
+
+        unweighted_metric (bool): indicates whether the metric
+            relates to one that is weighted by the number
+            of rows contributed by each table and/or HPO
         """
         self.date = date
         self.metric_type = metric_type
@@ -266,6 +293,12 @@ class AggregateMetricForDate:
                 2)
         except ZeroDivisionError:
             self.overall_rate = 0
+
+        if num_pertinent_rows == 0 and \
+           num_total_rows == 0:
+            self.unweighted_metric = True
+        else:
+            self.unweighted_metric = False
 
     def print_attributes(self):
         """
@@ -287,13 +320,14 @@ class AggregateMetricForDate:
         Number of Total Rows: {total_rows}\n
         Number of Pertinent Rows: {pert_rows}\n
         Overall Rate: {rate}\n
+        Unweighted Metric?: {uw_metric}
         """.format(
             date=time,
             metric_type=self.metric_type,
             total_rows=self.num_total_rows,
             pert_rows=self.num_pertinent_rows,
-            rate=self.overall_rate
-        )
+            rate=self.overall_rate,
+            uw_metric=self.unweighted_metric)
 
         print(attributes_str)
 
