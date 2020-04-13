@@ -39,34 +39,16 @@ print('Setting everything up...')
 import warnings
 
 warnings.filterwarnings('ignore')
-import pandas_gbq
 import pandas as pd
-import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
-from matplotlib.lines import Line2D
-
-import matplotlib.ticker as ticker
-import matplotlib.cm as cm
-import matplotlib as mpl
-
-import matplotlib.pyplot as plt
-
+# %matplotlib inline
 import os
-import sys
-from datetime import datetime
-from datetime import date
-from datetime import time
-from datetime import timedelta
-import time
+
 
 plt.style.use('ggplot')
 pd.options.display.max_rows = 999
 pd.options.display.max_columns = 999
 pd.options.display.max_colwidth = 999
-
-from IPython.display import HTML as html_print
 
 
 def cstr(s, color='black'):
@@ -78,7 +60,7 @@ print('done.')
 
 cwd = os.getcwd()
 cwd = str(cwd)
-print(cwd)
+print("Current working directory is: {cwd}".format(cwd=cwd))
 
 # +
 dic = {
@@ -133,95 +115,91 @@ site_map = pd.io.gbq.read_gbq('''
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_visit_occurrence`
+         `{DATASET}._mapping_visit_occurrence`
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_care_site`
+         `{DATASET}._mapping_care_site`
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_condition_occurrence`  
+         `{DATASET}._mapping_condition_occurrence`  
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_device_exposure`
+         `{DATASET}._mapping_device_exposure`
 
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_drug_exposure`
+         `{DATASET}._mapping_drug_exposure`
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_location`         
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{}._mapping_measurement`         
+         `{DATASET}._mapping_location`         
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_note`        
+         `{DATASET}._mapping_measurement`         
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_observation`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{}._mapping_person`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{}._mapping_procedure_occurrence`         
+         `{DATASET}._mapping_note`        
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_provider`
+         `{DATASET}._mapping_observation`         
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_specimen`
+         `{DATASET}._mapping_person`         
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_procedure_occurrence`         
+         
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_provider`
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_specimen`
     
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_visit_occurrence`   
-    ) 
-    order by 1
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET),
+         `{DATASET}._mapping_visit_occurrence`   
+    )     
+    '''.format(DATASET=DATASET),
                               dialect='standard')
 print(site_map.shape[0], 'records received.')
 # -
@@ -250,12 +228,12 @@ foreign_key_df = pd.io.gbq.read_gbq('''
        discharge_to_source_value, preceding_visit_occurrence_id,
         COUNT(*) as cnt
     FROM
-       `{}.unioned_ehr_visit_occurrence` AS t1
+       `{DATASET}.unioned_ehr_visit_occurrence` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
     FROM
-         `{}._mapping_visit_occurrence`) AS t2
+         `{DATASET}._mapping_visit_occurrence`) AS t2
     ON
         t1.visit_occurrence_id=t2.visit_occurrence_id
     WHERE
@@ -267,7 +245,7 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         COUNT(*) > 1
     ORDER BY
         1,2,3,4,5,6,7,8,9
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
+    '''.format(DATASET=DATASET),
                                     dialect='standard')
 print(foreign_key_df.shape[0], 'records received.')
 # -
@@ -296,12 +274,12 @@ condition_end_datetime, condition_type_concept_id, stop_reason, provider_id, vis
 condition_source_value, condition_source_concept_id, condition_status_source_value, condition_status_concept_id,
         COUNT(*) as cnt
     FROM
-       `{}.unioned_ehr_condition_occurrence` AS t1
+       `{DATASET}.unioned_ehr_condition_occurrence` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
     FROM
-         `{}._mapping_condition_occurrence`) AS t2
+         `{DATASET}._mapping_condition_occurrence`) AS t2
     ON
         t1.condition_occurrence_id=t2.condition_occurrence_id
     WHERE
@@ -313,8 +291,7 @@ condition_source_value, condition_source_concept_id, condition_status_source_val
         COUNT(*) > 1
     ORDER BY
         1,2,3,4,5,6,7,8,9,10,11,12,13,14
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                                    dialect='standard')
+    '''.format(DATASET=DATASET), dialect='standard')
 print(foreign_key_df.shape[0], 'records received.')
 # -
 
@@ -420,12 +397,12 @@ days_supply, sig, route_concept_id, lot_number, provider_id, visit_occurrence_id
 drug_source_concept_id, route_source_value, dose_unit_source_value,
         COUNT(*) as cnt
     FROM
-       `{}.unioned_ehr_drug_exposure` AS t1
+       `{DATASET}.unioned_ehr_drug_exposure` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
     FROM
-         `{}._mapping_drug_exposure`) AS t2
+         `{DATASET}._mapping_drug_exposure`) AS t2
     ON
         t1.drug_exposure_id=t2.drug_exposure_id
     WHERE
@@ -437,7 +414,7 @@ drug_source_concept_id, route_source_value, dose_unit_source_value,
         COUNT(*) > 1
     ORDER BY
         1,2,3
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
+    '''.format(DATASET=DATASET),
                                     dialect='standard')
 print(foreign_key_df.shape[0], 'records received.')
 # -
@@ -468,12 +445,12 @@ range_high, provider_id, visit_occurrence_id,
 measurement_source_value, measurement_source_concept_id, unit_source_value, value_source_value,
         COUNT(*) as cnt
     FROM
-       `{}.unioned_ehr_measurement` AS t1
+       `{DATASET}.unioned_ehr_measurement` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
     FROM
-         `{}._mapping_measurement`) AS t2
+         `{DATASET}._mapping_measurement`) AS t2
     ON
         t1.measurement_id=t2.measurement_id
     WHERE
@@ -485,7 +462,7 @@ measurement_source_value, measurement_source_concept_id, unit_source_value, valu
         COUNT(*) > 1
     ORDER BY
         1,2,3
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
+    '''.format(DATASET=DATASET),
                                     dialect='standard')
 print(foreign_key_df.shape[0], 'records received.')
 # -
@@ -514,12 +491,12 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         quantity, provider_id, visit_occurrence_id, procedure_source_value, procedure_source_concept_id, qualifier_source_value,
         COUNT(*) as cnt
     FROM
-       `{}.unioned_ehr_procedure_occurrence` AS t1
+       `{DATASET}.unioned_ehr_procedure_occurrence` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
     FROM
-         `{}._mapping_procedure_occurrence`) AS t2
+         `{DATASET}._mapping_procedure_occurrence`) AS t2
     ON
         t1.procedure_occurrence_id=t2.procedure_occurrence_id
     WHERE
@@ -531,7 +508,7 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         COUNT(*) > 1
     ORDER BY
         1,2,3,4,5,6,7,8,9,10,11,12,13,14
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
+    '''.format(DATASET=DATASET),
                                     dialect='standard')
 print(foreign_key_df.shape[0], 'records received.')
 # -
@@ -561,12 +538,12 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         value_source_value, questionnaire_response_id,
         COUNT(*) as cnt
     FROM
-       `{}.unioned_ehr_observation` AS t1
+       `{DATASET}.unioned_ehr_observation` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
     FROM
-         `{}._mapping_observation`) AS t2
+         `{DATASET}._mapping_observation`) AS t2
     ON
         t1.observation_id=t2.observation_id
     WHERE
@@ -578,7 +555,7 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         COUNT(*) > 1
     ORDER BY
         1,2,3,4,5,6,7,8,9,10,11,12,13,14
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
+    '''.format(DATASET=DATASET),
                                     dialect='standard')
 print(foreign_key_df.shape[0], 'records received.')
 # -
@@ -607,15 +584,14 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         specialty_source_concept_id, gender_source_value, gender_source_concept_id,
         COUNT(*) as cnt
     FROM
-       `{}.unioned_ehr_provider` AS t1
+       `{DATASET}.unioned_ehr_provider` AS t1
     GROUP BY
         1,2,3,4,5,6,7,8,9,10,11,12
     HAVING 
         COUNT(*) > 1
     ORDER BY
         1,2,3,4,5,6,7,8,9,10,11,12
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                                    dialect='standard')
+    '''.format(DATASET=DATASET), dialect='standard')
 print(foreign_key_df.shape[0], 'records received.')
 # -
 
@@ -636,12 +612,12 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         visit_occurrence_id, device_source_value, device_source_concept_id,
         COUNT(*) as cnt
     FROM
-       `{}.unioned_ehr_device_exposure` AS t1
+       `{DATASET}.unioned_ehr_device_exposure` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
     FROM
-         `{}._mapping_device_exposure`) AS t2
+         `{DATASET}._mapping_device_exposure`) AS t2
     ON
         t1.device_exposure_id=t2.device_exposure_id
     WHERE
@@ -653,7 +629,7 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         COUNT(*) > 1
     ORDER BY
         1,2,3,4,5,6,7,8,9,10,11,12,13,14
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
+    '''.format(DATASET=DATASET),
                                     dialect='standard')
 print(foreign_key_df.shape[0], 'records received.')
 # -
@@ -679,7 +655,7 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         person_id,death_date, death_datetime, death_type_concept_id, cause_concept_id, cause_source_value, cause_source_concept_id,
         COUNT(*) as cnt
     FROM
-       `{}.unioned_ehr_death` AS t1
+       `{DATASET}.unioned_ehr_death` AS t1
     WHERE
         t1.death_date IS NOT NULL AND t1.person_id IS NOT NULL 
     GROUP BY
@@ -688,8 +664,7 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         COUNT(*) > 1    
     ORDER BY
         1,2,3,4,5,6,7
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                                    dialect='standard')
+    '''.format(DATASET=DATASET), dialect='standard')
 print(foreign_key_df.shape[0], 'records received.')
 # -
 
@@ -708,14 +683,14 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         care_site_name, care_site_source_value,
         COUNT(*) as cnt
     FROM
-       `{}.unioned_ehr_care_site` AS t1
+       `{DATASET}.unioned_ehr_care_site` AS t1
     GROUP BY
         1,2,3,4,5
     HAVING 
         COUNT(*) > 1
     ORDER BY
         1,2,3,4,5
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
+    '''.format(DATASET=DATASET),
                                     dialect='standard')
 print(foreign_key_df.shape[0], 'records received.')
 # -
@@ -764,4 +739,4 @@ sites_success = sites_success.fillna(0)
 
 sites_success
 
-sites_success.to_csv("{cwd}\duplicates.csv".format(cwd = cwd))
+sites_success.to_csv("{cwd}/duplicates.csv".format(cwd = cwd))
