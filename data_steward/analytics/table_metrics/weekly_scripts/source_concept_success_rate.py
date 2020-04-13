@@ -38,34 +38,16 @@ print('Setting everything up...')
 import warnings
 
 warnings.filterwarnings('ignore')
-import pandas_gbq
 import pandas as pd
-import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
-from matplotlib.lines import Line2D
-
-import matplotlib.ticker as ticker
-import matplotlib.cm as cm
-import matplotlib as mpl
-
-import matplotlib.pyplot as plt
-
+# %matplotlib inline
 import os
-import sys
-from datetime import datetime
-from datetime import date
-from datetime import time
-from datetime import timedelta
-import time
+
 
 plt.style.use('ggplot')
 pd.options.display.max_rows = 999
 pd.options.display.max_columns = 999
 pd.options.display.max_colwidth = 999
-
-from IPython.display import HTML as html_print
 
 
 def cstr(s, color='black'):
@@ -77,7 +59,7 @@ print('done.')
 
 cwd = os.getcwd()
 cwd = str(cwd)
-print(cwd)
+print("Current working directory is: {cwd}".format(cwd=cwd))
 
 # +
 dic = {
@@ -132,95 +114,91 @@ site_map = pd.io.gbq.read_gbq('''
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_visit_occurrence`
+         `{DATASET}._mapping_visit_occurrence`
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_care_site`
+         `{DATASET}._mapping_care_site`
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_condition_occurrence`  
+         `{DATASET}._mapping_condition_occurrence`  
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_device_exposure`
+         `{DATASET}._mapping_device_exposure`
 
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_drug_exposure`
+         `{DATASET}._mapping_drug_exposure`
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_location`         
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{}._mapping_measurement`         
+         `{DATASET}._mapping_location`         
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_note`        
+         `{DATASET}._mapping_measurement`         
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_observation`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{}._mapping_person`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{}._mapping_procedure_occurrence`         
+         `{DATASET}._mapping_note`        
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_provider`
+         `{DATASET}._mapping_observation`         
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_specimen`
+         `{DATASET}._mapping_person`         
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_procedure_occurrence`         
+         
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_provider`
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_specimen`
     
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_visit_occurrence`   
-    ) 
-    order by 1
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET),
+         `{DATASET}._mapping_visit_occurrence`   
+    )     
+    '''.format(DATASET=DATASET),
                               dialect='standard')
 print(site_map.shape[0], 'records received.')
 # -
@@ -244,12 +222,12 @@ condition_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS condition_total_row
             FROM
-               `{}.unioned_ehr_condition_occurrence` AS t1
+               `{DATASET}.unioned_ehr_condition_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_condition_occurrence`)  AS t2
+                     `{DATASET}._mapping_condition_occurrence`)  AS t2
             ON
                 t1.condition_occurrence_id=t2.condition_occurrence_id
             GROUP BY
@@ -261,16 +239,16 @@ condition_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS condition_well_defined_row
             FROM
-               `{}.unioned_ehr_condition_occurrence` AS t1
+               `{DATASET}.unioned_ehr_condition_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_condition_occurrence`)  AS t2
+                     `{DATASET}._mapping_condition_occurrence`)  AS t2
             ON
                 t1.condition_occurrence_id=t2.condition_occurrence_id
             INNER JOIN
-                `{}.concept` as t3
+                `{DATASET}.concept` as t3
             ON
                 t3.concept_id = t1.condition_source_concept_id
             WHERE 
@@ -285,16 +263,16 @@ condition_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS condition_total_zero
             FROM
-               `{}.unioned_ehr_condition_occurrence` AS t1
+               `{DATASET}.unioned_ehr_condition_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_condition_occurrence`)  AS t2
+                     `{DATASET}._mapping_condition_occurrence`)  AS t2
             ON
                 t1.condition_occurrence_id=t2.condition_occurrence_id
             INNER JOIN
-                `{}.concept` as t3
+                `{DATASET}.concept` as t3
             ON
                 t3.concept_id = t1.condition_source_concept_id
             WHERE 
@@ -320,9 +298,7 @@ condition_concept_df = pd.io.gbq.read_gbq('''
         data1.src_hpo_id=data3.src_hpo_id
     ORDER BY
         1 DESC
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                                          dialect='standard')
+    '''.format(DATASET=DATASET), dialect='standard')
 condition_concept_df.shape
 
 condition_concept_df = condition_concept_df.fillna(0)
@@ -337,12 +313,12 @@ procedure_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS procedure_total_row
             FROM
-               `{}.unioned_ehr_procedure_occurrence` AS t1
+               `{DATASET}.unioned_ehr_procedure_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_procedure_occurrence`)  AS t2
+                     `{DATASET}._mapping_procedure_occurrence`)  AS t2
             ON
                 t1.procedure_occurrence_id=t2.procedure_occurrence_id
             GROUP BY
@@ -354,16 +330,16 @@ procedure_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS procedure_well_defined_row
             FROM
-               `{}.unioned_ehr_procedure_occurrence` AS t1
+               `{DATASET}.unioned_ehr_procedure_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_procedure_occurrence`)  AS t2
+                     `{DATASET}._mapping_procedure_occurrence`)  AS t2
             ON
                 t1.procedure_occurrence_id=t2.procedure_occurrence_id
             INNER JOIN
-                `{}.concept` as t3
+                `{DATASET}.concept` as t3
             ON
                 t3.concept_id = t1.procedure_source_concept_id
             WHERE 
@@ -385,9 +361,7 @@ procedure_concept_df = pd.io.gbq.read_gbq('''
         data1.src_hpo_id=data2.src_hpo_id
     ORDER BY
         1 DESC
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                                          dialect='standard')
+    '''.format(DATASET=DATASET), dialect='standard')
 procedure_concept_df.shape
 
 procedure_concept_df = procedure_concept_df.fillna(0)
@@ -402,12 +376,12 @@ drug_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS drug_total_row
             FROM
-               `{}.unioned_ehr_drug_exposure` AS t1
+               `{DATASET}.unioned_ehr_drug_exposure` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_drug_exposure`)  AS t2
+                     `{DATASET}._mapping_drug_exposure`)  AS t2
             ON
                 t1.drug_exposure_id=t2.drug_exposure_id
             GROUP BY
@@ -419,16 +393,16 @@ drug_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS drug_well_defined_row
             FROM
-               `{}.unioned_ehr_drug_exposure` AS t1
+               `{DATASET}.unioned_ehr_drug_exposure` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_drug_exposure`)  AS t2
+                     `{DATASET}._mapping_drug_exposure`)  AS t2
             ON
                 t1.drug_exposure_id=t2.drug_exposure_id
             INNER JOIN
-                `{}.concept` as t3
+                `{DATASET}.concept` as t3
             ON
                 t3.concept_id = t1.drug_source_concept_id
             WHERE 
@@ -450,9 +424,7 @@ drug_concept_df = pd.io.gbq.read_gbq('''
         data1.src_hpo_id=data2.src_hpo_id
     ORDER BY
         1 DESC
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                                     dialect='standard')
+    '''.format(DATASET=DATASET), dialect='standard')
 drug_concept_df.shape
 
 drug_concept_df = drug_concept_df.fillna(0)
@@ -469,12 +441,12 @@ observation_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS observation_total_row
             FROM
-               `{}.unioned_ehr_observation` AS t1
+               `{DATASET}.unioned_ehr_observation` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_observation`)  AS t2
+                     `{DATASET}._mapping_observation`)  AS t2
             ON
                 t1.observation_id=t2.observation_id
             GROUP BY
@@ -486,16 +458,16 @@ observation_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS observation_well_defined_row
             FROM
-               `{}.unioned_ehr_observation` AS t1
+               `{DATASET}.unioned_ehr_observation` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_observation`)  AS t2
+                     `{DATASET}._mapping_observation`)  AS t2
             ON
                 t1.observation_id=t2.observation_id
             INNER JOIN
-                `{}.concept` as t3
+                `{DATASET}.concept` as t3
             ON
                 t3.concept_id = t1.observation_source_concept_id 
             WHERE 
@@ -517,9 +489,7 @@ observation_concept_df = pd.io.gbq.read_gbq('''
         data1.src_hpo_id=data2.src_hpo_id
     ORDER BY
         1 DESC
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                                            dialect='standard')
+    '''.format(DATASET=DATASET), dialect='standard')
 observation_concept_df.shape
 
 observation_concept_df = observation_concept_df.fillna(0)
@@ -534,12 +504,12 @@ measurement_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS measurement_total_row
             FROM
-               `{}.unioned_ehr_measurement` AS t1
+               `{DATASET}.unioned_ehr_measurement` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_measurement`)  AS t2
+                     `{DATASET}._mapping_measurement`)  AS t2
             ON
                 t1.measurement_id=t2.measurement_id
             GROUP BY
@@ -551,16 +521,16 @@ measurement_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS measurement_well_defined_row
             FROM
-               `{}.unioned_ehr_measurement` AS t1
+               `{DATASET}.unioned_ehr_measurement` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_measurement`)  AS t2
+                     `{DATASET}._mapping_measurement`)  AS t2
             ON
                 t1.measurement_id=t2.measurement_id
             INNER JOIN
-                `{}.concept` as t3
+                `{DATASET}.concept` as t3
             ON
                 t3.concept_id = t1.measurement_source_concept_id
             WHERE 
@@ -582,9 +552,7 @@ measurement_concept_df = pd.io.gbq.read_gbq('''
         data1.src_hpo_id=data2.src_hpo_id
     ORDER BY
         1 DESC
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                                            dialect='standard')
+    '''.format(DATASET=DATASET), dialect='standard')
 measurement_concept_df.shape
 
 measurement_concept_df = measurement_concept_df.fillna(0)
@@ -599,12 +567,12 @@ visit_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS visit_total_row
             FROM
-               `{}.unioned_ehr_visit_occurrence` AS t1
+               `{DATASET}.unioned_ehr_visit_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_visit_occurrence`)  AS t2
+                     `{DATASET}._mapping_visit_occurrence`)  AS t2
             ON
                 t1.visit_occurrence_id=t2.visit_occurrence_id
             GROUP BY
@@ -616,16 +584,16 @@ visit_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS visit_well_defined_row
             FROM
-               `{}.unioned_ehr_visit_occurrence` AS t1
+               `{DATASET}.unioned_ehr_visit_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
                 FROM
-                     `{}._mapping_visit_occurrence`)  AS t2
+                     `{DATASET}._mapping_visit_occurrence`)  AS t2
             ON
                 t1.visit_occurrence_id=t2.visit_occurrence_id
             INNER JOIN
-                `{}.concept` as t3
+                `{DATASET}.concept` as t3
             ON
                 t3.concept_id = t1.visit_source_concept_id
             WHERE 
@@ -647,9 +615,7 @@ visit_concept_df = pd.io.gbq.read_gbq('''
         data1.src_hpo_id=data2.src_hpo_id
     ORDER BY
         1 DESC
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                                      dialect='standard')
+    '''.format(DATASET=DATASET), dialect='standard')
 visit_concept_df.shape
 
 visit_concept_df = visit_concept_df.fillna(0)
@@ -669,4 +635,6 @@ master_df
 
 source = pd.merge(master_df, site_df, how='outer', on='src_hpo_id')
 source = source.fillna("No Data")
-source.to_csv("{cwd}\source_concept_success_rate.csv".format(cwd = cwd))
+source.to_csv("{cwd}/source_concept_success_rate.csv".format(cwd = cwd))
+
+
