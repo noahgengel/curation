@@ -25,6 +25,12 @@ client = bigquery.Client()
 
 # %load_ext google.cloud.bigquery
 
+# +
+from notebooks import parameters
+DATASET = parameters.LATEST_DATASET
+
+print("Dataset to use: {DATASET}".format(DATASET = DATASET))
+
 # + endofcell="--"
 #######################################
 print('Setting everything up...')
@@ -46,8 +52,6 @@ import matplotlib.cm as cm
 import matplotlib as mpl
 
 import matplotlib.pyplot as plt
-
-DATASET = ''
 
 import os
 import sys

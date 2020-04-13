@@ -22,6 +22,12 @@ client = bigquery.Client()
 # %reload_ext google.cloud.bigquery
 
 # +
+from notebooks import parameters
+DATASET = parameters.LATEST_DATASET
+
+print("Dataset to use: {DATASET}".format(DATASET = DATASET))
+
+# +
 #######################################
 print('Setting everything up...')
 #######################################
@@ -51,8 +57,6 @@ from datetime import date
 from datetime import time
 from datetime import timedelta
 import time
-
-DATASET = ''
 
 plt.style.use('ggplot')
 pd.options.display.max_rows = 999

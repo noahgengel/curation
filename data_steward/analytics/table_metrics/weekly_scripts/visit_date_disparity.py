@@ -24,6 +24,12 @@ client = bigquery.Client()
 
 # %load_ext google.cloud.bigquery
 
+# +
+from notebooks import parameters
+DATASET = parameters.LATEST_DATASET
+
+print("Dataset to use: {DATASET}".format(DATASET = DATASET))
+
 # + endofcell="--"
 #######################################
 print('Setting everything up...')
@@ -39,8 +45,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 from matplotlib.lines import Line2D
-
-from notebooks import parameters
 
 import matplotlib.ticker as ticker
 import matplotlib.cm as cm
@@ -74,11 +78,6 @@ print(cwd)
 print('done.')
 # -
 # --
-
-# +
-DATASET = parameters.LATEST_DATASET
-
-print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
 # +
 dic = {
