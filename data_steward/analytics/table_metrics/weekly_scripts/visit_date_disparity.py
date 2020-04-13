@@ -930,6 +930,6 @@ final_success_df = pd.merge(final_success_df, short_condition_df, how='outer', o
 final_success_df
 # -
 
-final_success_df.to_csv("{cwd}\\visit_date_disparity.csv".format(cwd = cwd))
+final_success_df.to_csv("{cwd}/visit_date_disparity.csv".format(cwd = cwd))
 
 
