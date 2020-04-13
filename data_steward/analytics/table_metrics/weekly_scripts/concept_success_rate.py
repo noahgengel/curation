@@ -264,10 +264,7 @@ condition_concept_df = pd.io.gbq.read_gbq('''
 
     SELECT
         data1.src_hpo_id,
-        condition_well_defined_row,
         condition_total_row,
-        condition_total_zeros_or_null,
-        condition_total_null,
         round(100*(condition_well_defined_row/condition_total_row),1) as condition_success_rate
     FROM
         data1
@@ -284,7 +281,7 @@ condition_concept_df = pd.io.gbq.read_gbq('''
     ON
         data1.src_hpo_id=data4.src_hpo_id
     ORDER BY
-        4 DESC
+        2 DESC
     '''.format(DATASET=DATASET), dialect='standard')
 condition_concept_df.shape
 
@@ -376,9 +373,6 @@ procedure_concept_df = pd.io.gbq.read_gbq('''
 
     SELECT
         data1.src_hpo_id,
-        procedure_well_defined_row,
-        procedure_total_zero_null,
-        procedure_total_null,
         procedure_total_row,
         round(100*(procedure_well_defined_row/procedure_total_row),1) as procedure_success_rate
     FROM
@@ -396,7 +390,7 @@ procedure_concept_df = pd.io.gbq.read_gbq('''
     ON
         data1.src_hpo_id=data4.src_hpo_id
     ORDER BY
-        1 DESC
+        2 DESC
     '''.format(DATASET=DATASET), dialect='standard')
 procedure_concept_df.shape
 
@@ -491,9 +485,6 @@ drug_concept_df = pd.io.gbq.read_gbq('''
         
     SELECT
         data1.src_hpo_id,
-        drug_well_defined_row,
-        drug_total_zero_null,
-        drug_total_null,
         drug_total_row,
         round(100*(drug_well_defined_row/drug_total_row),1) as drug_success_rate
     FROM
@@ -511,7 +502,7 @@ drug_concept_df = pd.io.gbq.read_gbq('''
     ON
         data1.src_hpo_id=data4.src_hpo_id
     ORDER BY
-        1 DESC
+        2 DESC
     '''.format(DATASET = DATASET), dialect='standard')
 drug_concept_df.shape
 
@@ -610,9 +601,6 @@ observation_concept_df = pd.io.gbq.read_gbq('''
 
     SELECT
         data1.src_hpo_id,
-        observation_total_zero_missing,
-        observation_total_missing,
-        observation_well_defined_row,
         observation_total_row,
         round(100*(observation_well_defined_row/observation_total_row),1) as observation_success_rate
     FROM
@@ -630,7 +618,7 @@ observation_concept_df = pd.io.gbq.read_gbq('''
     ON
         data1.src_hpo_id=data4.src_hpo_id
     ORDER BY
-        1 DESC
+        2 DESC
     '''.format(DATASET = DATASET), dialect='standard')
 observation_concept_df.shape
 
@@ -726,9 +714,6 @@ measurement_concept_df = pd.io.gbq.read_gbq('''
 
     SELECT
         data1.src_hpo_id,
-        measurement_total_zero_missing,
-        measurement_total_missing,
-        measurement_well_defined_row,
         measurement_total_row,
         round(100*(measurement_well_defined_row/measurement_total_row),1) as  measurement_success_rate
     FROM
@@ -746,7 +731,7 @@ measurement_concept_df = pd.io.gbq.read_gbq('''
     ON
         data1.src_hpo_id=data4.src_hpo_id
     ORDER BY
-        1 DESC
+        2 DESC
     '''.format(DATASET=DATASET), dialect='standard')
 measurement_concept_df.shape
 
@@ -838,9 +823,6 @@ visit_concept_df = pd.io.gbq.read_gbq('''
 
     SELECT
         data1.src_hpo_id,
-        visit_well_defined_row,
-        visit_total_zero_null,
-        visit_total_null,
         visit_total_row,
         round(100*(visit_well_defined_row/visit_total_row),1) as visit_success_rate
     FROM
@@ -858,7 +840,7 @@ visit_concept_df = pd.io.gbq.read_gbq('''
     ON
         data1.src_hpo_id=data4.src_hpo_id
     ORDER BY
-        1 DESC
+        2 DESC
     '''.format(DATASET=DATASET),dialect='standard')
 visit_concept_df.shape
 
@@ -887,4 +869,4 @@ success_rate
 success_rate = success_rate.fillna(0)
 success_rate
 
-success_rate.to_csv("{cwd}\concept.csv".format(cwd = cwd))
+success_rate.to_csv("{cwd}/concept.csv".format(cwd = cwd))
