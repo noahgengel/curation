@@ -439,53 +439,11 @@ observation = observation[["src_hpo_id", "observation"]]
 observation = observation.fillna(100)
 observation
 
-# ## Device Exposure Table
-
-# +
-######################################
-print('Getting the data from the database...')
-######################################
-
-temporal_df = pd.io.gbq.read_gbq('''
-    SELECT
-        src_hpo_id,
-        COUNT(*) AS total,
-        sum(case when (DATE_DIFF(device_exposure_start_date, death_date, DAY)>30) then 1 else 0 end) as wrong_death_date
-    FROM
-       `{DATASET}.unioned_ehr_device_exposure` AS t1
-    INNER JOIN
-        `{DATASET}.unioned_ehr_death` AS t2
-        ON
-            t1.person_id=t2.person_id
-    INNER JOIN
-        (SELECT
-            DISTINCT * 
-        FROM
-             `{DATASET}._mapping_device_exposure`)  AS t3
-    ON
-        t1.device_exposure_id=t3.device_exposure_id
-    GROUP BY
-        1
-    '''.format(DATASET=DATASET), dialect='standard')
-temporal_df.shape
-
-print(temporal_df.shape[0], 'records received.')
-# -
-
-temporal_df['success_rate'] = 100 - round(
-    100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
-temporal_df
-
-device_exposure = temporal_df.rename(columns={"success_rate": "device_exposure"})
-device_exposure = device_exposure[["src_hpo_id", "device_exposure"]]
-device_exposure = device_exposure.fillna(100)
-device_exposure
-
 # ## 4. Success Rate Temporal Data Points - Data After Death Date
 
 datas = [
     condition_occurrence, drug_exposure, measurement, procedure_occurrence,
-    observation, device_exposure]
+    observation]
 
 master_df = visit_occurrence
 

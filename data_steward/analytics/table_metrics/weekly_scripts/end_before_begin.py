@@ -426,79 +426,6 @@ total_row = temporal_df['total_rows'].sum()
 percent = round(100 - 100 * (total_wrong / (total_row)), 1)
 percent
 
-# ## Device Exposure Table
-
-# +
-######################################
-print('Getting the data from the database...')
-######################################
-
-temporal_df = pd.io.gbq.read_gbq('''
-    SELECT
-        COUNT(*) AS total,
-        sum(case when (t1.device_exposure_start_date>t1.device_exposure_end_date) then 1 else 0 end) as wrong_date
-    FROM
-       `{DATASET}.unioned_ehr_device_exposure` AS t1
-    '''.format(DATASET=DATASET),
-                                 dialect='standard')
-temporal_df.shape
-
-print(temporal_df.shape[0], 'records received.')
-# -
-
-temporal_df
-
-print("success rate for device is: ",
-      round(100 - 100 * (temporal_df.iloc[0, 1] / temporal_df.iloc[0, 0]), 1))
-
-# ### Device Exposure Table By Site
-
-# +
-######################################
-print('Getting the data from the database...')
-######################################
-
-temporal_df = pd.io.gbq.read_gbq('''
-    SELECT
-        src_hpo_id,
-        COUNT(*) AS total_rows,
-        sum(case when (t1.device_exposure_start_date>t1.device_exposure_end_date) then 1 else 0 end) as wrong_date_rows
-    FROM
-       `{DATASET}.unioned_ehr_device_exposure` AS t1
-    INNER JOIN
-        (SELECT
-            DISTINCT * 
-        FROM
-             `{DATASET}._mapping_device_exposure`)  AS t2
-    ON
-        t1.device_exposure_id=t2.device_exposure_id
-    GROUP BY
-        1
-    '''.format(DATASET=DATASET),
-                                 dialect='standard')
-temporal_df.shape
-
-print(temporal_df.shape[0], 'records received.')
-# -
-
-temporal_df['success_rate'] = 100 - round(
-    100 * temporal_df['wrong_date_rows'] / temporal_df['total_rows'], 1)
-temporal_df
-
-device_exposure = temporal_df.rename(columns={"success_rate": "device_exposure"})
-device_exposure = device_exposure[["src_hpo_id", "device_exposure"]]
-device_exposure = device_exposure.fillna(100)
-device_exposure
-
-total_wrong = temporal_df['wrong_date_rows'].sum()
-total_wrong
-
-total_row = temporal_df['total_rows'].sum()
-percent = round(100 - 100 * (total_wrong / (total_row)), 1)
-percent
-
-temporal_df
-
 # ## Temporal Data Points - End Dates Before Start Dates
 
 # +
@@ -508,10 +435,9 @@ success_rate = pd.merge(visit_occurrence,
                        how='outer',
                        on='src_hpo_id')
 success_rate = pd.merge(success_rate, drug_exposure, how='outer', on='src_hpo_id')
-success_rate = pd.merge(success_rate,
-                       device_exposure,
-                       how='outer',
-                       on='src_hpo_id')
+
+
+
 success_rate = pd.merge(success_rate, site_df, how='outer', on='src_hpo_id')
 success_rate = success_rate.fillna(100)
 success_rate
