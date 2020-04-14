@@ -12,10 +12,6 @@
 #     name: python3
 # ---
 
-# +
-# #!pip install --upgrade google-cloud-bigquery[pandas]
-# -
-
 from google.cloud import bigquery
 
 # %reload_ext google.cloud.bigquery
