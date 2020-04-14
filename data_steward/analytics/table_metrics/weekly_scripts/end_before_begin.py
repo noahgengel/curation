@@ -13,6 +13,14 @@
 #     name: python3
 # ---
 
+# ### NOTE: This notebook only looks at the following three tables:
+# - Visit Occurrence, Condition Occurrence, and Measurement
+#
+# ### The following three tables are excluded:
+# - Observation, Procedure Occurrence, Measurement
+#
+# ### The aforementioned three tables are excluded because there is neither a "start" nor an "end" date fields in this table. There is only a single "date" and "datetime" field. This prevents the 'end date' from preceding the 'start date' since neither exists.
+
 from google.cloud import bigquery
 
 client = bigquery.Client()
