@@ -585,10 +585,6 @@ sites_success = pd.merge(sites_success,
                          how='outer',
                          on='src_hpo_id')
 sites_success = pd.merge(sites_success,
-                         device_exposure,
-                         how='outer',
-                         on='src_hpo_id')
-sites_success = pd.merge(sites_success,
                          observation,
                          how='outer',
                          on='src_hpo_id')
@@ -609,3 +605,5 @@ sites_success = sites_success.fillna(0)
 sites_success
 
 sites_success.to_csv("{cwd}/duplicates.csv".format(cwd = cwd))
+
+
