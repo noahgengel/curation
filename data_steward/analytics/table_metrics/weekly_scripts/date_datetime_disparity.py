@@ -364,7 +364,7 @@ DISTINCT
 total_rows.src_hpo_id,
 -- IFNULL(bad_rows.bad_rows_cnt, 0) as bad_rows_cnt,
 -- total_rows.total_rows,
-ROUND(IFNULL(bad_rows.bad_rows_cnt, 0) / total_rows.total_rows * 100, 2) as procedure_occurrence
+ROUND(IFNULL(bad_rows.bad_rows_cnt, 0) / total_rows.total_rows * 100, 2) as visit_occurrence
 
 FROM
 
@@ -424,7 +424,7 @@ ON
 total_rows.src_hpo_id = bad_rows.src_hpo_id
 
 GROUP BY 1, 2 --, 3, 4
-ORDER BY procedure_occurrence DESC
+ORDER BY visit_occurrence DESC
 """.format(DATASET = DATASET)
 
 visit_occurrence_df = pd.io.gbq.read_gbq(visit_occurrence_query_str, dialect ='standard')
@@ -508,6 +508,7 @@ drug_exposure_df = pd.io.gbq.read_gbq(drug_exposure_query_str, dialect ='standar
 drug_exposure_df
 
 # # Measurement Table
+# - NOTE: neither start nor end dates; simply date and datetime
 
 measurement_query_str = """
 SELECT
@@ -574,5 +575,98 @@ ORDER BY measurement DESC
 measurement_df = pd.io.gbq.read_gbq(measurement_query_str, dialect ='standard')
 
 measurement_df
+
+# # Observation Table
+# - NOTE: neither start nor end dates; simply date and datetime
+
+observation_query_str = """
+SELECT
+DISTINCT
+total_rows.src_hpo_id,
+-- IFNULL(bad_rows.bad_rows_cnt, 0) as bad_rows_cnt,
+-- total_rows.total_rows,
+ROUND(IFNULL(bad_rows.bad_rows_cnt, 0) / total_rows.total_rows * 100, 2) as observation
+
+FROM
+
+  (SELECT
+  DISTINCT
+  mo.src_hpo_id, COUNT(*) as total_rows
+  FROM
+  `{DATASET}.unioned_ehr_observation` o
+  JOIN
+  `{DATASET}._mapping_observation` mo
+  ON
+  o.observation_id = mo.observation_id
+  GROUP BY mo.src_hpo_id
+  ORDER BY total_rows DESC) total_rows
+
+LEFT JOIN
+
+  (SELECT
+  DISTINCT
+  bad_rows_orig.src_hpo_id, SUM(bad_rows_orig.cnt) as bad_rows_cnt 
+  FROM
+    (SELECT
+    DISTINCT
+    mo.src_hpo_id,
+    IFNULL(DATE_DIFF(CAST(o.observation_datetime AS DATE), o.observation_date, DAY), 0) as start_datetime_date_diff,
+    COUNT(*) as cnt
+
+    FROM
+    `{DATASET}.unioned_ehr_observation` o
+    JOIN
+    `{DATASET}._mapping_observation` mo
+    ON
+    o.observation_id = mo.observation_id
+
+    WHERE
+
+    -- adjusting for DC-607
+    IFNULL(DATE_DIFF(CAST(o.observation_datetime AS DATE), o.observation_date, DAY), 0) > 1
+    OR
+    IFNULL(DATE_DIFF(CAST(o.observation_datetime AS DATE), o.observation_date, DAY), 0) < 0
+
+    GROUP BY 1, 2
+    ORDER BY cnt DESC) bad_rows_orig
+
+  GROUP BY 1
+  ORDER BY bad_rows_cnt DESC) bad_rows
+
+ON
+
+total_rows.src_hpo_id = bad_rows.src_hpo_id
+
+GROUP BY 1, 2
+ORDER BY observation DESC
+""".format(DATASET = DATASET)
+
+observation_df = pd.io.gbq.read_gbq(observation_query_str, dialect ='standard')
+
+observation_df
+
+# ## Now to merge all the dataframes
+
+# +
+date_datetime_df = pd.merge(
+    site_df, observation_df, how='outer', on='src_hpo_id')
+
+date_datetime_df = pd.merge(
+    date_datetime_df, measurement_df, how='outer', on='src_hpo_id')
+
+date_datetime_df = pd.merge(
+    date_datetime_df, visit_occurrence_df, how='outer', on='src_hpo_id')
+
+date_datetime_df = pd.merge(
+    date_datetime_df, procedure_occurrence_df, how='outer', on='src_hpo_id')
+
+date_datetime_df = pd.merge(
+    date_datetime_df, drug_exposure_df, how='outer', on='src_hpo_id')
+
+date_datetime_df = pd.merge(
+    date_datetime_df, condition_occurrence_df, how='outer', on='src_hpo_id')
+# -
+
+date_datetime_df
 
 
