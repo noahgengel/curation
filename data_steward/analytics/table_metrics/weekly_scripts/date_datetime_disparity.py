@@ -221,7 +221,7 @@ DISTINCT
 total_rows.src_hpo_id,
 -- IFNULL(bad_rows.bad_rows_cnt, 0) as bad_rows_cnt,
 -- total_rows.total_rows,
-ROUND(IFNULL(bad_rows.bad_rows_cnt, 0) / total_rows.total_rows * 100, 2) as percent_bad_rows
+ROUND(IFNULL(bad_rows.bad_rows_cnt, 0) / total_rows.total_rows * 100, 2) as condition_occurrence
 
 FROM
 
@@ -279,8 +279,8 @@ ON
 
 total_rows.src_hpo_id = bad_rows.src_hpo_id
 
-GROUP BY 1, 2, 3, 4
-ORDER BY percent_bad_rows DESC
+GROUP BY 1, 2
+ORDER BY condition_occurrence DESC
 """.format(DATASET = DATASET)
 
 condition_occurrence_df = pd.io.gbq.read_gbq(condition_occurrence_query_str, dialect ='standard')
