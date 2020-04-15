@@ -287,6 +287,73 @@ condition_occurrence_df = pd.io.gbq.read_gbq(condition_occurrence_query_str, dia
 
 condition_occurrence_df
 
+# # Procedure Occurrence Table
+# - NOTE: neither start nor end dates; simply date and datetime
 
+procedure_occurrence_query_str = """
+SELECT
+DISTINCT
+total_rows.src_hpo_id,
+-- IFNULL(bad_rows.bad_rows_cnt, 0) as bad_rows_cnt,
+-- total_rows.total_rows,
+ROUND(IFNULL(bad_rows.bad_rows_cnt, 0) / total_rows.total_rows * 100, 2) as procedure_occurrence
+
+FROM
+
+  (SELECT
+  DISTINCT
+  mpo.src_hpo_id, COUNT(*) as total_rows
+  FROM
+  `{DATASET}.unioned_ehr_procedure_occurrence` po
+  JOIN
+  `{DATASET}._mapping_procedure_occurrence` mpo
+  ON
+  po.procedure_occurrence_id = mpo.procedure_occurrence_id
+  GROUP BY mpo.src_hpo_id
+  ORDER BY total_rows DESC) total_rows
+
+LEFT JOIN
+
+  (SELECT
+  DISTINCT
+  bad_rows_orig.src_hpo_id, SUM(bad_rows_orig.cnt) as bad_rows_cnt 
+  FROM
+    (SELECT
+    DISTINCT
+    mpo.src_hpo_id,
+    IFNULL(DATE_DIFF(CAST(po.procedure_datetime AS DATE), po.procedure_date, DAY), 0) as start_datetime_date_diff,
+    COUNT(*) as cnt
+
+    FROM
+    `{DATASET}.unioned_ehr_procedure_occurrence` po
+    JOIN
+    `{DATASET}._mapping_procedure_occurrence` mpo
+    ON
+    po.procedure_occurrence_id = mpo.procedure_occurrence_id
+
+    WHERE
+
+    -- adjusting for DC-607
+    IFNULL(DATE_DIFF(CAST(po.procedure_datetime AS DATE), po.procedure_date, DAY), 0) > 1
+    OR
+    IFNULL(DATE_DIFF(CAST(po.procedure_datetime AS DATE), po.procedure_date, DAY), 0) < 0
+
+    GROUP BY 1, 2
+    ORDER BY cnt DESC) bad_rows_orig
+
+  GROUP BY 1
+  ORDER BY bad_rows_cnt DESC) bad_rows
+
+ON
+
+total_rows.src_hpo_id = bad_rows.src_hpo_id
+
+GROUP BY 1, 2
+ORDER BY procedure_occurrence DESC
+""".format(DATASET = DATASET)
+
+procedure_occurrence_df = pd.io.gbq.read_gbq(procedure_occurrence_query_str, dialect ='standard')
+
+procedure_occurrence_df
 
 
