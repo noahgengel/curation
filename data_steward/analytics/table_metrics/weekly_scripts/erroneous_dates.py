@@ -12,7 +12,7 @@
 #     name: python3
 # ---
 
-# ### This notebook is intended to show the number of rows where there are 'erroneous dates' in the 6 canonical tables. The 6 canonical tables are as follows:
+# ### This notebook is intended to show the percentage of rows where there are 'erroneous dates' in the 6 canonical tables. The 6 canonical tables are as follows:
 # - Condition Occurrence
 # - Procedure Occurrence
 # - Visit Occurrence
@@ -212,3 +212,372 @@ print(site_map.shape[0], 'records received.')
 
 site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
 site_df
+
+# ## Observation Table
+
+observation_query = """
+SELECT
+total.src_hpo_id,
+-- IFNULL(bad_date.num_bad_rows, 0) AS num_bad_rows, 
+-- IFNULL(total.num_rows, 0) AS num_rows,
+ROUND(IFNULL(bad_date.num_bad_rows, 0) / IFNULL(total.num_rows, 0) * 100 , 2) as observation
+
+FROM
+
+  (SELECT
+  DISTINCT
+  mo.src_hpo_id, COUNT(*) as num_rows
+  FROM
+  `{DATASET}.unioned_ehr_observation` o
+  JOIN
+  `{DATASET}._mapping_observation` mo
+  ON
+  o.observation_id = mo.observation_id
+  GROUP BY 1
+  ORDER BY num_rows DESC) total
+
+LEFT JOIN
+
+  (SELECT
+  DISTINCT
+  mo.src_hpo_id, COUNT(*) as num_bad_rows
+  FROM
+  `{DATASET}.unioned_ehr_observation` o
+  JOIN
+  `{DATASET}._mapping_observation` mo
+  ON
+  o.observation_id = mo.observation_id
+  WHERE
+  o.observation_datetime < CAST('1900-01-01 00:00:00' AS TIMESTAMP)
+  OR
+  o.observation_date < CAST('1900-01-01' as DATE)
+  GROUP BY 1
+  ORDER BY num_bad_rows DESC) bad_date
+  
+ON
+bad_date.src_hpo_id = total.src_hpo_id
+
+GROUP BY 1, 2 --, 3, 4
+ORDER BY observation DESC
+""".format(DATASET=DATASET)
+
+observation_df = pd.io.gbq.read_gbq(observation_query, dialect ='standard')
+
+observation_df
+
+# ## Condition Occurrence Table
+
+condition_query = """
+SELECT
+total.src_hpo_id,
+-- IFNULL(bad_date.num_bad_rows, 0) AS num_bad_rows, 
+-- IFNULL(total.num_rows, 0) AS num_rows,
+ROUND(IFNULL(bad_date.num_bad_rows, 0) / IFNULL(total.num_rows, 0) * 100 , 2) as condition_occurrence
+
+FROM
+
+  (SELECT
+  DISTINCT
+  mco.src_hpo_id, COUNT(*) as num_rows
+  FROM
+  `{DATASET}.unioned_ehr_condition_occurrence` co
+  JOIN
+  `{DATASET}._mapping_condition_occurrence` mco
+  ON
+  co.condition_occurrence_id = mco.condition_occurrence_id
+  GROUP BY 1
+  ORDER BY num_rows DESC) total
+
+LEFT JOIN
+
+  (SELECT
+  DISTINCT
+  mco.src_hpo_id, COUNT(*) as num_bad_rows
+  FROM
+  `{DATASET}.unioned_ehr_condition_occurrence` co
+  JOIN
+  `{DATASET}._mapping_condition_occurrence` mco
+  ON
+  co.condition_occurrence_id = mco.condition_occurrence_id
+  
+  WHERE
+  co.condition_start_datetime < CAST('1980-01-01 00:00:00' AS TIMESTAMP)
+  OR
+  co.condition_start_date < CAST('1980-01-01' as DATE)
+  
+  OR
+  
+  co.condition_end_datetime < CAST('1980-01-01 00:00:00' AS TIMESTAMP)
+  OR
+  co.condition_end_date < CAST('1980-01-01' as DATE)
+  
+  GROUP BY 1
+  ORDER BY num_bad_rows DESC) bad_date
+  
+ON
+bad_date.src_hpo_id = total.src_hpo_id
+
+GROUP BY 1, 2 --, 3, 4
+ORDER BY condition_occurrence DESC
+""".format(DATASET=DATASET)
+
+condition_occurrence_df = pd.io.gbq.read_gbq(condition_query, dialect ='standard')
+
+condition_occurrence_df
+
+# ## Procedure Occurrence Table
+
+procedure_query = """
+SELECT
+total.src_hpo_id,
+-- IFNULL(bad_date.num_bad_rows, 0) AS num_bad_rows, 
+-- IFNULL(total.num_rows, 0) AS num_rows,
+ROUND(IFNULL(bad_date.num_bad_rows, 0) / IFNULL(total.num_rows, 0) * 100 , 2) as procedure_occurrence
+
+FROM
+
+  (SELECT
+  DISTINCT
+  mpo.src_hpo_id, COUNT(*) as num_rows
+  FROM
+  `{DATASET}.unioned_ehr_procedure_occurrence` po
+  JOIN
+  `{DATASET}._mapping_procedure_occurrence` mpo
+  ON
+  po.procedure_occurrence_id = mpo.procedure_occurrence_id
+  GROUP BY 1
+  ORDER BY num_rows DESC) total
+
+LEFT JOIN
+
+  (SELECT
+  DISTINCT
+  mpo.src_hpo_id, COUNT(*) as num_bad_rows
+  FROM
+  `{DATASET}.unioned_ehr_procedure_occurrence` po
+  JOIN
+  `{DATASET}._mapping_procedure_occurrence` mpo
+  ON
+  po.procedure_occurrence_id = mpo.procedure_occurrence_id
+  
+  WHERE
+  po.procedure_datetime < CAST('1980-01-01 00:00:00' AS TIMESTAMP)
+  OR
+  po.procedure_date < CAST('1980-01-01' as DATE)
+  
+  GROUP BY 1
+  ORDER BY num_bad_rows DESC) bad_date
+  
+ON
+bad_date.src_hpo_id = total.src_hpo_id
+
+GROUP BY 1, 2 --, 3, 4
+ORDER BY procedure_occurrence DESC
+""".format(DATASET=DATASET)
+
+procedure_occurrence_df = pd.io.gbq.read_gbq(procedure_query, dialect ='standard')
+
+procedure_occurrence_df
+
+# ## Visit Occurrence
+
+visit_query = """
+SELECT
+total.src_hpo_id,
+-- IFNULL(bad_date.num_bad_rows, 0) AS num_bad_rows, 
+-- IFNULL(total.num_rows, 0) AS num_rows,
+ROUND(IFNULL(bad_date.num_bad_rows, 0) / IFNULL(total.num_rows, 0) * 100 , 2) as visit_occurrence
+
+FROM
+
+  (SELECT
+  DISTINCT
+  mvo.src_hpo_id, COUNT(*) as num_rows
+  FROM
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  JOIN
+  `{DATASET}._mapping_visit_occurrence` mvo
+  ON
+  vo.visit_occurrence_id = mvo.visit_occurrence_id
+  GROUP BY 1
+  ORDER BY num_rows DESC) total
+
+LEFT JOIN
+
+  (SELECT
+  DISTINCT
+  mvo.src_hpo_id, COUNT(*) as num_bad_rows
+  FROM
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  JOIN
+  `{DATASET}._mapping_visit_occurrence` mvo
+  ON
+  vo.visit_occurrence_id = mvo.visit_occurrence_id
+  
+  WHERE
+  vo.visit_start_datetime < CAST('1980-01-01 00:00:00' AS TIMESTAMP)
+  OR
+  vo.visit_start_date < CAST('1980-01-01' as DATE)
+  
+  OR
+  
+  vo.visit_end_datetime < CAST('1980-01-01 00:00:00' AS TIMESTAMP)
+  OR
+  vo.visit_end_date < CAST('1980-01-01' as DATE)
+  
+  GROUP BY 1
+  ORDER BY num_bad_rows DESC) bad_date
+  
+ON
+bad_date.src_hpo_id = total.src_hpo_id
+
+GROUP BY 1, 2 --, 3, 4
+ORDER BY visit_occurrence DESC
+""".format(DATASET=DATASET)
+
+visit_occurrence_df = pd.io.gbq.read_gbq(visit_query, dialect ='standard')
+
+visit_occurrence_df
+
+# # Drug Exposure
+
+drug_query = """
+SELECT
+total.src_hpo_id,
+-- IFNULL(bad_date.num_bad_rows, 0) AS num_bad_rows, 
+-- IFNULL(total.num_rows, 0) AS num_rows,
+ROUND(IFNULL(bad_date.num_bad_rows, 0) / IFNULL(total.num_rows, 0) * 100 , 2) as drug_exposure
+
+FROM
+
+  (SELECT
+  DISTINCT
+  mde.src_hpo_id, COUNT(*) as num_rows
+  FROM
+  `{DATASET}.unioned_ehr_drug_exposure` de
+  JOIN
+  `{DATASET}._mapping_drug_exposure` mde
+  ON
+  de.drug_exposure_id = mde.drug_exposure_id
+  GROUP BY 1
+  ORDER BY num_rows DESC) total
+
+LEFT JOIN
+
+  (SELECT
+  DISTINCT
+  mde.src_hpo_id, COUNT(*) as num_bad_rows
+  FROM
+  `{DATASET}.unioned_ehr_drug_exposure` de
+  JOIN
+  `{DATASET}._mapping_drug_exposure` mde
+  ON
+  de.drug_exposure_id = mde.drug_exposure_id
+  
+  WHERE
+  de.drug_exposure_start_datetime < CAST('1980-01-01 00:00:00' AS TIMESTAMP)
+  OR
+  de.drug_exposure_start_date < CAST('1980-01-01' as DATE)
+  
+  OR
+  
+  de.drug_exposure_end_datetime < CAST('1980-01-01 00:00:00' AS TIMESTAMP)
+  OR
+  de.drug_exposure_end_date < CAST('1980-01-01' as DATE)
+  
+  GROUP BY 1
+  ORDER BY num_bad_rows DESC) bad_date
+  
+ON
+bad_date.src_hpo_id = total.src_hpo_id
+
+GROUP BY 1, 2 --, 3, 4
+ORDER BY drug_exposure DESC
+""".format(DATASET=DATASET)
+
+drug_exposure_df = pd.io.gbq.read_gbq(drug_query, dialect ='standard')
+
+drug_exposure_df
+
+# ## Measurement
+
+measurement_query = """
+SELECT
+total.src_hpo_id,
+-- IFNULL(bad_date.num_bad_rows, 0) AS num_bad_rows, 
+-- IFNULL(total.num_rows, 0) AS num_rows,
+ROUND(IFNULL(bad_date.num_bad_rows, 0) / IFNULL(total.num_rows, 0) * 100 , 2) as measurement
+
+FROM
+
+  (SELECT
+  DISTINCT
+  mm.src_hpo_id, COUNT(*) as num_rows
+  FROM
+  `{DATASET}.unioned_ehr_measurement` m
+  JOIN
+  `{DATASET}._mapping_measurement` mm
+  ON
+  m.measurement_id = mm.measurement_id
+  GROUP BY 1
+  ORDER BY num_rows DESC) total
+
+LEFT JOIN
+
+  (SELECT
+  DISTINCT
+  mm.src_hpo_id, COUNT(*) as num_bad_rows
+  FROM
+  `{DATASET}.unioned_ehr_measurement` m
+  JOIN
+  `{DATASET}._mapping_measurement` mm
+  ON
+  m.measurement_id = mm.measurement_id
+  WHERE
+  m.measurement_datetime < CAST('1900-01-01 00:00:00' AS TIMESTAMP)
+  OR
+  m.measurement_date < CAST('1900-01-01' as DATE)
+  GROUP BY 1
+  ORDER BY num_bad_rows DESC) bad_date
+  
+ON
+bad_date.src_hpo_id = total.src_hpo_id
+
+GROUP BY 1, 2 --, 3, 4
+ORDER BY measurement DESC
+""".format(DATASET=DATASET)
+
+measurement_df = pd.io.gbq.read_gbq(measurement_query, dialect ='standard')
+
+measurement_df
+
+# ## Bring it all together
+
+# +
+erroneous_date_df = pd.merge(
+    site_df, observation_df, how='outer', on='src_hpo_id')
+
+erroneous_date_df = pd.merge(
+    erroneous_date_df, measurement_df, how='outer', on='src_hpo_id')
+
+erroneous_date_df = pd.merge(
+    erroneous_date_df, visit_occurrence_df, how='outer', on='src_hpo_id')
+
+erroneous_date_df = pd.merge(
+    erroneous_date_df, procedure_occurrence_df, how='outer', on='src_hpo_id')
+
+erroneous_date_df = pd.merge(
+    erroneous_date_df, drug_exposure_df, how='outer', on='src_hpo_id')
+
+erroneous_date_df = pd.merge(
+    erroneous_date_df, condition_occurrence_df, how='outer', on='src_hpo_id')
+
+# +
+erroneous_date_df = erroneous_date_df.fillna(0)
+
+erroneous_date_df
+# -
+
+erroneous_date_df.to_csv("{cwd}/erroneous_dates.csv".format(cwd = cwd))
+
+
