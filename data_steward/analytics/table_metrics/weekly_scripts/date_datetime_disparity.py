@@ -667,6 +667,8 @@ date_datetime_df = pd.merge(
     date_datetime_df, condition_occurrence_df, how='outer', on='src_hpo_id')
 # -
 
+date_datetime_df = date_datetime_df.fillna(0)
+
 date_datetime_df
 
-
+date_datetime_df.to_csv("{cwd}/date_datetime_disparity.csv".format(cwd = cwd))
