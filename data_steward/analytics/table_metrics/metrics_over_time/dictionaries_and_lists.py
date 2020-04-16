@@ -175,8 +175,7 @@ columns_to_document_for_sheet = {
     'person_id_failure_rate': [
         'visit_occurrence', 'condition_occurrence',
         'drug_exposure', 'measurement',
-        'procedure_occurrence', 'observation'
-    ]
+        'procedure_occurrence', 'observation']
 }
 
 

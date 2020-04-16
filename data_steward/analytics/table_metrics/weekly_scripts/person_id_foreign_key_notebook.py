@@ -606,7 +606,7 @@ DISTINCT
 total_rows.src_hpo_id,
 -- IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) as rows_w_no_valid_person,
 -- total_rows.total_rows,
-round(IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) / total_rows.total_rows * 100, 2) AS measurement
+round(IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) / total_rows.total_rows * 100, 2) AS visit_occurrence
 
 FROM
 
@@ -666,7 +666,7 @@ LEFT JOIN
 
 ON
 total_rows.src_hpo_id = invalid_row_count.src_hpo_id
-ORDER BY measurement DESC
+ORDER BY visit_occurrence DESC
 """
 
 visit_occurrence_df = pd.io.gbq.read_gbq(visit_occurrence_query, dialect ='standard')

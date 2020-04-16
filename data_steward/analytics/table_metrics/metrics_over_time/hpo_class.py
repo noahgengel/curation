@@ -387,6 +387,11 @@ class HPO:
                 if obj.table_or_class == table_or_class:
                     succ_rate = obj.value
 
+        elif metric == 'Person ID Failure Rate':
+            for obj in self.person_id_failure:
+                if obj.table_or_class == table_or_class:
+                    succ_rate = obj.value
+
         else:
             raise Exception(
                 "Unexpected metric type:"
