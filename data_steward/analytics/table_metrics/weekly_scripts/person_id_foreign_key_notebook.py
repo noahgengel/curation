@@ -13,7 +13,11 @@
 #     name: python3
 # ---
 
-# ### This notebook is intended to show the percentage of rows with 'invalid' 'person_id' (a type of 'foreign key') in each of the 6 canonical ta. An 'invalid' row would be one where the field value should exist in another table but does not. For example, a row where the `person_id` cannot be found in the `person` table would be considered invalid.
+# ### This notebook is intended to show the percentage of rows with 'invalid' 'person_id' (a type of 'foreign key') in each of the 6 canonical tables. 
+#
+# ### An 'invalid' row would be one where the field value ('person_id') either:
+# ###     a. does not exist in the person table
+# ###     b. is seemingly associated with another site in the `unioned_ehr_person` table
 
 # ### The notebook will evaluate the following
 #
@@ -225,8 +229,8 @@ condition_occurrence_query = f"""
 SELECT
 DISTINCT
 total_rows.src_hpo_id,
-IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) as rows_w_no_valid_person,
-total_rows.total_rows,
+-- IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) as rows_w_no_valid_person,
+-- total_rows.total_rows,
 round(IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) / total_rows.total_rows * 100, 2) AS condition_occurrence
 
 FROM
@@ -300,8 +304,8 @@ observation_query = f"""
 SELECT
 DISTINCT
 total_rows.src_hpo_id,
-IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) as rows_w_no_valid_person,
-total_rows.total_rows,
+-- IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) as rows_w_no_valid_person,
+-- total_rows.total_rows,
 round(IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) / total_rows.total_rows * 100, 2) AS observation
 
 FROM
@@ -375,8 +379,8 @@ drug_exposure_query = f"""
 SELECT
 DISTINCT
 total_rows.src_hpo_id,
-IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) as rows_w_no_valid_person,
-total_rows.total_rows,
+-- IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) as rows_w_no_valid_person,
+-- total_rows.total_rows,
 round(IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) / total_rows.total_rows * 100, 2) AS drug_exposure
 
 FROM
@@ -450,8 +454,8 @@ procedure_occurrence_query = f"""
 SELECT
 DISTINCT
 total_rows.src_hpo_id,
-IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) as rows_w_no_valid_person,
-total_rows.total_rows,
+-- IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) as rows_w_no_valid_person,
+-- total_rows.total_rows,
 round(IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) / total_rows.total_rows * 100, 2) AS procedure_occurrence
 
 FROM
@@ -519,5 +523,183 @@ procedure_occurrence_df = pd.io.gbq.read_gbq(procedure_occurrence_query, dialect
 
 procedure_occurrence_df
 
+# # Measurement
+
+measurement_query = f"""
+SELECT
+DISTINCT
+total_rows.src_hpo_id,
+-- IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) as rows_w_no_valid_person,
+-- total_rows.total_rows,
+round(IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) / total_rows.total_rows * 100, 2) AS measurement
+
+FROM
+
+  (SELECT
+  DISTINCT
+  mm.src_hpo_id, COUNT(mm.src_hpo_id) as total_rows
+  FROM
+  `{DATASET}.unioned_ehr_measurement` m
+  LEFT JOIN
+  `{DATASET}._mapping_measurement` mm
+  ON
+  m.measurement_id = mm.measurement_id
+  GROUP BY 1
+  ORDER BY total_rows DESC) total_rows
+
+LEFT JOIN
+
+  (SELECT
+  DISTINCT
+  mm.src_hpo_id, COUNT(mm.src_hpo_id) as number_rows_w_no_valid_person
+
+  -- to enable site tracing
+  FROM
+  `{DATASET}.unioned_ehr_measurement` m
+  LEFT JOIN
+  `{DATASET}._mapping_measurement` mm
+  ON
+  m.measurement_id = mm.measurement_id
+
+  -- to enable person/src_hpo_id cross-checking
+  LEFT JOIN
+  `{DATASET}.unioned_ehr_person` p
+  ON
+  m.person_id = p.person_id
+  LEFT JOIN
+  `{DATASET}._mapping_person` mp
+  ON
+  p.person_id = mp.person_id
+
+
+  -- anything dropped by the 'left join'
+  WHERE
+  m.person_id NOT IN
+    (
+    SELECT
+    DISTINCT p.person_id
+    FROM
+    `{DATASET}.unioned_ehr_person` p
+    )
+
+  -- same person_id but traced to different sites
+  OR
+  mm.src_hpo_id <> mp.src_hpo_id
+
+  GROUP BY 1
+  ORDER BY number_rows_w_no_valid_person DESC) invalid_row_count
+
+ON
+total_rows.src_hpo_id = invalid_row_count.src_hpo_id
+ORDER BY measurement DESC
+"""
+
+measurement_df = pd.io.gbq.read_gbq(measurement_query, dialect ='standard')
+
+measurement_df
+
+# # Visit Occurrence
+
+visit_occurrence_query = f"""
+SELECT
+DISTINCT
+total_rows.src_hpo_id,
+-- IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) as rows_w_no_valid_person,
+-- total_rows.total_rows,
+round(IFNULL(invalid_row_count.number_rows_w_no_valid_person, 0) / total_rows.total_rows * 100, 2) AS measurement
+
+FROM
+
+  (SELECT
+  DISTINCT
+  mvo.src_hpo_id, COUNT(mvo.src_hpo_id) as total_rows
+  FROM
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  LEFT JOIN
+  `{DATASET}._mapping_visit_occurrence` mvo
+  ON
+  vo.visit_occurrence_id = mvo.visit_occurrence_id
+  GROUP BY 1
+  ORDER BY total_rows DESC) total_rows
+
+LEFT JOIN
+
+  (SELECT
+  DISTINCT
+  mvo.src_hpo_id, COUNT(mvo.src_hpo_id) as number_rows_w_no_valid_person
+
+  -- to enable site tracing
+  FROM
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  LEFT JOIN
+  `{DATASET}._mapping_visit_occurrence` mvo
+  ON
+  vo.visit_occurrence_id = mvo.visit_occurrence_id
+
+  -- to enable person/src_hpo_id cross-checking
+  LEFT JOIN
+  `{DATASET}.unioned_ehr_person` p
+  ON
+  vo.person_id = p.person_id
+  LEFT JOIN
+  `{DATASET}._mapping_person` mp
+  ON
+  p.person_id = mp.person_id
+
+
+  -- anything dropped by the 'left join'
+  WHERE
+  vo.person_id NOT IN
+    (
+    SELECT
+    DISTINCT p.person_id
+    FROM
+    `{DATASET}.unioned_ehr_person` p
+    )
+
+  -- same person_id but traced to different sites
+  OR
+  mvo.src_hpo_id <> mp.src_hpo_id
+
+  GROUP BY 1
+  ORDER BY number_rows_w_no_valid_person DESC) invalid_row_count
+
+ON
+total_rows.src_hpo_id = invalid_row_count.src_hpo_id
+ORDER BY measurement DESC
+"""
+
+visit_occurrence_df = pd.io.gbq.read_gbq(visit_occurrence_query, dialect ='standard')
+
+visit_occurrence_df
+
+# # Bringing it all together
+
 # +
-# Measurement
+person_id_foreign_key_df = pd.merge(
+    site_df, observation_df, how='outer', on='src_hpo_id')
+
+person_id_foreign_key_df = pd.merge(
+    person_id_foreign_key_df, measurement_df, how='outer', on='src_hpo_id')
+
+person_id_foreign_key_df = pd.merge(
+    person_id_foreign_key_df, visit_occurrence_df, how='outer', on='src_hpo_id')
+
+person_id_foreign_key_df = pd.merge(
+    person_id_foreign_key_df, procedure_occurrence_df, how='outer', on='src_hpo_id')
+
+person_id_foreign_key_df = pd.merge(
+    person_id_foreign_key_df, drug_exposure_df, how='outer', on='src_hpo_id')
+
+person_id_foreign_key_df = pd.merge(
+    person_id_foreign_key_df, condition_occurrence_df, how='outer', on='src_hpo_id')
+
+# +
+person_id_foreign_key_df = person_id_foreign_key_df.fillna(0)
+
+person_id_foreign_key_df
+# -
+
+person_id_foreign_key_df.to_csv(f"{cwd}/person_id_foreign_key.csv")
+
+
