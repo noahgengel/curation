@@ -251,7 +251,8 @@ metrics_to_weight = [
     'measurement_units', 'drug_routes',
     'end_before_begin', 'data_after_death',
     'concept', 'duplicates',
-    'date_datetime_disparity']
+    'date_datetime_disparity',
+    'erroneous_dates']
 
 full_names = {
     "saou_uab_selma": "UAB Selma",
