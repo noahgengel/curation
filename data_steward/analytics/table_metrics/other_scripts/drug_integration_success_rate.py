@@ -23,7 +23,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.JULY_2019
+DATASET = parameters.OCT_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 

@@ -23,7 +23,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.JULY_2019
+DATASET = parameters.OCT_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -570,9 +570,9 @@ sites_success = pd.merge(sites_success,
 
 sites_success = sites_success.fillna(0)
 sites_success[["visit_occurrence", "condition_occurrence", "drug_exposure", "measurement", "procedure_occurrence",
-               "device_exposure", "observation"]] \
+               "observation"]] \
     = sites_success[["visit_occurrence", "condition_occurrence", "drug_exposure", "measurement", "procedure_occurrence",
-                     "device_exposure", "observation"]].astype(int)
+                     "observation"]].astype(int)
 
 sites_success
 
@@ -583,5 +583,7 @@ sites_success = sites_success.fillna(0)
 sites_success
 
 sites_success.to_csv("{cwd}/duplicates.csv".format(cwd = cwd))
+
+
 
 
