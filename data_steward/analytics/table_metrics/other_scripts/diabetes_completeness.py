@@ -22,6 +22,12 @@ client = bigquery.Client()
 # %reload_ext google.cloud.bigquery
 
 # +
+from notebooks import parameters
+DATASET = parameters.LATEST_DATASET
+
+print("Dataset to use: {DATASET}".format(DATASET = DATASET))
+
+# +
 #######################################
 print('Setting everything up...')
 #######################################
@@ -29,38 +35,16 @@ print('Setting everything up...')
 import warnings
 
 warnings.filterwarnings('ignore')
-import pandas_gbq
 import pandas as pd
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
-from matplotlib.lines import Line2D
-
-import matplotlib.ticker as ticker
-import matplotlib.cm as cm
-import matplotlib as mpl
-
 import matplotlib.pyplot as plt
 # %matplotlib inline
 
 import os
-import sys
-from datetime import datetime
-from datetime import date
-from datetime import time
-from datetime import timedelta
-import time
-import math
-
-DATASET = ''
 
 plt.style.use('ggplot')
 pd.options.display.max_rows = 999
 pd.options.display.max_columns = 999
 pd.options.display.max_colwidth = 999
-
-from IPython.display import HTML as html_print
 
 
 def cstr(s, color='black'):
@@ -72,7 +56,7 @@ print('done.')
 
 cwd = os.getcwd()
 cwd = str(cwd)
-print(cwd)
+print("Current working directory is: {cwd}".format(cwd=cwd))
 
 # +
 dic = {
@@ -127,60 +111,91 @@ site_map = pd.io.gbq.read_gbq('''
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_visit_occurrence`
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{}._mapping_condition_occurrence`  
+         `{DATASET}._mapping_visit_occurrence`
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_device_exposure`
+         `{DATASET}._mapping_care_site`
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_condition_occurrence`  
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_device_exposure`
 
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_drug_exposure`        
+         `{DATASET}._mapping_drug_exposure`
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_location`         
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_measurement`            
+         `{DATASET}._mapping_measurement`         
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_observation`         
-                
+         `{DATASET}._mapping_note`        
+         
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_procedure_occurrence`         
+         `{DATASET}._mapping_observation`         
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_person`         
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_procedure_occurrence`         
+         
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_provider`
+         
+    UNION ALL
+    SELECT
+            DISTINCT(src_hpo_id) as src_hpo_id
+    FROM
+         `{DATASET}._mapping_specimen`
     
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{}._mapping_visit_occurrence`   
-    )
-    WHERE src_hpo_id NOT LIKE '%rdr'
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET, DATASET, DATASET,
-               DATASET, DATASET, DATASET, DATASET, DATASET),
-                              dialect='standard')
+         `{DATASET}._mapping_visit_occurrence`   
+    )     
+    '''.format(DATASET=DATASET), dialect='standard')
 print(site_map.shape[0], 'records received.')
 # -
 
@@ -204,8 +219,8 @@ birth_df = pd.io.gbq.read_gbq('''
         sum(case when (DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR)<18) then 1 else 0 end) as minors_in_dataset
          
     FROM
-       `{}.person` AS t1
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
+       `{DATASET}.unioned_ehr_person` AS t1
+    '''.format(DATASET=DATASET),
                               dialect='standard')
 print(birth_df.shape[0], 'records received.')
 # -
@@ -221,10 +236,10 @@ birth_df = pd.io.gbq.read_gbq('''
     SELECT
         person_id          
     FROM
-       `{}.person` AS t1
+       `{DATASET}.unioned_ehr_person` AS t1
     where 
         (DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR)<18)
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
+    '''.format(DATASET=DATASET),
                               dialect='standard')
 print(birth_df.shape[0], 'records received.')
 # -
@@ -243,9 +258,8 @@ birth_df = pd.io.gbq.read_gbq('''
         sum(case when (DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR)>120) then 1 else 0 end) as over_120_in_dataset
          
     FROM
-       `{}.person` AS t1
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                              dialect='standard')
+       `{DATASET}.unioned_ehr_person` AS t1
+    '''.format(DATASET=DATASET), dialect='standard')
 print(birth_df.shape[0], 'records received.')
 
 # +
@@ -257,11 +271,11 @@ birth_df = pd.io.gbq.read_gbq('''
     SELECT
         person_id          
     FROM
-       `{}.person` AS t1
+       `{DATASET}.unioned_ehr_person` AS t1
     where 
         DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR)>120
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                              dialect='standard')
+    '''.format(DATASET=DATASET), dialect='standard')
+
 print(birth_df.shape[0], 'records received.')
 # -
 
@@ -279,9 +293,9 @@ birth_df = pd.io.gbq.read_gbq('''
     SELECT
         DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR) as AGE    
     FROM
-       `{}.person` AS t1
-    '''.format(DATASET, DATASET, DATASET, DATASET, DATASET, DATASET),
-                              dialect='standard')
+       `{DATASET}.unioned_ehr_person` AS t1
+    '''.format(DATASET=DATASET), dialect='standard')
+
 print(birth_df.shape[0], 'records received.')
 # -
 
@@ -303,9 +317,9 @@ SELECT
 DISTINCT
 mco.src_hpo_id, p.person_id
 FROM
-`{DATASET}.person` p
+`{DATASET}.unioned_ehr_person` p
 JOIN
-`{DATASET}.condition_occurrence` co
+`{DATASET}.unioned_ehr_condition_occurrence` co
 ON
 p.person_id = co.person_id
 JOIN
@@ -320,8 +334,6 @@ WHERE
 LOWER(c.concept_name) LIKE '%diabetes%'
 AND
 (invalid_reason is null or invalid_reason = '')
-AND
-mco.src_hpo_id NOT LIKE '%rdr%'
 GROUP BY 1, 2
 ORDER BY 1, 2 DESC
 """.format(DATASET = DATASET)
@@ -351,8 +363,6 @@ DISTINCT
 p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
-WHERE
-p.src_hpo_id NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_with_diab DESC
 """.format(DATASET = DATASET)
@@ -401,14 +411,13 @@ p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab_and_drugs
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 RIGHT JOIN
-`{DATASET}.drug_exposure` de  -- get the relevant drugs
+`{DATASET}.unioned_ehr_drug_exposure` de  -- get the relevant drugs
 ON
 p.person_id = de.person_id
 RIGHT JOIN
 `{DATASET}.substantiating_diabetic_drug_concept_ids` t2drugs  -- only focus on the drugs that substantiate diabetes
 ON
-de.drug_concept_id = t2drugs.descendant_concept_id
-WHERE p.src_hpo_id NOT LIKE '%rdr%'
+de.drug_concept_id = t2drugs.descendant_concept_id 
 GROUP BY 1
 ORDER BY num_with_diab_and_drugs DESC
 """.format(DATASET = DATASET)
@@ -456,15 +465,13 @@ p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab_and_glucose
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 RIGHT JOIN
-`{DATASET}.measurement` m
+`{DATASET}.unioned_ehr_measurement` m
 ON
 p.person_id = m.person_id -- get the persons with measurements
 RIGHT JOIN
 `{DATASET}.valid_glucose_labs` vgl
 ON
 vgl.concept_id = m.measurement_concept_id -- only get those with the substantiating labs
-WHERE
-p.src_hpo_id NOT LIKE '%rdr'
 GROUP BY 1
 ORDER BY num_with_diab_and_glucose DESC
 """.format(DATASET = DATASET)
@@ -499,15 +506,13 @@ p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab_and_a1c
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 RIGHT JOIN
-`{DATASET}.measurement` m
+`{DATASET}.unioned_ehr_measurement` m
 ON
 p.person_id = m.person_id -- get the persons with measurements
 RIGHT JOIN
 `{DATASET}.a1c_descendants` a1c
 ON
 a1c.concept_id = m.measurement_concept_id -- only get those with the substantiating labs
-WHERE
-p.src_hpo_id NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_with_diab_and_a1c DESC
 """.format(DATASET = DATASET)
@@ -532,7 +537,7 @@ p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab_and_insulin
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 RIGHT JOIN
-`{DATASET}.drug_exposure` de
+`{DATASET}.unioned_ehr_drug_exposure` de
 ON
 de.person_id = p.person_id -- get the persons with measurements
 RIGHT JOIN
@@ -541,8 +546,6 @@ ON
 de.drug_concept_id = c.concept_id
 WHERE
 LOWER(c.concept_name) LIKE '%insulin%'  -- generous for detecting insulin
-AND
-p.src_hpo_id NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_with_diab_and_insulin DESC
 """.format(DATASET = DATASET)
@@ -570,6 +573,6 @@ final_diabetic_df = final_diabetic_df.sort_values(by='diabetics_w_glucose', asce
 
 final_diabetic_df
 
-final_diabetic_df.to_csv("{cwd}\diabetes.csv".format(cwd = cwd))
+final_diabetic_df.to_csv("{cwd}/diabetes.csv".format(cwd = cwd))
 
 

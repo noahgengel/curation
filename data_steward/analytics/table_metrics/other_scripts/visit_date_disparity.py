@@ -12,10 +12,6 @@
 #     name: python3
 # ---
 
-# +
-# #!pip install --upgrade google-cloud-bigquery[pandas]
-# -
-
 from google.cloud import bigquery
 
 # %reload_ext google.cloud.bigquery
@@ -24,7 +20,13 @@ client = bigquery.Client()
 
 # %load_ext google.cloud.bigquery
 
-# + endofcell="--"
+# +
+from notebooks import parameters
+DATASET = parameters.LATEST_DATASET
+
+print("Dataset to use: {DATASET}".format(DATASET = DATASET))
+
+# +
 #######################################
 print('Setting everything up...')
 #######################################
@@ -32,53 +34,28 @@ print('Setting everything up...')
 import warnings
 
 warnings.filterwarnings('ignore')
-import pandas_gbq
 import pandas as pd
-import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
-from matplotlib.lines import Line2D
-
-from notebooks import parameters
-
-import matplotlib.ticker as ticker
-import matplotlib.cm as cm
-import matplotlib as mpl
-
-import matplotlib.pyplot as plt
-
+# %matplotlib inline
 import os
-import sys
-from datetime import datetime
-from datetime import date
-from datetime import time
-from datetime import timedelta
-import time
+
 
 plt.style.use('ggplot')
 pd.options.display.max_rows = 999
 pd.options.display.max_columns = 999
 pd.options.display.max_colwidth = 999
 
-from IPython.display import HTML as html_print
-
 
 def cstr(s, color='black'):
     return "<text style=color:{}>{}</text>".format(color, s)
 
-cwd = os.getcwd()
-cwd = str(cwd)
-print(cwd)
 
 print('done.')
 # -
-# --
 
-# +
-DATASET = parameters.Q2_2019
-
-print("Dataset to use: {DATASET}".format(DATASET = DATASET))
+cwd = os.getcwd()
+cwd = str(cwd)
+print("Current working directory is: {cwd}".format(cwd=cwd))
 
 # +
 dic = {
@@ -182,8 +159,7 @@ site_map = pd.io.gbq.read_gbq('''
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_visit_occurrence`   
-    )
-    WHERE src_hpo_id NOT LIKE '%rdr%'
+    ) 
     order by 1
     '''.format(DATASET = DATASET),
                               dialect='standard')
@@ -241,13 +217,13 @@ FROM
   ABS(DATE_DIFF(CAST(po.procedure_datetime AS DATE), CAST(vo.visit_end_datetime AS DATE), DAY))
   ) as all_discrepancies_equal
   FROM
-  `{DATASET}.procedure_occurrence` po
+  `{DATASET}.unioned_ehr_procedure_occurrence` po
   LEFT JOIN
   `{DATASET}._mapping_procedure_occurrence` mpo
   ON
   po.procedure_occurrence_id = mpo.procedure_occurrence_id
   LEFT JOIN
-  `{DATASET}.visit_occurrence` vo
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
   ON
   po.visit_occurrence_id = vo.visit_occurrence_id
   WHERE
@@ -304,8 +280,6 @@ a.procedure_dt_vis_start_dt_diff > 0
 OR
 a.procedure_dt_vis_end_dt_diff > 0
 )
-AND
-a.src_hpo_id NOT LIKE '%rdr%'
 ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
 """.format(DATASET = DATASET)
 
@@ -326,12 +300,11 @@ SELECT
 DISTINCT
 mp.src_hpo_id, count(p.procedure_occurrence_id) as num_total_records
 FROM
-`{DATASET}.procedure_occurrence`p
+`{DATASET}.unioned_ehr_procedure_occurrence`p
 JOIN
 `{DATASET}._mapping_procedure_occurrence` mp
 ON
 p.procedure_occurrence_id = mp.procedure_occurrence_id
-WHERE mp.src_hpo_id NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_total_records DESC
 """.format(DATASET = DATASET)
@@ -398,13 +371,13 @@ FROM
   ) as all_discrepancies_equal
 
   FROM
-  `{DATASET}.observation` o
+  `{DATASET}.unioned_ehr_observation` o
   LEFT JOIN
   `{DATASET}._mapping_observation` mo
   ON
   o.observation_id = mo.observation_id
   LEFT JOIN
-  `{DATASET}.visit_occurrence` vo
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
   ON
   o.visit_occurrence_id = vo.visit_occurrence_id
 
@@ -466,8 +439,6 @@ a.observation_dt_vis_start_dt_diff > 0
 OR
 a.observation_dt_vis_end_dt_diff > 0
 )
-AND
-a.src_hpo_id NOT LIKE '%rdr%'
 ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
 """.format(DATASET = DATASET)
 
@@ -483,12 +454,11 @@ SELECT
 DISTINCT
 mo.src_hpo_id, count(o.observation_id) as num_total_records
 FROM
-`{DATASET}.observation`o
+`{DATASET}.unioned_ehr_observation`o
 JOIN
 `{DATASET}._mapping_observation` mo
 ON
 o.observation_id = mo.observation_id
-WHERE mo.src_hpo_id NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_total_records DESC
 """.format(DATASET = DATASET)
@@ -557,13 +527,13 @@ FROM
   ) as all_discrepancies_equal
 
   FROM
-  `{DATASET}.measurement` m
+  `{DATASET}.unioned_ehr_measurement` m
   LEFT JOIN
   `{DATASET}._mapping_measurement` mm
   ON
   m.measurement_id = mm.measurement_id
   LEFT JOIN
-  `{DATASET}.visit_occurrence` vo
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
   ON
   m.visit_occurrence_id = vo.visit_occurrence_id
 
@@ -625,7 +595,6 @@ a.measurement_dt_vis_start_dt_diff > 0
 OR
 a.measurement_dt_vis_end_dt_diff > 0
 )
-AND a.src_hpo_id NOT LIKE '%rdr%'
 ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
 """.format(DATASET = DATASET)
 
@@ -640,12 +609,11 @@ SELECT
 DISTINCT
 mm.src_hpo_id, count(m.measurement_id) as num_total_records
 FROM
-`{DATASET}.measurement` m
+`{DATASET}.unioned_ehr_measurement` m
 JOIN
 `{DATASET}._mapping_measurement` mm
 ON
 m.measurement_id = mm.measurement_id
-WHERE mm.src_hpo_id NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_total_records DESC
 """.format(DATASET = DATASET)
@@ -705,13 +673,13 @@ FROM
   ) as all_discrepancies_equal
 
   FROM
-  `{DATASET}.condition_occurrence` co
+  `{DATASET}.unioned_ehr_condition_occurrence` co
   LEFT JOIN
   `{DATASET}._mapping_condition_occurrence` mco
   ON
   co.condition_occurrence_id = mco.condition_occurrence_id
   LEFT JOIN
-  `{DATASET}.visit_occurrence` vo
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
   ON
   co.visit_occurrence_id = vo.visit_occurrence_id
 
@@ -758,7 +726,6 @@ a.condition_vis_start_diff > 0
 OR
 a.condition_dt_vis_start_dt_diff > 0
 )
-AND a.src_hpo_id NOT LIKE '%rdr%'
 ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
 """.format(DATASET = DATASET)
 
@@ -773,12 +740,11 @@ SELECT
 DISTINCT
 mco.src_hpo_id, count(co.condition_occurrence_id) as num_total_records
 FROM
-`{DATASET}.condition_occurrence` co
+`{DATASET}.unioned_ehr_condition_occurrence` co
 JOIN
 `{DATASET}._mapping_condition_occurrence` mco
 ON
 co.condition_occurrence_id = mco.condition_occurrence_id
-WHERE mco.src_hpo_id NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_total_records DESC
 """.format(DATASET = DATASET)
@@ -838,13 +804,13 @@ FROM
   ) as all_discrepancies_equal
 
   FROM
-  `{DATASET}.drug_exposure` de
+  `{DATASET}.unioned_ehr_drug_exposure` de
   LEFT JOIN
   `{DATASET}._mapping_drug_exposure` mde
   ON
   de.drug_exposure_id = mde.drug_exposure_id
   LEFT JOIN
-  `{DATASET}.visit_occurrence` vo
+  `{DATASET}.unioned_ehr_visit_occurrence` vo
   ON
   de.visit_occurrence_id = vo.visit_occurrence_id
 
@@ -891,8 +857,6 @@ a.drug_vis_start_diff > 0
 OR
 a.drug_dt_vis_start_dt_diff > 0
 )
-AND
-a.src_hpo_id NOT LIKE '%rdr%'
 ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
 """.format(DATASET = DATASET)
 
@@ -907,13 +871,11 @@ SELECT
 DISTINCT
 mde.src_hpo_id, count(de.drug_exposure_id) as num_total_records
 FROM
-`{DATASET}.drug_exposure` de
+`{DATASET}.unioned_ehr_drug_exposure` de
 JOIN
 `{DATASET}._mapping_drug_exposure` mde
 ON
 de.drug_exposure_id = mde.drug_exposure_id
-AND
-mde.src_hpo_id NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_total_records DESC
 """.format(DATASET = DATASET)
