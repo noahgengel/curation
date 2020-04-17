@@ -23,7 +23,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.LATEST_DATASET
+DATASET = parameters.JULY_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -58,7 +58,8 @@ cwd = os.getcwd()
 cwd = str(cwd)
 print("Current working directory is: {cwd}".format(cwd=cwd))
 
-# +
+# + endofcell="--"
+# # +
 dic = {
     'src_hpo_id': [
         "saou_uab_selma", "saou_uab_hunt", "saou_tul", "pitt_temple",
@@ -101,7 +102,7 @@ dic = {
 site_df = pd.DataFrame(data=dic)
 site_df
 
-# +
+# # +
 ######################################
 print('Getting the data from the database...')
 ######################################
@@ -113,11 +114,6 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_visit_occurrence`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_care_site`
          
     UNION ALL
     SELECT
@@ -137,38 +133,19 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_drug_exposure`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_location`         
-         
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_measurement`         
+         `{DATASET}._mapping_measurement`               
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_note`        
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_observation`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_person`         
+         `{DATASET}._mapping_observation`           
          
     UNION ALL
     SELECT
@@ -176,29 +153,24 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_procedure_occurrence`         
          
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_provider`
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_specimen`
     
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_visit_occurrence`   
-    )     
-    '''.format(DATASET=DATASET),
-                              dialect='standard')
+    ) 
+    order by 1
+    '''.format(DATASET=DATASET), dialect='standard')
 print(site_map.shape[0], 'records received.')
 # -
+
+site_map
+
+site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
+
+site_df
+# --
 
 site_map
 
@@ -224,7 +196,7 @@ foreign_key_df = pd.io.gbq.read_gbq('''
        discharge_to_source_value, preceding_visit_occurrence_id,
         COUNT(*) as cnt
     FROM
-       `{DATASET}.unioned_ehr_visit_occurrence` AS t1
+       `{DATASET}.visit_occurrence` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
@@ -234,7 +206,8 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         t1.visit_occurrence_id=t2.visit_occurrence_id
     WHERE
         t1.visit_concept_id!=0 AND t1.visit_concept_id IS NOT NULL AND
-        t1.person_id!=0 and t1.person_id IS NOT NULL 
+        t1.person_id!=0 and t1.person_id IS NOT NULL AND
+        LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
     HAVING 
@@ -270,7 +243,7 @@ condition_end_datetime, condition_type_concept_id, stop_reason, provider_id, vis
 condition_source_value, condition_source_concept_id, condition_status_source_value, condition_status_concept_id,
         COUNT(*) as cnt
     FROM
-       `{DATASET}.unioned_ehr_condition_occurrence` AS t1
+       `{DATASET}.condition_occurrence` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
@@ -280,7 +253,8 @@ condition_source_value, condition_source_concept_id, condition_status_source_val
         t1.condition_occurrence_id=t2.condition_occurrence_id
     WHERE
         t1.condition_concept_id!=0 AND t1.condition_concept_id IS NOT NULL AND
-        t1.person_id!=0 and t1.person_id IS NOT NULL 
+        t1.person_id!=0 and t1.person_id IS NOT NULL AND
+        LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
     HAVING 
@@ -393,7 +367,7 @@ days_supply, sig, route_concept_id, lot_number, provider_id, visit_occurrence_id
 drug_source_concept_id, route_source_value, dose_unit_source_value,
         COUNT(*) as cnt
     FROM
-       `{DATASET}.unioned_ehr_drug_exposure` AS t1
+       `{DATASET}.drug_exposure` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
@@ -403,7 +377,8 @@ drug_source_concept_id, route_source_value, dose_unit_source_value,
         t1.drug_exposure_id=t2.drug_exposure_id
     WHERE
         t1.drug_concept_id!=0 AND t1.drug_concept_id IS NOT NULL AND
-        t1.person_id!=0 and t1.person_id IS NOT NULL 
+        t1.person_id!=0 and t1.person_id IS NOT NULL AND
+        LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22
     HAVING 
@@ -441,7 +416,7 @@ range_high, provider_id, visit_occurrence_id,
 measurement_source_value, measurement_source_concept_id, unit_source_value, value_source_value,
         COUNT(*) as cnt
     FROM
-       `{DATASET}.unioned_ehr_measurement` AS t1
+       `{DATASET}.measurement` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
@@ -451,7 +426,8 @@ measurement_source_value, measurement_source_concept_id, unit_source_value, valu
         t1.measurement_id=t2.measurement_id
     WHERE
         t1.measurement_concept_id!=0 AND t1.measurement_concept_id IS NOT NULL AND
-        t1.person_id!=0 and t1.person_id IS NOT NULL 
+        t1.person_id!=0 and t1.person_id IS NOT NULL AND
+        src_hpo_id NOT LIKE '%rdr%'
     GROUP BY
         1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
     HAVING 
@@ -487,7 +463,7 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         quantity, provider_id, visit_occurrence_id, procedure_source_value, procedure_source_concept_id, qualifier_source_value,
         COUNT(*) as cnt
     FROM
-       `{DATASET}.unioned_ehr_procedure_occurrence` AS t1
+       `{DATASET}.procedure_occurrence` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
@@ -497,7 +473,8 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         t1.procedure_occurrence_id=t2.procedure_occurrence_id
     WHERE
         t1.procedure_concept_id!=0 AND t1.procedure_concept_id IS NOT NULL AND
-        t1.person_id!=0 and t1.person_id IS NOT NULL 
+        t1.person_id!=0 and t1.person_id IS NOT NULL AND
+        LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1,2,3,4,5,6,7,8,9,10,11,12,13
     HAVING 
@@ -534,7 +511,7 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         value_source_value, questionnaire_response_id,
         COUNT(*) as cnt
     FROM
-       `{DATASET}.unioned_ehr_observation` AS t1
+       `{DATASET}.observation` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
@@ -544,7 +521,8 @@ foreign_key_df = pd.io.gbq.read_gbq('''
         t1.observation_id=t2.observation_id
     WHERE
         t1.observation_concept_id!=0 AND t1.observation_concept_id IS NOT NULL AND
-        t1.person_id!=0 and t1.person_id IS NOT NULL 
+        t1.person_id!=0 and t1.person_id IS NOT NULL AND
+        LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
     HAVING 

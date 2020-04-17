@@ -31,7 +31,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.LATEST_DATASET
+DATASET = parameters.JULY_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -109,11 +109,7 @@ dic = {
 site_df = pd.DataFrame(data=dic)
 site_df
 
-# +
-######################################
-print('Getting the data from the database...')
-######################################
-
+# + endofcell="--"
 site_map = pd.io.gbq.read_gbq('''
     select distinct * from (
     SELECT
@@ -121,11 +117,6 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_visit_occurrence`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_care_site`
          
     UNION ALL
     SELECT
@@ -145,38 +136,19 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_drug_exposure`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_location`         
-         
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_measurement`         
+         `{DATASET}._mapping_measurement`               
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_note`        
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_observation`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_person`         
+         `{DATASET}._mapping_observation`           
          
     UNION ALL
     SELECT
@@ -184,29 +156,24 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_procedure_occurrence`         
          
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_provider`
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_specimen`
     
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_visit_occurrence`   
-    )     
-    '''.format(DATASET=DATASET),
-                              dialect='standard')
+    ) 
+    order by 1
+    '''.format(DATASET=DATASET), dialect='standard')
 print(site_map.shape[0], 'records received.')
 # -
+
+site_map
+
+site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
+
+site_df
+# --
 
 site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
 
@@ -226,7 +193,7 @@ temporal_df = pd.io.gbq.read_gbq('''
         COUNT(*) AS total,
         sum(case when (t1.visit_start_date>t1.visit_end_date) then 1 else 0 end) as wrong_date
     FROM
-       `{DATASET}.unioned_ehr_visit_occurrence` AS t1
+       `{DATASET}.visit_occurrence` AS t1
 
     '''.format(DATASET=DATASET),
                                  dialect='standard')
@@ -250,7 +217,7 @@ temporal_df = pd.io.gbq.read_gbq('''
         COUNT(*) AS total_rows,
         sum(case when (t1.visit_start_date>t1.visit_end_date) then 1 else 0 end) as wrong_date_rows
     FROM
-       `{DATASET}.unioned_ehr_visit_occurrence` AS t1
+       `{DATASET}.visit_occurrence` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
@@ -258,6 +225,8 @@ temporal_df = pd.io.gbq.read_gbq('''
              `{DATASET}._mapping_visit_occurrence`)  AS t2
     ON
         t1.visit_occurrence_id=t2.visit_occurrence_id
+    WHERE
+        LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1
     ORDER BY
@@ -297,7 +266,7 @@ temporal_df = pd.io.gbq.read_gbq('''
         COUNT(*) AS total,
         sum(case when (t1.condition_start_date>t1.condition_end_date) then 1 else 0 end) as wrong_date
     FROM
-       `{DATASET}.unioned_ehr_condition_occurrence` AS t1
+       `{DATASET}.condition_occurrence` AS t1
     '''.format(DATASET=DATASET),
                                  dialect='standard')
 temporal_df.shape
@@ -324,7 +293,7 @@ temporal_df = pd.io.gbq.read_gbq('''
         COUNT(*) AS total_rows,
         sum(case when (t1.condition_start_date>t1.condition_end_date) then 1 else 0 end) as wrong_date_rows
     FROM
-       `{DATASET}.unioned_ehr_condition_occurrence` AS t1
+       `{DATASET}.condition_occurrence` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
@@ -332,6 +301,8 @@ temporal_df = pd.io.gbq.read_gbq('''
              `{DATASET}._mapping_condition_occurrence`)  AS t2
     ON
         t1.condition_occurrence_id=t2.condition_occurrence_id
+    WHERE
+        LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1
     ORDER BY
@@ -374,7 +345,7 @@ temporal_df = pd.io.gbq.read_gbq('''
         COUNT(*) AS total,
         sum(case when (t1.drug_exposure_start_date>t1.drug_exposure_end_date) then 1 else 0 end) as wrong_date
     FROM
-       `{DATASET}.unioned_ehr_drug_exposure` AS t1
+       `{DATASET}.drug_exposure` AS t1
     '''.format(DATASET=DATASET),
                                  dialect='standard')
 temporal_df.shape
@@ -401,7 +372,7 @@ temporal_df = pd.io.gbq.read_gbq('''
         COUNT(*) AS total_rows,
         sum(case when (t1.drug_exposure_start_date>t1.drug_exposure_end_date) then 1 else 0 end) as wrong_date_rows
     FROM
-       `{DATASET}.unioned_ehr_drug_exposure` AS t1
+       `{DATASET}.drug_exposure` AS t1
     INNER JOIN
         (SELECT
             DISTINCT * 
@@ -409,6 +380,8 @@ temporal_df = pd.io.gbq.read_gbq('''
              `{DATASET}._mapping_drug_exposure`)  AS t2
     ON
         t1.drug_exposure_id=t2.drug_exposure_id
+    WHERE
+        LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1
     '''.format(DATASET=DATASET),

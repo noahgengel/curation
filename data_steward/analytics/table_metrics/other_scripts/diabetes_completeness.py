@@ -23,7 +23,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.LATEST_DATASET
+DATASET = parameters.JULY_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -101,23 +101,18 @@ dic = {
 site_df = pd.DataFrame(data=dic)
 site_df
 
-# +
+# + endofcell="--"
+# # +
 ######################################
 print('Getting the data from the database...')
-######################################
 
-site_map = pd.io.gbq.read_gbq('''
-    select distinct * from (
+site_construct_query = """
+select distinct * from (
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_visit_occurrence`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_care_site`
          
     UNION ALL
     SELECT
@@ -137,38 +132,19 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_drug_exposure`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_location`         
-         
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_measurement`         
+         `{DATASET}._mapping_measurement`               
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_note`        
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_observation`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_person`         
+         `{DATASET}._mapping_observation`           
          
     UNION ALL
     SELECT
@@ -176,132 +152,28 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_procedure_occurrence`         
          
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_provider`
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_specimen`
     
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_visit_occurrence`   
-    )     
-    '''.format(DATASET=DATASET), dialect='standard')
+    ) 
+""".format(DATASET = DATASET)
+
+######################################
+
+site_map = pd.io.gbq.read_gbq(site_construct_query,
+            dialect='standard')
 print(site_map.shape[0], 'records received.')
 # -
+
+site_map
+# --
 
 site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
 
 site_df
-
-# # Age of participant should NOT be below 18 and should NOT be too high (Achilles rule_id #20 and 21)
-
-# ## Count number of unique participants with age <18
-
-# +
-
-######################################
-print('Getting the data from the database...')
-######################################
-
-birth_df = pd.io.gbq.read_gbq('''
-    SELECT
-        COUNT(*) AS total,
-        sum(case when (DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR)<18) then 1 else 0 end) as minors_in_dataset
-         
-    FROM
-       `{DATASET}.unioned_ehr_person` AS t1
-    '''.format(DATASET=DATASET),
-                              dialect='standard')
-print(birth_df.shape[0], 'records received.')
-# -
-
-birth_df
-
-# +
-######################################
-print('Getting the data from the database...')
-######################################
-
-birth_df = pd.io.gbq.read_gbq('''
-    SELECT
-        person_id          
-    FROM
-       `{DATASET}.unioned_ehr_person` AS t1
-    where 
-        (DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR)<18)
-    '''.format(DATASET=DATASET),
-                              dialect='standard')
-print(birth_df.shape[0], 'records received.')
-# -
-
-# ## Count number of unique participants with age >120
-
-# +
-
-######################################
-print('Getting the data from the database...')
-######################################
-
-birth_df = pd.io.gbq.read_gbq('''
-    SELECT
-        COUNT(*) AS total,
-        sum(case when (DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR)>120) then 1 else 0 end) as over_120_in_dataset
-         
-    FROM
-       `{DATASET}.unioned_ehr_person` AS t1
-    '''.format(DATASET=DATASET), dialect='standard')
-print(birth_df.shape[0], 'records received.')
-
-# +
-######################################
-print('Getting the data from the database...')
-######################################
-
-birth_df = pd.io.gbq.read_gbq('''
-    SELECT
-        person_id          
-    FROM
-       `{DATASET}.unioned_ehr_person` AS t1
-    where 
-        DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR)>120
-    '''.format(DATASET=DATASET), dialect='standard')
-
-print(birth_df.shape[0], 'records received.')
-# -
-
-birth_df
-
-# ## Histogram
-
-# +
-
-######################################
-print('Getting the data from the database...')
-######################################
-
-birth_df = pd.io.gbq.read_gbq('''
-    SELECT
-        DATE_DIFF(CURRENT_DATE, EXTRACT(DATE FROM birth_datetime), YEAR) as AGE    
-    FROM
-       `{DATASET}.unioned_ehr_person` AS t1
-    '''.format(DATASET=DATASET), dialect='standard')
-
-print(birth_df.shape[0], 'records received.')
-# -
-
-birth_df.head()
-
-birth_df['AGE'].hist(bins=88)
 
 # # Participant should have supporting data in either lab results or drugs if he/she has a condition code for diabetes.
 
@@ -317,9 +189,9 @@ SELECT
 DISTINCT
 mco.src_hpo_id, p.person_id
 FROM
-`{DATASET}.unioned_ehr_person` p
+`{DATASET}.person` p
 JOIN
-`{DATASET}.unioned_ehr_condition_occurrence` co
+`{DATASET}.condition_occurrence` co
 ON
 p.person_id = co.person_id
 JOIN
@@ -334,6 +206,8 @@ WHERE
 LOWER(c.concept_name) LIKE '%diabetes%'
 AND
 (invalid_reason is null or invalid_reason = '')
+AND
+LOWER(mco.src_hpo_id) NOT LIKE '%rdr%'
 GROUP BY 1, 2
 ORDER BY 1, 2 DESC
 """.format(DATASET = DATASET)
@@ -363,6 +237,8 @@ DISTINCT
 p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
+WHERE
+LOWER(p.src_hpo_id) NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_with_diab DESC
 """.format(DATASET = DATASET)
@@ -411,13 +287,15 @@ p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab_and_drugs
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 RIGHT JOIN
-`{DATASET}.unioned_ehr_drug_exposure` de  -- get the relevant drugs
+`{DATASET}.drug_exposure` de  -- get the relevant drugs
 ON
 p.person_id = de.person_id
 RIGHT JOIN
 `{DATASET}.substantiating_diabetic_drug_concept_ids` t2drugs  -- only focus on the drugs that substantiate diabetes
 ON
-de.drug_concept_id = t2drugs.descendant_concept_id 
+de.drug_concept_id = t2drugs.descendant_concept_id
+WHERE
+LOWER(p.src_hpo_id) NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_with_diab_and_drugs DESC
 """.format(DATASET = DATASET)
@@ -465,13 +343,15 @@ p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab_and_glucose
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 RIGHT JOIN
-`{DATASET}.unioned_ehr_measurement` m
+`{DATASET}.measurement` m
 ON
 p.person_id = m.person_id -- get the persons with measurements
 RIGHT JOIN
 `{DATASET}.valid_glucose_labs` vgl
 ON
 vgl.concept_id = m.measurement_concept_id -- only get those with the substantiating labs
+WHERE
+LOWER(p.src_hpo_id) NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_with_diab_and_glucose DESC
 """.format(DATASET = DATASET)
@@ -506,13 +386,15 @@ p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab_and_a1c
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 RIGHT JOIN
-`{DATASET}.unioned_ehr_measurement` m
+`{DATASET}.measurement` m
 ON
 p.person_id = m.person_id -- get the persons with measurements
 RIGHT JOIN
 `{DATASET}.a1c_descendants` a1c
 ON
 a1c.concept_id = m.measurement_concept_id -- only get those with the substantiating labs
+WHERE
+p.src_hpo_id NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_with_diab_and_a1c DESC
 """.format(DATASET = DATASET)
@@ -537,7 +419,7 @@ p.src_hpo_id, COUNT(DISTINCT p.person_id) as num_with_diab_and_insulin
 FROM
 `{DATASET}.persons_with_diabetes_according_to_condition_table` p
 RIGHT JOIN
-`{DATASET}.unioned_ehr_drug_exposure` de
+`{DATASET}.drug_exposure` de
 ON
 de.person_id = p.person_id -- get the persons with measurements
 RIGHT JOIN

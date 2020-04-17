@@ -23,7 +23,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.LATEST_DATASET
+DATASET = parameters.JULY_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -101,11 +101,7 @@ dic = {
 site_df = pd.DataFrame(data=dic)
 site_df
 
-# +
-######################################
-print('Getting the data from the database...')
-######################################
-
+# + endofcell="--"
 site_map = pd.io.gbq.read_gbq('''
     select distinct * from (
     SELECT
@@ -113,11 +109,6 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_visit_occurrence`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_care_site`
          
     UNION ALL
     SELECT
@@ -137,38 +128,19 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_drug_exposure`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_location`         
-         
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_measurement`         
+         `{DATASET}._mapping_measurement`               
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_note`        
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_observation`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_person`         
+         `{DATASET}._mapping_observation`           
          
     UNION ALL
     SELECT
@@ -176,29 +148,24 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_procedure_occurrence`         
          
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_provider`
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_specimen`
     
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_visit_occurrence`   
-    )     
-    '''.format(DATASET=DATASET),
-                              dialect='standard')
+    ) 
+    order by 1
+    '''.format(DATASET=DATASET), dialect='standard')
 print(site_map.shape[0], 'records received.')
 # -
+
+site_map
+
+site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
+
+site_df
+# --
 
 site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
 
@@ -237,7 +204,7 @@ FROM
      SELECT
          DISTINCT mm.src_hpo_id, ca.ancestor_concept_id -- logs an ancestor_concept if it is found
      FROM
-         `{DATASET}.unioned_ehr_measurement` m
+         `{DATASET}.measurement` m
      JOIN -- to get the site info
          `{DATASET}._mapping_measurement` mm
      ON
@@ -253,6 +220,7 @@ FROM
      WHERE
          ca.ancestor_concept_id IN {Lipid}
      ) a
+ WHERE LOWER(a.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 1
  ORDER BY perc_ancestors DESC, a.src_hpo_id
     '''.format(DATASET=DATASET, num_lipids=num_lipids,Lipid=Lipid),
@@ -278,7 +246,7 @@ FROM
      SELECT
          DISTINCT mm.src_hpo_id, ca.ancestor_concept_id -- logs an ancestor_concept if it is found
      FROM
-         `{DATASET}.unioned_ehr_measurement` m
+         `{DATASET}.measurement` m
      JOIN -- to get the site info
          `{DATASET}._mapping_measurement` mm
      ON
@@ -294,6 +262,7 @@ FROM
      WHERE
          ca.ancestor_concept_id IN {CBC}
      ) a
+ WHERE LOWER(a.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 1
  ORDER BY perc_ancestors DESC, a.src_hpo_id
     '''.format(num_cbc=num_cbc, DATASET=DATASET, CBC=CBC),
@@ -319,7 +288,7 @@ FROM
      SELECT
          DISTINCT mm.src_hpo_id, ca.ancestor_concept_id -- logs an ancestor_concept if it is found
      FROM
-         `{DATASET}.unioned_ehr_measurement` m
+         `{DATASET}.measurement` m
      JOIN -- to get the site info
          `{DATASET}._mapping_measurement` mm
      ON
@@ -335,6 +304,7 @@ FROM
      WHERE
          ca.ancestor_concept_id IN {CBCwDiff}
      ) a
+ WHERE LOWER(a.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 1
  ORDER BY perc_ancestors DESC, a.src_hpo_id
     '''.format(num_cbc_w_diff=num_cbc_w_diff, DATASET=DATASET, 
@@ -361,7 +331,7 @@ FROM
      SELECT
          DISTINCT mm.src_hpo_id, ca.ancestor_concept_id -- logs an ancestor_concept if it is found
      FROM
-         `{DATASET}.unioned_ehr_measurement` m
+         `{DATASET}.measurement` m
      JOIN -- to get the site info
          `{DATASET}._mapping_measurement` mm
      ON
@@ -377,6 +347,7 @@ FROM
      WHERE
          ca.ancestor_concept_id IN {CMP}
      ) a
+ WHERE LOWER(a.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 1
  ORDER BY perc_ancestors DESC, a.src_hpo_id
     '''.format(num_cmp=num_cmp, DATASET=DATASET, CMP=CMP),
@@ -402,7 +373,7 @@ FROM
      SELECT
          DISTINCT mm.src_hpo_id, ca.ancestor_concept_id -- logs an ancestor_concept if it is found
      FROM
-         `{DATASET}.unioned_ehr_measurement` m
+         `{DATASET}.measurement` m
      JOIN -- to get the site info
          `{DATASET}._mapping_measurement` mm
      ON
@@ -418,6 +389,7 @@ FROM
      WHERE
          ca.ancestor_concept_id IN {Physical_Measurement}
      ) a
+ WHERE LOWER(a.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 1
  ORDER BY perc_ancestors DESC, a.src_hpo_id
     '''.format(num_pms=num_pms, DATASET=DATASET, Physical_Measurement=Physical_Measurement),
@@ -444,7 +416,7 @@ FROM
      SELECT
          DISTINCT mm.src_hpo_id, ca.ancestor_concept_id -- logs an ancestor_concept if it is found
      FROM
-         `{DATASET}.unioned_ehr_measurement` m
+         `{DATASET}.measurement` m
      JOIN -- to get the site info
          `{DATASET}._mapping_measurement` mm
      ON
@@ -460,6 +432,7 @@ FROM
      WHERE
          ca.ancestor_concept_id IN {all_measurements}
      ) a
+ WHERE LOWER(a.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 1
  ORDER BY perc_ancestors DESC, a.src_hpo_id
     '''.format(num_all_measurements=num_all_measurements, DATASET=DATASET,

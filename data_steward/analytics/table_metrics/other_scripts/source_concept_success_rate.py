@@ -22,7 +22,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.LATEST_DATASET
+DATASET = parameters.JULY_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -100,11 +100,7 @@ dic = {
 site_df = pd.DataFrame(data=dic)
 site_df
 
-# +
-######################################
-print('Getting the data from the database...')
-######################################
-
+# + endofcell="--"
 site_map = pd.io.gbq.read_gbq('''
     select distinct * from (
     SELECT
@@ -112,11 +108,6 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_visit_occurrence`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_care_site`
          
     UNION ALL
     SELECT
@@ -136,38 +127,19 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_drug_exposure`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_location`         
-         
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_measurement`         
+         `{DATASET}._mapping_measurement`               
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_note`        
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_observation`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_person`         
+         `{DATASET}._mapping_observation`           
          
     UNION ALL
     SELECT
@@ -175,29 +147,24 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_procedure_occurrence`         
          
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_provider`
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_specimen`
     
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_visit_occurrence`   
-    )     
-    '''.format(DATASET=DATASET),
-                              dialect='standard')
+    ) 
+    order by 1
+    '''.format(DATASET=DATASET), dialect='standard')
 print(site_map.shape[0], 'records received.')
 # -
+
+site_map
+
+site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
+
+site_df
+# --
 
 site_map
 
@@ -218,7 +185,7 @@ condition_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS condition_total_row
             FROM
-               `{DATASET}.unioned_ehr_condition_occurrence` AS t1
+               `{DATASET}.condition_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -235,7 +202,7 @@ condition_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS condition_well_defined_row
             FROM
-               `{DATASET}.unioned_ehr_condition_occurrence` AS t1
+               `{DATASET}.condition_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -259,7 +226,7 @@ condition_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS condition_total_zero
             FROM
-               `{DATASET}.unioned_ehr_condition_occurrence` AS t1
+               `{DATASET}.condition_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -292,6 +259,8 @@ condition_concept_df = pd.io.gbq.read_gbq('''
         data3
     ON
         data1.src_hpo_id=data3.src_hpo_id
+    WHERE
+        LOWER(data1.src_hpo_id) NOT LIKE '%rdr%'
     ORDER BY
         1 DESC
     '''.format(DATASET=DATASET), dialect='standard')
@@ -309,7 +278,7 @@ procedure_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS procedure_total_row
             FROM
-               `{DATASET}.unioned_ehr_procedure_occurrence` AS t1
+               `{DATASET}.procedure_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -326,7 +295,7 @@ procedure_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS procedure_well_defined_row
             FROM
-               `{DATASET}.unioned_ehr_procedure_occurrence` AS t1
+               `{DATASET}.procedure_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -355,6 +324,8 @@ procedure_concept_df = pd.io.gbq.read_gbq('''
         data2
     ON
         data1.src_hpo_id=data2.src_hpo_id
+    WHERE
+        LOWER(data1.src_hpo_id) NOT LIKE '%rdr%'
     ORDER BY
         1 DESC
     '''.format(DATASET=DATASET), dialect='standard')
@@ -372,7 +343,7 @@ drug_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS drug_total_row
             FROM
-               `{DATASET}.unioned_ehr_drug_exposure` AS t1
+               `{DATASET}.drug_exposure` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -389,7 +360,7 @@ drug_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS drug_well_defined_row
             FROM
-               `{DATASET}.unioned_ehr_drug_exposure` AS t1
+               `{DATASET}.drug_exposure` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -418,6 +389,8 @@ drug_concept_df = pd.io.gbq.read_gbq('''
         data2
     ON
         data1.src_hpo_id=data2.src_hpo_id
+    WHERE
+        LOWER(data1.src_hpo_id) NOT LIKE '%rdr%'
     ORDER BY
         1 DESC
     '''.format(DATASET=DATASET), dialect='standard')
@@ -437,7 +410,7 @@ observation_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS observation_total_row
             FROM
-               `{DATASET}.unioned_ehr_observation` AS t1
+               `{DATASET}.observation` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -454,7 +427,7 @@ observation_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS observation_well_defined_row
             FROM
-               `{DATASET}.unioned_ehr_observation` AS t1
+               `{DATASET}.observation` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -483,6 +456,8 @@ observation_concept_df = pd.io.gbq.read_gbq('''
         data2
     ON
         data1.src_hpo_id=data2.src_hpo_id
+    WHERE
+        LOWER(data1.src_hpo_id) NOT LIKE '%rdr%'
     ORDER BY
         1 DESC
     '''.format(DATASET=DATASET), dialect='standard')
@@ -500,7 +475,7 @@ measurement_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS measurement_total_row
             FROM
-               `{DATASET}.unioned_ehr_measurement` AS t1
+               `{DATASET}.measurement` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -517,7 +492,7 @@ measurement_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS measurement_well_defined_row
             FROM
-               `{DATASET}.unioned_ehr_measurement` AS t1
+               `{DATASET}.measurement` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -546,6 +521,8 @@ measurement_concept_df = pd.io.gbq.read_gbq('''
         data2
     ON
         data1.src_hpo_id=data2.src_hpo_id
+    WHERE
+        LOWER(data1.src_hpo_id) NOT LIKE '%rdr%'
     ORDER BY
         1 DESC
     '''.format(DATASET=DATASET), dialect='standard')
@@ -563,7 +540,7 @@ visit_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS visit_total_row
             FROM
-               `{DATASET}.unioned_ehr_visit_occurrence` AS t1
+               `{DATASET}.visit_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -580,7 +557,7 @@ visit_concept_df = pd.io.gbq.read_gbq('''
                 src_hpo_id,
                 COUNT(*) AS visit_well_defined_row
             FROM
-               `{DATASET}.unioned_ehr_visit_occurrence` AS t1
+               `{DATASET}.visit_occurrence` AS t1
             INNER JOIN
                 (SELECT
                     DISTINCT * 
@@ -609,6 +586,8 @@ visit_concept_df = pd.io.gbq.read_gbq('''
         data2
     ON
         data1.src_hpo_id=data2.src_hpo_id
+    WHERE
+        LOWER(data1.src_hpo_id) NOT LIKE '%rdr%'
     ORDER BY
         1 DESC
     '''.format(DATASET=DATASET), dialect='standard')

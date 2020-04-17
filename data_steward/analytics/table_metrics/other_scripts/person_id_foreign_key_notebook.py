@@ -13,6 +13,8 @@
 #     name: python3
 # ---
 
+# # NOTE: `combined` datasets do not have a `_mapping_person` table - this necessitates the use of unioned_ehr datasets (and this notebook therefore more closely resembles the "weekly metrics" notebook)
+#
 # ### This notebook is intended to show the percentage of rows with 'invalid' 'person_id' (a type of 'foreign key') in each of the 6 canonical tables. 
 #
 # ### An 'invalid' row would be one where the field value ('person_id') either:
@@ -41,7 +43,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.LATEST_DATASET
+DATASET = parameters.UNIONED_EHR_JULY_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -119,11 +121,7 @@ dic = {
 site_df = pd.DataFrame(data=dic)
 site_df
 
-# +
-######################################
-print('Getting the data from the database...')
-######################################
-
+# + endofcell="--"
 site_map = pd.io.gbq.read_gbq('''
     select distinct * from (
     SELECT
@@ -131,11 +129,6 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_visit_occurrence`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_care_site`
          
     UNION ALL
     SELECT
@@ -155,38 +148,19 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_drug_exposure`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_location`         
-         
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_measurement`         
+         `{DATASET}._mapping_measurement`               
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_note`        
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_observation`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_person`         
+         `{DATASET}._mapping_observation`           
          
     UNION ALL
     SELECT
@@ -194,29 +168,24 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_procedure_occurrence`         
          
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_provider`
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_specimen`
     
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_visit_occurrence`   
-    )     
-    '''.format(DATASET=DATASET),
-                              dialect='standard')
+    ) 
+    order by 1
+    '''.format(DATASET=DATASET), dialect='standard')
 print(site_map.shape[0], 'records received.')
 # -
+
+site_map
+
+site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
+
+site_df
+# --
 
 site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
 site_df
@@ -291,6 +260,9 @@ LEFT JOIN
 
 ON
 total_rows.src_hpo_id = invalid_row_count.src_hpo_id
+
+WHERE LOWER(total_rows.src_hpo_id) NOT LIKE '%rdr%'
+
 ORDER BY condition_occurrence DESC
 """
 
@@ -366,6 +338,9 @@ LEFT JOIN
 
 ON
 total_rows.src_hpo_id = invalid_row_count.src_hpo_id
+
+WHERE LOWER(total_rows.src_hpo_id) NOT LIKE '%rdr%'
+
 ORDER BY observation DESC
 """
 
@@ -440,7 +415,11 @@ LEFT JOIN
   ORDER BY number_rows_w_no_valid_person DESC) invalid_row_count
 
 ON
+
 total_rows.src_hpo_id = invalid_row_count.src_hpo_id
+
+WHERE LOWER(total_rows.src_hpo_id) NOT LIKE '%rdr%'
+
 ORDER BY drug_exposure DESC
 """
 
@@ -516,6 +495,9 @@ LEFT JOIN
 
 ON
 total_rows.src_hpo_id = invalid_row_count.src_hpo_id
+
+WHERE LOWER(total_rows.src_hpo_id) NOT LIKE '%rdr%'
+
 ORDER BY procedure_occurrence DESC
 """
 
@@ -591,6 +573,9 @@ LEFT JOIN
 
 ON
 total_rows.src_hpo_id = invalid_row_count.src_hpo_id
+
+WHERE LOWER(total_rows.src_hpo_id) NOT LIKE '%rdr%'
+
 ORDER BY measurement DESC
 """
 
@@ -666,6 +651,9 @@ LEFT JOIN
 
 ON
 total_rows.src_hpo_id = invalid_row_count.src_hpo_id
+
+WHERE LOWER(total_rows.src_hpo_id) NOT LIKE '%rdr%'
+
 ORDER BY visit_occurrence DESC
 """
 
@@ -701,5 +689,3 @@ person_id_foreign_key_df
 # -
 
 person_id_foreign_key_df.to_csv(f"{cwd}/person_id_failure_rate.csv")
-
-

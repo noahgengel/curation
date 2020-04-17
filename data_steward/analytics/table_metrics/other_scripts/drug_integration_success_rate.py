@@ -23,7 +23,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.LATEST_DATASET
+DATASET = parameters.JULY_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -101,23 +101,18 @@ dic = {
 site_df = pd.DataFrame(data=dic)
 site_df
 
-# +
+# + endofcell="--"
+# # +
 ######################################
 print('Getting the data from the database...')
-######################################
 
-site_map = pd.io.gbq.read_gbq('''
-    select distinct * from (
+site_construct_query = """
+select distinct * from (
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_visit_occurrence`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_care_site`
          
     UNION ALL
     SELECT
@@ -137,38 +132,19 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_drug_exposure`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_location`         
-         
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_measurement`         
+         `{DATASET}._mapping_measurement`               
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_note`        
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_observation`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_person`         
+         `{DATASET}._mapping_observation`           
          
     UNION ALL
     SELECT
@@ -176,28 +152,24 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_procedure_occurrence`         
          
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_provider`
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_specimen`
     
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_visit_occurrence`   
-    )     
-    '''.format(DATASET=DATASET), dialect='standard')
+    ) 
+""".format(DATASET = DATASET)
+
+######################################
+
+site_map = pd.io.gbq.read_gbq(site_construct_query,
+            dialect='standard')
 print(site_map.shape[0], 'records received.')
 # -
+
+site_map
+# --
 
 site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
 
@@ -245,7 +217,7 @@ SELECT
      mde.src_hpo_id, 
      round(COUNT(DISTINCT ca.ancestor_concept_id) / {num_diuretics} * 100, 0) as ancestor_usage
  FROM
-     `{DATASET}.unioned_ehr_drug_exposure` de
+     `{DATASET}.drug_exposure` de
  JOIN
      `{DATASET}.concept_ancestor` ca
  ON
@@ -256,6 +228,8 @@ SELECT
      de.drug_exposure_id = mde.drug_exposure_id
  WHERE
      ca.ancestor_concept_id IN {diuretics}
+ AND
+     LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 
      1
  ORDER BY 
@@ -280,7 +254,7 @@ SELECT
      mde.src_hpo_id, 
      round(COUNT(DISTINCT ca.ancestor_concept_id) / {num_ccbs} * 100, 0) as ancestor_usage
  FROM
-     `{DATASET}.unioned_ehr_drug_exposure` de
+     `{DATASET}.drug_exposure` de
  JOIN
      `{DATASET}.concept_ancestor` ca
  ON
@@ -291,6 +265,8 @@ SELECT
      de.drug_exposure_id = mde.drug_exposure_id
  WHERE
      ca.ancestor_concept_id IN {ccbs}
+  AND
+     LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 
      1
  ORDER BY 
@@ -315,7 +291,7 @@ SELECT
      mde.src_hpo_id, 
      round(COUNT(DISTINCT ca.ancestor_concept_id) / {num_vaccines} * 100, 0) as ancestor_usage
  FROM
-     `{DATASET}.unioned_ehr_drug_exposure` de
+     `{DATASET}.drug_exposure` de
  JOIN
      `{DATASET}.concept_ancestor` ca
  ON
@@ -326,6 +302,8 @@ SELECT
      de.drug_exposure_id = mde.drug_exposure_id
  WHERE
      ca.ancestor_concept_id IN {vaccine}
+  AND
+     LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 
      1
  ORDER BY 
@@ -350,7 +328,7 @@ SELECT
      mde.src_hpo_id, 
      round(COUNT(DISTINCT ca.ancestor_concept_id) / {num_oralhypoglycemics} * 100, 0) as ancestor_usage
  FROM
-     `{DATASET}.unioned_ehr_drug_exposure` de
+     `{DATASET}.drug_exposure` de
  JOIN
      `{DATASET}.concept_ancestor` ca
  ON
@@ -361,6 +339,8 @@ SELECT
      de.drug_exposure_id = mde.drug_exposure_id
  WHERE
      ca.ancestor_concept_id IN {oralhypoglycemics}
+  AND
+     LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 
      1
  ORDER BY 
@@ -387,7 +367,7 @@ SELECT
      mde.src_hpo_id, 
      round(COUNT(DISTINCT ca.ancestor_concept_id) / {num_opioids} * 100, 0) as ancestor_usage
  FROM
-     `{DATASET}.unioned_ehr_drug_exposure` de
+     `{DATASET}.drug_exposure` de
  JOIN
      `{DATASET}.concept_ancestor` ca
  ON
@@ -398,6 +378,8 @@ SELECT
      de.drug_exposure_id = mde.drug_exposure_id
  WHERE
      ca.ancestor_concept_id IN {opioids}
+ AND
+     LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 
      1
  ORDER BY 
@@ -423,7 +405,7 @@ SELECT
      mde.src_hpo_id, 
      round(COUNT(DISTINCT ca.ancestor_concept_id) / {num_antibiotics} * 100, 0) as ancestor_usage
  FROM
-     `{DATASET}.unioned_ehr_drug_exposure` de
+     `{DATASET}.drug_exposure` de
  JOIN
      `{DATASET}.concept_ancestor` ca
  ON
@@ -434,6 +416,8 @@ SELECT
      de.drug_exposure_id = mde.drug_exposure_id
  WHERE
      ca.ancestor_concept_id IN {antibiotics}
+ AND
+     LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 
      1
  ORDER BY 
@@ -461,7 +445,7 @@ SELECT
      mde.src_hpo_id, 
      round(COUNT(DISTINCT ca.ancestor_concept_id) / {num_statins} * 100, 0) as ancestor_usage
  FROM
-     `{DATASET}.unioned_ehr_drug_exposure` de
+     `{DATASET}.drug_exposure` de
  JOIN
      `{DATASET}.concept_ancestor` ca
  ON
@@ -472,6 +456,8 @@ SELECT
      de.drug_exposure_id = mde.drug_exposure_id
  WHERE
      ca.ancestor_concept_id IN {statins}
+ AND
+     LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 
      1
  ORDER BY 
@@ -496,7 +482,7 @@ SELECT
      mde.src_hpo_id, 
      round(COUNT(DISTINCT ca.ancestor_concept_id) / {num_msknsaids} * 100, 0) as ancestor_usage
  FROM
-     `{DATASET}.unioned_ehr_drug_exposure` de
+     `{DATASET}.drug_exposure` de
  JOIN
      `{DATASET}.concept_ancestor` ca
  ON
@@ -507,6 +493,8 @@ SELECT
      de.drug_exposure_id = mde.drug_exposure_id
  WHERE
      ca.ancestor_concept_id IN {msknsaids}
+ AND
+     LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 
      1
  ORDER BY 
@@ -531,7 +519,7 @@ SELECT
      mde.src_hpo_id, 
      round(COUNT(DISTINCT ca.ancestor_concept_id) / {num_painnsaids} * 100, 0) as ancestor_usage
  FROM
-     `{DATASET}.unioned_ehr_drug_exposure` de
+     `{DATASET}.drug_exposure` de
  JOIN
      `{DATASET}.concept_ancestor` ca
  ON
@@ -542,6 +530,8 @@ SELECT
      de.drug_exposure_id = mde.drug_exposure_id
  WHERE
      ca.ancestor_concept_id IN {painnsaids}
+ AND
+     LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 
      1
  ORDER BY 
@@ -566,7 +556,7 @@ SELECT
      mde.src_hpo_id, 
      round(COUNT(DISTINCT ca.ancestor_concept_id) / {num_ace_inhib} * 100, 0) as ancestor_usage
  FROM
-     `{DATASET}.unioned_ehr_drug_exposure` de
+     `{DATASET}.drug_exposure` de
  JOIN
      `{DATASET}.concept_ancestor` ca
  ON
@@ -577,6 +567,8 @@ SELECT
      de.drug_exposure_id = mde.drug_exposure_id
  WHERE
      ca.ancestor_concept_id IN {ace_inhibitors}
+ AND
+     LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 
      1
  ORDER BY 
@@ -603,7 +595,7 @@ SELECT
      mde.src_hpo_id, 
      round(COUNT(DISTINCT ca.ancestor_concept_id) / {num_drugs} * 100, 0) as ancestor_usage
  FROM
-     `{DATASET}.unioned_ehr_drug_exposure` de
+     `{DATASET}.drug_exposure` de
  JOIN
      `{DATASET}.concept_ancestor` ca
  ON
@@ -614,6 +606,8 @@ SELECT
      de.drug_exposure_id = mde.drug_exposure_id
  WHERE
      ca.ancestor_concept_id IN {all_drugs}
+ AND
+     LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
  GROUP BY 
      1
  ORDER BY 

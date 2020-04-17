@@ -23,7 +23,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.LATEST_DATASET
+DATASET = parameters.JULY_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -189,9 +189,9 @@ temporal_df = pd.io.gbq.read_gbq('''
         COUNT(*) AS total,
         sum(case when (DATE_DIFF(visit_start_date, death_date, DAY)>30) then 1 else 0 end) as wrong_death_date
     FROM
-       `{DATASET}.unioned_ehr_visit_occurrence` AS t1
+       `{DATASET}.visit_occurrence` AS t1
     INNER JOIN
-        `{DATASET}.unioned_ehr_death` AS t2
+        `{DATASET}.death` AS t2
         ON
             t1.person_id=t2.person_id
     INNER JOIN
@@ -201,6 +201,7 @@ temporal_df = pd.io.gbq.read_gbq('''
              `{DATASET}._mapping_visit_occurrence`)  AS t3
     ON
         t1.visit_occurrence_id=t3.visit_occurrence_id
+    WHERE LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1
     '''.format(DATASET=DATASET), dialect='standard')
@@ -234,9 +235,9 @@ temporal_df = pd.io.gbq.read_gbq('''
         COUNT(*) AS total,
         sum(case when (DATE_DIFF(condition_start_date, death_date, DAY)>30) then 1 else 0 end) as wrong_death_date
     FROM
-       `{DATASET}.unioned_ehr_condition_occurrence` AS t1
+       `{DATASET}.condition_occurrence` AS t1
     INNER JOIN
-        `{DATASET}.unioned_ehr_death` AS t2
+        `{DATASET}.death` AS t2
         ON
             t1.person_id=t2.person_id
     INNER JOIN
@@ -246,6 +247,7 @@ temporal_df = pd.io.gbq.read_gbq('''
              `{DATASET}._mapping_condition_occurrence`)  AS t3
     ON
         t1.condition_occurrence_id=t3.condition_occurrence_id
+    WHERE LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1
     '''.format(DATASET=DATASET),
@@ -280,9 +282,9 @@ temporal_df = pd.io.gbq.read_gbq('''
         COUNT(*) AS total,
         sum(case when (DATE_DIFF(drug_exposure_start_date, death_date, DAY)>30) then 1 else 0 end) as wrong_death_date
     FROM
-       `{DATASET}.unioned_ehr_drug_exposure` AS t1
+       `{DATASET}.drug_exposure` AS t1
     INNER JOIN
-        `{DATASET}.unioned_ehr_death` AS t2
+        `{DATASET}.death` AS t2
         ON
             t1.person_id=t2.person_id
     INNER JOIN
@@ -292,6 +294,7 @@ temporal_df = pd.io.gbq.read_gbq('''
              `{DATASET}._mapping_drug_exposure`)  AS t3
     ON
         t1.drug_exposure_id=t3.drug_exposure_id
+    WHERE LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1
     '''.format(DATASET=DATASET), dialect='standard')
@@ -322,9 +325,9 @@ temporal_df = pd.io.gbq.read_gbq('''
         COUNT(*) AS total,
         sum(case when (DATE_DIFF(measurement_date, death_date, DAY)>30) then 1 else 0 end) as wrong_death_date
     FROM
-       `{DATASET}.unioned_ehr_measurement` AS t1
+       `{DATASET}.measurement` AS t1
     INNER JOIN
-        `{DATASET}.unioned_ehr_death` AS t2
+        `{DATASET}.death` AS t2
         ON
             t1.person_id=t2.person_id
     INNER JOIN
@@ -334,6 +337,7 @@ temporal_df = pd.io.gbq.read_gbq('''
              `{DATASET}._mapping_measurement`)  AS t3
     ON
         t1.measurement_id=t3.measurement_id
+    WHERE LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1
     '''.format(DATASET=DATASET),dialect='standard')
@@ -364,9 +368,9 @@ temporal_df = pd.io.gbq.read_gbq('''
         COUNT(*) AS total,
         sum(case when (DATE_DIFF(procedure_date, death_date, DAY)>30) then 1 else 0 end) as wrong_death_date
     FROM
-       `{DATASET}.unioned_ehr_procedure_occurrence` AS t1
+       `{DATASET}.procedure_occurrence` AS t1
     INNER JOIN
-        `{DATASET}.unioned_ehr_death` AS t2
+        `{DATASET}.death` AS t2
         ON
             t1.person_id=t2.person_id
     INNER JOIN
@@ -376,6 +380,7 @@ temporal_df = pd.io.gbq.read_gbq('''
              `{DATASET}._mapping_procedure_occurrence`)  AS t3
     ON
         t1.procedure_occurrence_id=t3.procedure_occurrence_id
+    WHERE LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1
     '''.format(DATASET=DATASET), dialect='standard')
@@ -409,9 +414,9 @@ temporal_df = pd.io.gbq.read_gbq('''
         COUNT(*) AS total,
         sum(case when (DATE_DIFF(observation_date, death_date, DAY)>30) then 1 else 0 end) as wrong_death_date
     FROM
-       `{DATASET}.unioned_ehr_observation` AS t1
+       `{DATASET}.observation` AS t1
     INNER JOIN
-        `{DATASET}.unioned_ehr_death` AS t2
+        `{DATASET}.death` AS t2
         ON
             t1.person_id=t2.person_id
     INNER JOIN
@@ -421,6 +426,7 @@ temporal_df = pd.io.gbq.read_gbq('''
              `{DATASET}._mapping_observation`)  AS t3
     ON
         t1.observation_id=t3.observation_id
+    WHERE LOWER(src_hpo_id) NOT LIKE '%rdr%'
     GROUP BY
         1
     '''.format(DATASET=DATASET), dialect='standard')

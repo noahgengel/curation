@@ -23,7 +23,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.LATEST_DATASET
+DATASET = parameters.JULY_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -58,7 +58,8 @@ cwd = os.getcwd()
 cwd = str(cwd)
 print("Current working directory is: {cwd}".format(cwd=cwd))
 
-# +
+# + endofcell="--"
+# # +
 dic = {
     'src_hpo_id': [
         "saou_uab_selma", "saou_uab_hunt", "saou_tul", "pitt_temple",
@@ -101,7 +102,7 @@ dic = {
 site_df = pd.DataFrame(data=dic)
 site_df
 
-# +
+# # +
 ######################################
 print('Getting the data from the database...')
 ######################################
@@ -113,11 +114,6 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_visit_occurrence`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_care_site`
          
     UNION ALL
     SELECT
@@ -137,38 +133,19 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_drug_exposure`
          
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_location`         
-         
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_measurement`         
+         `{DATASET}._mapping_measurement`               
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_note`        
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_observation`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_person`         
+         `{DATASET}._mapping_observation`           
          
     UNION ALL
     SELECT
@@ -176,29 +153,24 @@ site_map = pd.io.gbq.read_gbq('''
     FROM
          `{DATASET}._mapping_procedure_occurrence`         
          
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_provider`
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_specimen`
     
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_visit_occurrence`   
-    )     
-    '''.format(DATASET=DATASET),
-                              dialect='standard')
+    ) 
+    order by 1
+    '''.format(DATASET=DATASET), dialect='standard')
 print(site_map.shape[0], 'records received.')
 # -
+
+site_map
+
+site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
+
+site_df
+# --
 
 site_df = pd.merge(site_map, site_df, how='outer', on='src_hpo_id')
 
@@ -220,11 +192,13 @@ SELECT
 DISTINCT
 mde.src_hpo_id, COUNT(de.drug_exposure_id) as number_total_routes
 FROM
-`{DATASET}.unioned_ehr_drug_exposure` de
+`{DATASET}.drug_exposure` de
 JOIN
 `{DATASET}._mapping_drug_exposure` mde
 ON
-de.drug_exposure_id = mde.drug_exposure_id 
+de.drug_exposure_id = mde.drug_exposure_id
+WHERE
+LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY number_total_routes DESC
 """.format(DATASET = DATASET)
@@ -257,7 +231,7 @@ SELECT
 DISTINCT
 mde.src_hpo_id, COUNT(de.drug_exposure_id) as number_valid_routes
 FROM
-`{DATASET}.unioned_ehr_drug_exposure` de
+`{DATASET}.drug_exposure` de
 JOIN
 `{DATASET}._mapping_drug_exposure` mde
 ON
@@ -270,6 +244,8 @@ WHERE
 c.standard_concept IN ('S')
 AND
 LOWER(c.domain_id) LIKE '%route%'
+AND
+LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY number_valid_routes DESC
 """.format(DATASET = DATASET)

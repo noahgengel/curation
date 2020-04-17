@@ -22,7 +22,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.LATEST_DATASET
+DATASET = parameters.JULY_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -102,11 +102,6 @@ site_df
 
 
 # + endofcell="--"
-# # +
-######################################
-print('Getting additional sites that may not already be in the dataframe')
-######################################
-
 site_map = pd.io.gbq.read_gbq('''
     select distinct * from (
     SELECT
@@ -161,8 +156,7 @@ site_map = pd.io.gbq.read_gbq('''
          `{DATASET}._mapping_visit_occurrence`   
     ) 
     order by 1
-    '''.format(DATASET = DATASET),
-                              dialect='standard')
+    '''.format(DATASET=DATASET), dialect='standard')
 print(site_map.shape[0], 'records received.')
 # -
 
@@ -217,13 +211,13 @@ FROM
   ABS(DATE_DIFF(CAST(po.procedure_datetime AS DATE), CAST(vo.visit_end_datetime AS DATE), DAY))
   ) as all_discrepancies_equal
   FROM
-  `{DATASET}.unioned_ehr_procedure_occurrence` po
+  `{DATASET}.procedure_occurrence` po
   LEFT JOIN
   `{DATASET}._mapping_procedure_occurrence` mpo
   ON
   po.procedure_occurrence_id = mpo.procedure_occurrence_id
   LEFT JOIN
-  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  `{DATASET}.visit_occurrence` vo
   ON
   po.visit_occurrence_id = vo.visit_occurrence_id
   WHERE
@@ -280,6 +274,8 @@ a.procedure_dt_vis_start_dt_diff > 0
 OR
 a.procedure_dt_vis_end_dt_diff > 0
 )
+AND
+LOWER(a.src_hpo_id) NOT LIKE '%rdr%'
 ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
 """.format(DATASET = DATASET)
 
@@ -300,11 +296,13 @@ SELECT
 DISTINCT
 mp.src_hpo_id, count(p.procedure_occurrence_id) as num_total_records
 FROM
-`{DATASET}.unioned_ehr_procedure_occurrence`p
+`{DATASET}.procedure_occurrence`p
 JOIN
 `{DATASET}._mapping_procedure_occurrence` mp
 ON
 p.procedure_occurrence_id = mp.procedure_occurrence_id
+WHERE
+LOWER(mp.src_hpo_id) NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_total_records DESC
 """.format(DATASET = DATASET)
@@ -371,13 +369,13 @@ FROM
   ) as all_discrepancies_equal
 
   FROM
-  `{DATASET}.unioned_ehr_observation` o
+  `{DATASET}.observation` o
   LEFT JOIN
   `{DATASET}._mapping_observation` mo
   ON
   o.observation_id = mo.observation_id
   LEFT JOIN
-  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  `{DATASET}.visit_occurrence` vo
   ON
   o.visit_occurrence_id = vo.visit_occurrence_id
 
@@ -439,6 +437,8 @@ a.observation_dt_vis_start_dt_diff > 0
 OR
 a.observation_dt_vis_end_dt_diff > 0
 )
+AND
+LOWER(a.src_hpo_id) NOT LIKE '%rdr%'
 ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
 """.format(DATASET = DATASET)
 
@@ -454,11 +454,13 @@ SELECT
 DISTINCT
 mo.src_hpo_id, count(o.observation_id) as num_total_records
 FROM
-`{DATASET}.unioned_ehr_observation`o
+`{DATASET}.observation`o
 JOIN
 `{DATASET}._mapping_observation` mo
 ON
 o.observation_id = mo.observation_id
+AND
+LOWER(mo.src_hpo_id) NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_total_records DESC
 """.format(DATASET = DATASET)
@@ -527,13 +529,13 @@ FROM
   ) as all_discrepancies_equal
 
   FROM
-  `{DATASET}.unioned_ehr_measurement` m
+  `{DATASET}.measurement` m
   LEFT JOIN
   `{DATASET}._mapping_measurement` mm
   ON
   m.measurement_id = mm.measurement_id
   LEFT JOIN
-  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  `{DATASET}.visit_occurrence` vo
   ON
   m.visit_occurrence_id = vo.visit_occurrence_id
 
@@ -595,6 +597,8 @@ a.measurement_dt_vis_start_dt_diff > 0
 OR
 a.measurement_dt_vis_end_dt_diff > 0
 )
+AND
+LOWER(a.src_hpo_id) NOT LIKE '%rdr%'
 ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
 """.format(DATASET = DATASET)
 
@@ -609,11 +613,13 @@ SELECT
 DISTINCT
 mm.src_hpo_id, count(m.measurement_id) as num_total_records
 FROM
-`{DATASET}.unioned_ehr_measurement` m
+`{DATASET}.measurement` m
 JOIN
 `{DATASET}._mapping_measurement` mm
 ON
 m.measurement_id = mm.measurement_id
+WHERE
+LOWER(mm.src_hpo_id) NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_total_records DESC
 """.format(DATASET = DATASET)
@@ -673,13 +679,13 @@ FROM
   ) as all_discrepancies_equal
 
   FROM
-  `{DATASET}.unioned_ehr_condition_occurrence` co
+  `{DATASET}.condition_occurrence` co
   LEFT JOIN
   `{DATASET}._mapping_condition_occurrence` mco
   ON
   co.condition_occurrence_id = mco.condition_occurrence_id
   LEFT JOIN
-  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  `{DATASET}.visit_occurrence` vo
   ON
   co.visit_occurrence_id = vo.visit_occurrence_id
 
@@ -726,6 +732,8 @@ a.condition_vis_start_diff > 0
 OR
 a.condition_dt_vis_start_dt_diff > 0
 )
+AND
+LOWER(a.src_hpo_id) NOT LIKE '%rdr%'
 ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
 """.format(DATASET = DATASET)
 
@@ -740,11 +748,13 @@ SELECT
 DISTINCT
 mco.src_hpo_id, count(co.condition_occurrence_id) as num_total_records
 FROM
-`{DATASET}.unioned_ehr_condition_occurrence` co
+`{DATASET}.condition_occurrence` co
 JOIN
 `{DATASET}._mapping_condition_occurrence` mco
 ON
 co.condition_occurrence_id = mco.condition_occurrence_id
+WHERE
+LOWER(mco.src_hpo_id) NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_total_records DESC
 """.format(DATASET = DATASET)
@@ -804,13 +814,13 @@ FROM
   ) as all_discrepancies_equal
 
   FROM
-  `{DATASET}.unioned_ehr_drug_exposure` de
+  `{DATASET}.drug_exposure` de
   LEFT JOIN
   `{DATASET}._mapping_drug_exposure` mde
   ON
   de.drug_exposure_id = mde.drug_exposure_id
   LEFT JOIN
-  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  `{DATASET}.visit_occurrence` vo
   ON
   de.visit_occurrence_id = vo.visit_occurrence_id
 
@@ -857,6 +867,8 @@ a.drug_vis_start_diff > 0
 OR
 a.drug_dt_vis_start_dt_diff > 0
 )
+AND
+LOWER(a.src_hpo_id) NOT LIKE '%rdr%'
 ORDER BY src_hpo_id ASC, num_bad_records DESC, total_diff DESC, all_discrepancies_equal ASC
 """.format(DATASET = DATASET)
 
@@ -871,11 +883,13 @@ SELECT
 DISTINCT
 mde.src_hpo_id, count(de.drug_exposure_id) as num_total_records
 FROM
-`{DATASET}.unioned_ehr_drug_exposure` de
+`{DATASET}.drug_exposure` de
 JOIN
 `{DATASET}._mapping_drug_exposure` mde
 ON
 de.drug_exposure_id = mde.drug_exposure_id
+WHERE
+LOWER(mde.src_hpo_id) NOT LIKE '%rdr%'
 GROUP BY 1
 ORDER BY num_total_records DESC
 """.format(DATASET = DATASET)

@@ -33,7 +33,7 @@ client = bigquery.Client()
 
 # +
 from notebooks import parameters
-DATASET = parameters.LATEST_DATASET
+DATASET = parameters.JULY_2019
 
 print("Dataset to use: {DATASET}".format(DATASET = DATASET))
 
@@ -122,13 +122,7 @@ site_map = pd.io.gbq.read_gbq('''
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_visit_occurrence`
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_care_site`
-         
+
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
@@ -146,58 +140,26 @@ site_map = pd.io.gbq.read_gbq('''
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_drug_exposure`
+
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_location`         
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_measurement`         
+         `{DATASET}._mapping_measurement`   
          
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
-         `{DATASET}._mapping_note`        
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_observation`         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_person`         
+         `{DATASET}._mapping_observation`              
          
     UNION ALL
     SELECT
             DISTINCT(src_hpo_id) as src_hpo_id
     FROM
          `{DATASET}._mapping_procedure_occurrence`         
-         
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_provider`
-         
-    UNION ALL
-    SELECT
-            DISTINCT(src_hpo_id) as src_hpo_id
-    FROM
-         `{DATASET}._mapping_specimen`
     
     UNION ALL
     SELECT
@@ -229,7 +191,7 @@ FROM
   DISTINCT
   mco.src_hpo_id, COUNT(*) as total_rows
   FROM
-  `{DATASET}.unioned_ehr_condition_occurrence` co
+  `{DATASET}.condition_occurrence` co
   JOIN
   `{DATASET}._mapping_condition_occurrence` mco
   ON
@@ -251,7 +213,7 @@ LEFT JOIN
     COUNT(*) as cnt
 
     FROM
-    `{DATASET}.unioned_ehr_condition_occurrence` co
+    `{DATASET}.condition_occurrence` co
     JOIN
     `{DATASET}._mapping_condition_occurrence` mco
     ON
@@ -279,6 +241,9 @@ ON
 
 total_rows.src_hpo_id = bad_rows.src_hpo_id
 
+WHERE
+LOWER(total_rows.src_hpo_id) NOT LIKE '%rdr%'
+
 GROUP BY 1, 2
 ORDER BY condition_occurrence DESC
 """.format(DATASET = DATASET)
@@ -304,7 +269,7 @@ FROM
   DISTINCT
   mpo.src_hpo_id, COUNT(*) as total_rows
   FROM
-  `{DATASET}.unioned_ehr_procedure_occurrence` po
+  `{DATASET}.procedure_occurrence` po
   JOIN
   `{DATASET}._mapping_procedure_occurrence` mpo
   ON
@@ -325,7 +290,7 @@ LEFT JOIN
     COUNT(*) as cnt
 
     FROM
-    `{DATASET}.unioned_ehr_procedure_occurrence` po
+    `{DATASET}.procedure_occurrence` po
     JOIN
     `{DATASET}._mapping_procedure_occurrence` mpo
     ON
@@ -347,6 +312,9 @@ LEFT JOIN
 ON
 
 total_rows.src_hpo_id = bad_rows.src_hpo_id
+
+WHERE
+LOWER(total_rows.src_hpo_id) NOT LIKE '%rdr%'
 
 GROUP BY 1, 2
 ORDER BY procedure_occurrence DESC
@@ -372,7 +340,7 @@ FROM
   DISTINCT
   mvo.src_hpo_id, COUNT(*) as total_rows
   FROM
-  `{DATASET}.unioned_ehr_visit_occurrence` vo
+  `{DATASET}.visit_occurrence` vo
   JOIN
   `{DATASET}._mapping_visit_occurrence` mvo
   ON
@@ -394,7 +362,7 @@ LEFT JOIN
     COUNT(*) as cnt
 
     FROM
-    `{DATASET}.unioned_ehr_visit_occurrence` vo
+    `{DATASET}.visit_occurrence` vo
     JOIN
     `{DATASET}._mapping_visit_occurrence` mvo
     ON
@@ -423,6 +391,9 @@ ON
 
 total_rows.src_hpo_id = bad_rows.src_hpo_id
 
+WHERE
+LOWER(total_rows.src_hpo_id) NOT LIKE '%rdr%'
+
 GROUP BY 1, 2 --, 3, 4
 ORDER BY visit_occurrence DESC
 """.format(DATASET = DATASET)
@@ -447,7 +418,7 @@ FROM
   DISTINCT
   mde.src_hpo_id, COUNT(*) as total_rows
   FROM
-  `{DATASET}.unioned_ehr_drug_exposure` de
+  `{DATASET}.drug_exposure` de
   JOIN
   `{DATASET}._mapping_drug_exposure` mde
   ON
@@ -469,7 +440,7 @@ LEFT JOIN
     COUNT(*) as cnt
 
     FROM
-    `{DATASET}.unioned_ehr_drug_exposure` de
+    `{DATASET}.drug_exposure` de
     JOIN
     `{DATASET}._mapping_drug_exposure` mde
     ON
@@ -499,6 +470,9 @@ ON
 
 total_rows.src_hpo_id = bad_rows.src_hpo_id
 
+WHERE
+LOWER(total_rows.src_hpo_id) NOT LIKE '%rdr%'
+
 GROUP BY 1, 2
 ORDER BY drug_exposure DESC
 """.format(DATASET = DATASET)
@@ -524,7 +498,7 @@ FROM
   DISTINCT
   mm.src_hpo_id, COUNT(*) as total_rows
   FROM
-  `{DATASET}.unioned_ehr_measurement` m
+  `{DATASET}.measurement` m
   JOIN
   `{DATASET}._mapping_measurement` mm
   ON
@@ -545,7 +519,7 @@ LEFT JOIN
     COUNT(*) as cnt
 
     FROM
-    `{DATASET}.unioned_ehr_measurement` m
+    `{DATASET}.measurement` m
     JOIN
     `{DATASET}._mapping_measurement` mm
     ON
@@ -567,6 +541,9 @@ LEFT JOIN
 ON
 
 total_rows.src_hpo_id = bad_rows.src_hpo_id
+
+WHERE
+LOWER(total_rows.src_hpo_id) NOT LIKE '%rdr%'
 
 GROUP BY 1, 2
 ORDER BY measurement DESC
@@ -593,7 +570,7 @@ FROM
   DISTINCT
   mo.src_hpo_id, COUNT(*) as total_rows
   FROM
-  `{DATASET}.unioned_ehr_observation` o
+  `{DATASET}.observation` o
   JOIN
   `{DATASET}._mapping_observation` mo
   ON
@@ -614,7 +591,7 @@ LEFT JOIN
     COUNT(*) as cnt
 
     FROM
-    `{DATASET}.unioned_ehr_observation` o
+    `{DATASET}.observation` o
     JOIN
     `{DATASET}._mapping_observation` mo
     ON
@@ -636,6 +613,9 @@ LEFT JOIN
 ON
 
 total_rows.src_hpo_id = bad_rows.src_hpo_id
+
+WHERE
+LOWER(total_rows.src_hpo_id) NOT LIKE '%rdr%'
 
 GROUP BY 1, 2
 ORDER BY observation DESC
