@@ -143,3 +143,4 @@ data_steward/analytics/tools/dq_issue_tracker/*.xlsx
 
 # exclude reports for use in metrics_over_time
 data_steward/analytics/table_metrics/metrics_over_time/*.xlsx
+data_steward/analytics/tools/visualizations/*.xlsx
