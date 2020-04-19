@@ -278,9 +278,9 @@ def create_excel_files(
 report1 = 'may_10_2019.xlsx'
 report2 = 'july_15_2019.xlsx'
 report3 = 'october_04_2019.xlsx'
-report4 = 'march_19_2020.xlsx'
+report4 = 'april_17_2020.xlsx'
 
-report_names = [report1, report2, report3, report4]
+report_names = [report1, report2]
 
 
 def main():

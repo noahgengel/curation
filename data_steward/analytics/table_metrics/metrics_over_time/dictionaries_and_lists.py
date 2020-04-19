@@ -255,7 +255,7 @@ metric_type_to_english_dict = {
     'concept': 'Concept ID Success Rate',
     'duplicates': 'Duplicate Records',
     'erroneous_dates': 'Erroneous Dates',
-    'person_id_failure_rate': 'Person ID Failure Rate'
+    'person_id_failure_rate': 'Person ID Failure Rate',
 }
 
 metrics_to_weight = [
