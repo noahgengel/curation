@@ -81,7 +81,7 @@ sns.heatmap(new_table_sheets['Condition Occurrence'], annot=True, annot_kws={"si
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
             xticklabels=date_cols, cmap="RdYlGn")
 
-ax.set_title("Condition Table Concept Success Rate", size=14)
+ax.set_title("Condition Table Erroneous Dates", size=14)
 # plt.savefig("condition_table_concepts.jpg")
 
 # +
@@ -90,7 +90,7 @@ sns.heatmap(new_table_sheets['Drug Exposure'], annot=True, annot_kws={"size": 10
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
             xticklabels=date_cols, cmap="RdYlGn")
 
-ax.set_title("Drug Table Concept Success Rate", size=14)
+ax.set_title("Drug Table Erroneous Dates Rate", size=14)
 # plt.savefig("drug_table_concepts.jpg")
 
 # +
@@ -99,7 +99,7 @@ sns.heatmap(new_table_sheets['Measurement'], annot=True, annot_kws={"size": 10},
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
             xticklabels=date_cols, cmap="RdYlGn")
 
-ax.set_title("Measurement Table Concept Success Rate", size=14)
+ax.set_title("Measurement Table Erroneous Dates Rate", size=14)
 # plt.savefig("measurement_table_concepts.jpg")
 
 # +
@@ -108,7 +108,7 @@ sns.heatmap(new_table_sheets['Observation'], annot=True, annot_kws={"size": 10},
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
             xticklabels=date_cols, cmap="RdYlGn")
 
-ax.set_title("Observation Table Concept Success Rate", size=14)
+ax.set_title("Observation Table Erroneous Dates Rate", size=14)
 # plt.savefig("observation_table_concepts.jpg")
 
 # +
@@ -117,7 +117,7 @@ sns.heatmap(new_table_sheets['Procedure Occurrence'], annot=True, annot_kws={"si
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
             xticklabels=date_cols, cmap="RdYlGn")
 
-ax.set_title("Procedure Table Concept Success Rate", size=14)
+ax.set_title("Procedure Table Erroneous Dates Rate", size=14)
 # plt.savefig("procedure_table_concepts.jpg")
 
 # +
@@ -127,7 +127,7 @@ sns.heatmap(new_table_sheets['Visit Occurrence'], annot=True, annot_kws={"size":
             xticklabels=date_cols, cmap="RdYlGn")
 
 
-ax.set_title("Visit Table Concept Success Rate", size=14)
+ax.set_title("Visit Table Erroneous Dates Rate", size=14)
 # plt.savefig("visit_table_concepts.jpg")
 # -
 
@@ -273,10 +273,10 @@ sns.heatmap(new_hpo_sheets[idx_of_interest], annot=True, annot_kws={"size": 14},
             fmt='g', linewidths=.5, ax=ax, yticklabels=table_id_cols,
             xticklabels=date_cols, cmap="RdYlGn")
 
-ax.set_title("Date/Datetime Disparity Rates for {}".format(name_of_interest), size=14)
+ax.set_title("Erroneous Dates Rates for {}".format(name_of_interest), size=14)
 
 plt.tight_layout()
-img_name = name_of_interest + "_date_datetime_disparity.png"
+img_name = name_of_interest + "_erroneous_dates.png"
 
 plt.savefig(img_name)
 # -
@@ -376,7 +376,7 @@ for table, values_over_time in success_rates.items():
         plt.plot(date_idxs[non_nan_idx], new_lst, 'o', label=table)
 
 plt.legend(loc="upper left", bbox_to_anchor=(1,1))
-plt.title("{} date/datetime disparity rates over time".format(name_of_interest))
+plt.title("{} erroneous date rates over time".format(name_of_interest))
 plt.ylabel("Disparity Rate (%)")
 plt.xlabel("")
 plt.xticks(date_idxs, times, rotation = 'vertical')
@@ -384,7 +384,7 @@ plt.xticks(date_idxs, times, rotation = 'vertical')
 handles, labels = ax.get_legend_handles_labels()
 lgd = ax.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5,-0.1))
 
-img_name = name_of_interest + "_date_datetime_disparity_line_graph.jpg"
+img_name = name_of_interest + "_erroneous_dates_line_graph.jpg"
 # plt.savefig(img_name, bbox_extraartist=(lgd,), bbox_inches='tight')
 # -
 
