@@ -16,7 +16,7 @@
 # NOTES:
 # 1. matplotlib MUST be in 3.1.0; 3.1.1 ruins the heatmap
 
-# # Across-Site Statistics for Concept Population
+# # Across-Site Statistics for Date/Datetime Disparity Rates
 #
 # ### NOTE: Aggregate info is weighted by the contribution of each site
 
@@ -82,7 +82,7 @@ sns.heatmap(new_table_sheets['Condition Occurrence'], annot=True, annot_kws={"si
             xticklabels=date_cols, cmap="RdYlGn")
 
 ax.set_title("Condition Table Date/Datetime Disparity Rate", size=14)
-# plt.savefig("condition_table_concepts.jpg")
+# plt.savefig("condition_table_date_datetime_disparity.jpg")
 
 # +
 fig, ax = plt.subplots(figsize=(18, 12))
@@ -91,7 +91,7 @@ sns.heatmap(new_table_sheets['Drug Exposure'], annot=True, annot_kws={"size": 10
             xticklabels=date_cols, cmap="RdYlGn")
 
 ax.set_title("Drug Table Date/Datetime Disparity Rate", size=14)
-# plt.savefig("drug_table_concepts.jpg")
+# plt.savefig("drug_table_date_datetime_disparity.jpg")
 
 # +
 fig, ax = plt.subplots(figsize=(18, 12))
@@ -100,7 +100,7 @@ sns.heatmap(new_table_sheets['Measurement'], annot=True, annot_kws={"size": 10},
             xticklabels=date_cols, cmap="RdYlGn")
 
 ax.set_title("Measurement Table Date/Datetime Disparity Rate", size=14)
-# plt.savefig("measurement_table_concepts.jpg")
+# plt.savefig("measurement_table_date_datetime_disparity.jpg")
 
 # +
 fig, ax = plt.subplots(figsize=(18, 12))
@@ -109,7 +109,7 @@ sns.heatmap(new_table_sheets['Observation'], annot=True, annot_kws={"size": 10},
             xticklabels=date_cols, cmap="RdYlGn")
 
 ax.set_title("Observation Table Date/Datetime Disparity Rate", size=14)
-# plt.savefig("observation_table_concepts.jpg")
+# plt.savefig("observation_table_date_datetime_disparity.jpg")
 
 # +
 fig, ax = plt.subplots(figsize=(18, 12))
@@ -118,7 +118,7 @@ sns.heatmap(new_table_sheets['Procedure Occurrence'], annot=True, annot_kws={"si
             xticklabels=date_cols, cmap="RdYlGn")
 
 ax.set_title("Procedure Table Date/Datetime Disparity Rate", size=14)
-# plt.savefig("procedure_table_concepts.jpg")
+# plt.savefig("procedure_table_date_datetime_disparity.jpg")
 
 # +
 fig, ax = plt.subplots(figsize=(18, 12))
@@ -128,7 +128,7 @@ sns.heatmap(new_table_sheets['Visit Occurrence'], annot=True, annot_kws={"size":
 
 
 ax.set_title("Visit Table Date/Datetime Disparity Rate", size=14)
-# plt.savefig("visit_table_concepts.jpg")
+# plt.savefig("visit_table_date_datetime_disparity.jpg")
 # -
 
 # ## Creating a box-and-whisker plot for the different table types across all sites
@@ -336,7 +336,7 @@ for date_idx in range(len(dates)):
     ax.plot(angles, date, linewidth=1, linestyle='solid', label=dates[date_idx])
     ax.fill(angles, date, alpha=0.1)
 
-plt.title("Concept Percent Population: {}".format(name_of_interest), size=15, y = 1.1)
+plt.title("Date/Datetime Disparity: {}".format(name_of_interest), size=15, y = 1.1)
 plt.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
 # -
 
