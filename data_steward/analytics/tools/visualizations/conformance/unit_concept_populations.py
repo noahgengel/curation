@@ -104,7 +104,7 @@ ax.set_title("Measurement Table Unit Population Rate", size=14)
 # plt.title("Unit Success Rate for {}".format(date), size = 18)
 # sns.despine(trim=True, left=True)
 
-# # Now let's look at the metrics for particular sites with respect to route success rate; this will allow us to send them the same information
+# # Now let's look at the metrics for particular sites with respect to unit success rate; this will allow us to send them the same information
 
 # +
 site_name_list = ['aouw_mcri', 'aouw_mcw', 'aouw_uwh', 'chci', 'chs', 'cpmc_ceders', 

@@ -69,9 +69,6 @@ for name, sheet in zip(sheet_names, table_sheets):
         new_df[col] = new_col
 
     new_table_sheets[name] = new_df
-# -
-
-# ### Fixing typos
 
 # +
 fig, ax = plt.subplots(figsize=(18, 12))
