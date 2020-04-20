@@ -79,7 +79,7 @@ for name, sheet in zip(sheet_names, table_sheets):
 fig, ax = plt.subplots(figsize=(18, 12))
 sns.heatmap(new_table_sheets['Condition Occurrence'], annot=True, annot_kws={"size": 10},
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
-            xticklabels=date_cols, cmap="RdYlGn")
+            xticklabels=date_cols, cmap="YlGnBu")
 
 ax.set_title("Condition Table Date/Datetime Disparity Rate", size=14)
 # plt.savefig("condition_table_date_datetime_disparity.jpg")
@@ -88,7 +88,7 @@ ax.set_title("Condition Table Date/Datetime Disparity Rate", size=14)
 fig, ax = plt.subplots(figsize=(18, 12))
 sns.heatmap(new_table_sheets['Drug Exposure'], annot=True, annot_kws={"size": 10},
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
-            xticklabels=date_cols, cmap="RdYlGn")
+            xticklabels=date_cols, cmap="YlGnBu")
 
 ax.set_title("Drug Table Date/Datetime Disparity Rate", size=14)
 # plt.savefig("drug_table_date_datetime_disparity.jpg")
@@ -97,7 +97,7 @@ ax.set_title("Drug Table Date/Datetime Disparity Rate", size=14)
 fig, ax = plt.subplots(figsize=(18, 12))
 sns.heatmap(new_table_sheets['Measurement'], annot=True, annot_kws={"size": 10},
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
-            xticklabels=date_cols, cmap="RdYlGn")
+            xticklabels=date_cols, cmap="YlGnBu")
 
 ax.set_title("Measurement Table Date/Datetime Disparity Rate", size=14)
 # plt.savefig("measurement_table_date_datetime_disparity.jpg")
@@ -106,7 +106,7 @@ ax.set_title("Measurement Table Date/Datetime Disparity Rate", size=14)
 fig, ax = plt.subplots(figsize=(18, 12))
 sns.heatmap(new_table_sheets['Observation'], annot=True, annot_kws={"size": 10},
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
-            xticklabels=date_cols, cmap="RdYlGn")
+            xticklabels=date_cols, cmap="YlGnBu")
 
 ax.set_title("Observation Table Date/Datetime Disparity Rate", size=14)
 # plt.savefig("observation_table_date_datetime_disparity.jpg")
@@ -115,7 +115,7 @@ ax.set_title("Observation Table Date/Datetime Disparity Rate", size=14)
 fig, ax = plt.subplots(figsize=(18, 12))
 sns.heatmap(new_table_sheets['Procedure Occurrence'], annot=True, annot_kws={"size": 10},
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
-            xticklabels=date_cols, cmap="RdYlGn")
+            xticklabels=date_cols, cmap="YlGnBu")
 
 ax.set_title("Procedure Table Date/Datetime Disparity Rate", size=14)
 # plt.savefig("procedure_table_date_datetime_disparity.jpg")
@@ -124,7 +124,7 @@ ax.set_title("Procedure Table Date/Datetime Disparity Rate", size=14)
 fig, ax = plt.subplots(figsize=(18, 12))
 sns.heatmap(new_table_sheets['Visit Occurrence'], annot=True, annot_kws={"size": 10},
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
-            xticklabels=date_cols, cmap="RdYlGn")
+            xticklabels=date_cols, cmap="YlGnBu")
 
 
 ax.set_title("Visit Table Date/Datetime Disparity Rate", size=14)
@@ -271,7 +271,7 @@ for sheet in hpo_sheets:
 fig, ax = plt.subplots(figsize=(9, 6))
 sns.heatmap(new_hpo_sheets[idx_of_interest], annot=True, annot_kws={"size": 14},
             fmt='g', linewidths=.5, ax=ax, yticklabels=table_id_cols,
-            xticklabels=date_cols, cmap="RdYlGn")
+            xticklabels=date_cols, cmap="YlGnBu")
 
 ax.set_title("Date/Datetime Disparity Rates for {}".format(name_of_interest), size=14)
 
@@ -376,7 +376,7 @@ for table, values_over_time in success_rates.items():
         plt.plot(date_idxs[non_nan_idx], new_lst, 'o', label=table)
 
 plt.legend(loc="upper left", bbox_to_anchor=(1,1))
-plt.title("{} date/datetime disparity rates over time".format(name_of_interest))
+plt.title("{} Date/Datetime Disparity Rates Over Time".format(name_of_interest))
 plt.ylabel("Disparity Rate (%)")
 plt.xlabel("")
 plt.xticks(date_idxs, times, rotation = 'vertical')
