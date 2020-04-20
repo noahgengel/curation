@@ -29,7 +29,7 @@ from math import pi
 # +
 sheets = []
 
-fn1 = 'date_datetime_disparity_table_sheets_analytics_report.xlsx'
+fn1 = 'erroneous_dates_table_sheets_analytics_report.xlsx'
 file_names = [fn1]
 
 s1 = 'Observation'
@@ -81,7 +81,7 @@ sns.heatmap(new_table_sheets['Condition Occurrence'], annot=True, annot_kws={"si
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
             xticklabels=date_cols, cmap="RdYlGn")
 
-ax.set_title("Condition Table Date/Datetime Disparity Rate", size=14)
+ax.set_title("Condition Table Concept Success Rate", size=14)
 # plt.savefig("condition_table_concepts.jpg")
 
 # +
@@ -90,7 +90,7 @@ sns.heatmap(new_table_sheets['Drug Exposure'], annot=True, annot_kws={"size": 10
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
             xticklabels=date_cols, cmap="RdYlGn")
 
-ax.set_title("Drug Table Date/Datetime Disparity Rate", size=14)
+ax.set_title("Drug Table Concept Success Rate", size=14)
 # plt.savefig("drug_table_concepts.jpg")
 
 # +
@@ -99,7 +99,7 @@ sns.heatmap(new_table_sheets['Measurement'], annot=True, annot_kws={"size": 10},
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
             xticklabels=date_cols, cmap="RdYlGn")
 
-ax.set_title("Measurement Table Date/Datetime Disparity Rate", size=14)
+ax.set_title("Measurement Table Concept Success Rate", size=14)
 # plt.savefig("measurement_table_concepts.jpg")
 
 # +
@@ -108,7 +108,7 @@ sns.heatmap(new_table_sheets['Observation'], annot=True, annot_kws={"size": 10},
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
             xticklabels=date_cols, cmap="RdYlGn")
 
-ax.set_title("Observation Table Date/Datetime Disparity Rate", size=14)
+ax.set_title("Observation Table Concept Success Rate", size=14)
 # plt.savefig("observation_table_concepts.jpg")
 
 # +
@@ -117,7 +117,7 @@ sns.heatmap(new_table_sheets['Procedure Occurrence'], annot=True, annot_kws={"si
             fmt='g', linewidths=.5, ax=ax, yticklabels=hpo_id_cols,
             xticklabels=date_cols, cmap="RdYlGn")
 
-ax.set_title("Procedure Table Date/Datetime Disparity Rate", size=14)
+ax.set_title("Procedure Table Concept Success Rate", size=14)
 # plt.savefig("procedure_table_concepts.jpg")
 
 # +
@@ -127,7 +127,7 @@ sns.heatmap(new_table_sheets['Visit Occurrence'], annot=True, annot_kws={"size":
             xticklabels=date_cols, cmap="RdYlGn")
 
 
-ax.set_title("Visit Table Date/Datetime Disparity Rate", size=14)
+ax.set_title("Visit Table Concept Success Rate", size=14)
 # plt.savefig("visit_table_concepts.jpg")
 # -
 
@@ -185,7 +185,7 @@ for idx, site in enumerate(site_name_list):
         idx_of_interest = idx
 
 # +
-fn1_hpo_sheets = 'date_datetime_disparity_hpo_sheets_analytics_report.xlsx'
+fn1_hpo_sheets = 'erroneous_dates_hpo_sheets_analytics_report.xlsx'
 file_names_hpo_sheets = [fn1_hpo_sheets]
 
 s1, s2 = site_name_list[0], site_name_list[1]
