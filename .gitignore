@@ -146,6 +146,6 @@ data_steward/analytics/table_metrics/metrics_over_time/*.xlsx
 data_steward/analytics/tools/dq_issue_tracker/*.xlsx
 
 # the xlrd files that are needed to read in Excel outputs
-data_steward/analytics/tools/visualizations/completeness/xlrd/*
-data_steward/analytics/tools/visualizations/conformance/xlrd/*
-data_steward/analytics/tools/visualizations/plausibility/xlrd/*
+data_steward/analytics/tools/visualizations/completeness/xlrd
+data_steward/analytics/tools/visualizations/conformance/xlrd
+data_steward/analytics/tools/visualizations/plausibility/xlrd
