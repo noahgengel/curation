@@ -155,7 +155,7 @@ ax.set_title("Visit Table Date/Datetime Disparity Rate", size=14)
 #
 # plt.ylabel(ylabel="Success Rate", size=16)
 # plt.xlabel(xlabel="\nTable Type", size=16)
-# plt.title("Concept Table Success Rates for {}".format(date), size = 18)
+# plt.title("Date/Datetime Disparity Rates for {}".format(date), size = 18)
 # sns.despine(trim=True, left=True)
 
 # # Now let's look at the metrics for particular sites with respect to date/datetime disparity; this will allow us to send them the same information

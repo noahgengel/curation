@@ -16,7 +16,9 @@
 # NOTES:
 # 1. matplotlib MUST be in 3.1.0; 3.1.1 ruins the heatmap
 
-# # Across-Site Statistics for Concept Population
+# # Across-Site Statistics for Erroneous Dates
+# - Dates that are prior to 1980 for all tables except Observation
+# - Dates prior to 1900 for the Observation table
 #
 # ### NOTE: Aggregate info is weighted by the contribution of each site
 
@@ -82,7 +84,7 @@ sns.heatmap(new_table_sheets['Condition Occurrence'], annot=True, annot_kws={"si
             xticklabels=date_cols, cmap="RdYlGn")
 
 ax.set_title("Condition Table Erroneous Dates", size=14)
-# plt.savefig("condition_table_concepts.jpg")
+# plt.savefig("condition_table_erroneous_dates.jpg")
 
 # +
 fig, ax = plt.subplots(figsize=(18, 12))
@@ -91,7 +93,7 @@ sns.heatmap(new_table_sheets['Drug Exposure'], annot=True, annot_kws={"size": 10
             xticklabels=date_cols, cmap="RdYlGn")
 
 ax.set_title("Drug Table Erroneous Dates Rate", size=14)
-# plt.savefig("drug_table_concepts.jpg")
+# plt.savefig("drug_table_erroneous_dates.jpg")
 
 # +
 fig, ax = plt.subplots(figsize=(18, 12))
@@ -100,7 +102,7 @@ sns.heatmap(new_table_sheets['Measurement'], annot=True, annot_kws={"size": 10},
             xticklabels=date_cols, cmap="RdYlGn")
 
 ax.set_title("Measurement Table Erroneous Dates Rate", size=14)
-# plt.savefig("measurement_table_concepts.jpg")
+# plt.savefig("measurement_table_erroneous_dates.jpg")
 
 # +
 fig, ax = plt.subplots(figsize=(18, 12))
@@ -109,7 +111,7 @@ sns.heatmap(new_table_sheets['Observation'], annot=True, annot_kws={"size": 10},
             xticklabels=date_cols, cmap="RdYlGn")
 
 ax.set_title("Observation Table Erroneous Dates Rate", size=14)
-# plt.savefig("observation_table_concepts.jpg")
+# plt.savefig("observation_table_erroneous_dates.jpg")
 
 # +
 fig, ax = plt.subplots(figsize=(18, 12))
@@ -118,7 +120,7 @@ sns.heatmap(new_table_sheets['Procedure Occurrence'], annot=True, annot_kws={"si
             xticklabels=date_cols, cmap="RdYlGn")
 
 ax.set_title("Procedure Table Erroneous Dates Rate", size=14)
-# plt.savefig("procedure_table_concepts.jpg")
+# plt.savefig("procedure_table_erroneous_dates.jpg")
 
 # +
 fig, ax = plt.subplots(figsize=(18, 12))
@@ -128,7 +130,7 @@ sns.heatmap(new_table_sheets['Visit Occurrence'], annot=True, annot_kws={"size":
 
 
 ax.set_title("Visit Table Erroneous Dates Rate", size=14)
-# plt.savefig("visit_table_concepts.jpg")
+# plt.savefig("visit_table_erroneous_dates.jpg")
 # -
 
 # ## Creating a box-and-whisker plot for the different table types across all sites
@@ -155,7 +157,7 @@ ax.set_title("Visit Table Erroneous Dates Rate", size=14)
 #
 # plt.ylabel(ylabel="Success Rate", size=16)
 # plt.xlabel(xlabel="\nTable Type", size=16)
-# plt.title("Concept Table Success Rates for {}".format(date), size = 18)
+# plt.title("Erroneous Date Rates for {}".format(date), size = 18)
 # sns.despine(trim=True, left=True)
 
 # # Now let's look at the metrics for particular sites with respect to date/datetime disparity; this will allow us to send them the same information
@@ -336,7 +338,7 @@ for date_idx in range(len(dates)):
     ax.plot(angles, date, linewidth=1, linestyle='solid', label=dates[date_idx])
     ax.fill(angles, date, alpha=0.1)
 
-plt.title("Concept Percent Population: {}".format(name_of_interest), size=15, y = 1.1)
+plt.title("Erroneous Dates: {}".format(name_of_interest), size=15, y = 1.1)
 plt.legend(loc='upper right', bbox_to_anchor=(0.1, 0.1))
 # -
 
