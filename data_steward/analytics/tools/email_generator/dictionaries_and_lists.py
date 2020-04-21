@@ -70,11 +70,52 @@ thresholds = {
     'unit_success_min': 85,
     'route_success_min': 85,
 
-    'date_datetime_disparity_max': 0.01,
+    'date_datetime_disparity_max': 0,
     'erroneous_dates_max': 0.01,
     'person_failure_rate_max': 0.01
 }
 
+thresholds_full_name = {
+    # field population metrics
+    'Unit Concept ID Success Rate': 85,
+    'Route Concept ID Success Rate': 85,
+
+    # integration metrics
+    'Drug Ingredient Integration': 90,
+    'Measurement Integration': 90,
+
+    # ACHILLES errors
+    'End Dates Preceding Start Dates': 0,
+    'Data After Death': 0,
+    'Date/Datetime Disparity': 0,
+
+    # other metrics
+    'Concept ID Success Rate': 90,
+    'Duplicate Records': 5,
+    'Erroneous Dates': 0.01,
+    'Person ID Failure Rate': 0.01
+}
+
+min_or_max = {
+    # field population metrics
+    'Unit Concept ID Success Rate': 'minimum',
+    'Route Concept ID Success Rate': 'minimum',
+
+    # integration metrics
+    'Drug Ingredient Integration': 'minimum',
+    'Measurement Integration': 'minimum',
+
+    # ACHILLES errors
+    'End Dates Preceding Start Dates': 'maximum',
+    'Data After Death': 'maximum',
+    'Date/Datetime Disparity': 'maximum',
+
+    # other metrics
+    'Concept ID Success Rate': 'minimum',
+    'Duplicate Records': 'maximum',
+    'Erroneous Dates': 'maximum',
+    'Person ID Failure Rate': 'maximum'
+}
 
 choice_dict = {
     'a': 'duplicates',
@@ -135,7 +176,9 @@ target_low_dict = {
 columns_to_document_for_sheet_email = {
     'measurement_units': ['total_unit_success_rate'],
 
-    'sites_measurement': ['All_Measurements'],
+    'sites_measurement': [
+        'Physical_Measurement',	'CMP',' CBCwDiff',
+        'CBC', 'Lipid',	'All_Measurements'],
 
     'end_before_begin': [
         'visit_occurrence', 'condition_occurrence',
@@ -149,13 +192,14 @@ columns_to_document_for_sheet_email = {
     'drug_routes': ['total_route_success_rate'],
 
     'drug_success': [
-        'all_drugs'],
+        'ace_inhibitors', 'painnsaids', 'msknsaids',
+        'statins', 'antibiotics', 'opioids', 'oralhypoglycemics',
+        'vaccine', 'ccb', 'diuretics', 'all_drugs'],
 
     'data_after_death': [
         'visit_occurrence', 'condition_occurrence',
         'drug_exposure', 'measurement',
-        'procedure_occurrence', 'observation',
-        'device_exposure'],
+        'procedure_occurrence', 'observation'],
 
     'diabetes': [
         'diabetics_w_drugs', 'diabetics_w_glucose',

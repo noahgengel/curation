@@ -4,6 +4,9 @@ DataQualityMetric (and
 """
 
 from contact_list import recipient_dict
+from messages import great_job
+from dictionaries_and_lists import thresholds_full_name, \
+    min_or_max
 
 
 def get_hpo_site():
@@ -46,6 +49,9 @@ def organize_relevant_dqms(hpo_objects):
     unique_metrics (dict): has the following structure:
         keys: the 'metric type' (e.g. duplicates)
         values: the tables that were deemed to have 'failed'
+
+    hpo_id (str): string that represents the HPO ID whose email
+        is to be generated
     """
     hpo_id = get_hpo_site()
     failing_metrics, unique_metrics = [], {}
@@ -70,7 +76,7 @@ def organize_relevant_dqms(hpo_objects):
             unique_metrics[failing_metric.metric_type].append(
                 failing_metric.table_or_class)
 
-    return unique_metrics
+    return unique_metrics, hpo_id
 
 
 def create_string_for_failing_metrics(hpo_objects):
@@ -87,9 +93,14 @@ def create_string_for_failing_metrics(hpo_objects):
 
     Returns
     -------
+    issue_report (str): string with all of the data quality issues
+        presented
+
+    hpo_id (str): string that represents the HPO ID whose email
+        is to be generated
     """
 
-    unique_metrics = organize_relevant_dqms(hpo_objects)
+    unique_metrics, hpo_id = organize_relevant_dqms(hpo_objects)
 
     issue_num = 1
 
@@ -99,10 +110,20 @@ def create_string_for_failing_metrics(hpo_objects):
 
         tables_affected = ', '.join(tables_or_classes)
 
-        issue_report += f"{issue_num}. {metric_type} " \
-            f"has failed in at least the following tables or classes: \n\t" \
-            f"{tables_affected}\n\n"
+        threshold = thresholds_full_name[metric_type]
+
+        min_or_max_str = min_or_max[metric_type]
+
+        issue_report += \
+            f"{issue_num}. {metric_type} " \
+            f"has failed in the following tables or classes:\n" \
+            f"\t{tables_affected}\n" \
+            f"\tWe aim for a {min_or_max_str} value of {threshold} " \
+            f"for this metric.\n\n"
 
         issue_num += 1
 
-    return issue_report
+    if not issue_report:  # no issues found
+        issue_report = great_job
+
+    return issue_report, hpo_id

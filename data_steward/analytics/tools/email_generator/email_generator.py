@@ -19,6 +19,12 @@ from functions_to_create_hpo_objects import establish_hpo_objects, \
 
 from organize_relevant_dqms import create_string_for_failing_metrics
 
+from messages import introduction, sign_off, sign_off, link
+
+from dictionaries_and_lists import full_names
+
+from contact_list import recipient_dict
+
 report1 = 'april_17_2020.xlsx'
 
 report_names = [report1]
@@ -77,6 +83,52 @@ def create_hpo_objects(dqm_objects, file_names, datetimes):
     return hpo_objects
 
 
+def assemble_final_messages(unique_metrics, hpo_id):
+    """
+    This function is used to assemble the final
+    message displayed on the outputted email.
+
+    Parameters
+    ----------
+    unique_metrics (str): string that contains
+        all the 'erroneous' data quality metrics and
+        tables/classes affected. this effectively serves
+        as the body of the paragraph.
+
+    hpo_id (str): represents the HPO string that the
+        user entered
+
+    Returns
+    -------
+
+    """
+    ehr_site = full_names[hpo_id]
+    name = "Noah Engel"
+    num_metrics = len(sheet_names)
+    date = "April 17th, 2020"
+
+    message = introduction.format(
+        ehr_site=ehr_site, name=name,
+        num_metrics=num_metrics, date=date)
+
+    message += unique_metrics
+
+    message += sign_off.format(
+        link=link)
+
+    relevant_persons = recipient_dict[hpo_id]
+
+    message += """\n
+    Contact the following individuals:
+    ----------------------------------
+    {relevant_persons}
+    """.format(relevant_persons=relevant_persons)
+
+    print(message)
+
+
+
+
 def main():
     """
     Function that executes the entirety of the program.
@@ -102,10 +154,10 @@ def main():
 
         all_objects.extend(hpo_objects)
 
-    unique_metrics = create_string_for_failing_metrics(
+    unique_metrics, hpo_id = create_string_for_failing_metrics(
         hpo_objects=all_objects)
 
-    print(unique_metrics)
+    assemble_final_messages(unique_metrics=unique_metrics, hpo_id=hpo_id)
 
 if __name__ == "__main__":
     main()
