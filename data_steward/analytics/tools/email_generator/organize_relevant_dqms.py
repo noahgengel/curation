@@ -100,8 +100,8 @@ def create_string_for_failing_metrics(hpo_objects):
         tables_affected = ', '.join(tables_or_classes)
 
         issue_report += f"{issue_num}. {metric_type} " \
-              f"has failed in at least the following tables or classes: \n\t" \
-              f"{tables_affected}\n\n"
+            f"has failed in at least the following tables or classes: \n\t" \
+            f"{tables_affected}\n\n"
 
         issue_num += 1
 
