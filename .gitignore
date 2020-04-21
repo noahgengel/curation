@@ -143,3 +143,7 @@ data_steward/analytics/tools/dq_issue_tracker/*.xlsx
 
 # exclude reports for use in metrics_over_time
 data_steward/analytics/table_metrics/metrics_over_time/*.xlsx
+
+# exclude files used in email_generator that should not be available
+data_steward/analytics/tools/email_generator/*.xlsx
+data_steward/analytics/tools/email_generator/contact_list.py
