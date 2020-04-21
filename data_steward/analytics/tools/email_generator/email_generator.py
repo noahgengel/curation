@@ -17,9 +17,7 @@ from functions_to_create_hpo_objects import establish_hpo_objects, \
     add_dqm_to_hpo_objects, add_number_total_rows_for_hpo_and_date, \
     sort_hpos_into_dicts
 
-from create_aggregate_objects import \
-    create_aggregate_metric_master_function
-
+from organize_relevant_dqms import create_string_for_failing_metrics
 
 report1 = 'april_17_2020.xlsx'
 
@@ -83,7 +81,6 @@ def main():
     """
     Function that executes the entirety of the program.
     """
-
     all_objects = []
 
     for metric_choice in sheet_names:
@@ -103,34 +100,12 @@ def main():
             dqm_objects=dqm_list, file_names=file_names,
             datetimes=datetimes)
 
-        metric_dictionary, hpo_dictionary = sort_hpos_into_dicts(
-            hpo_objects=hpo_objects, hpo_names=hpo_names,
-            user_choice=metric_choice)
-
-        # since we are looking to calculate aggregate objects for
-        # HPOs - not tables
-        sheet_output = 'hpo_sheets'
-
-        # creating the aggregate metrics for the HPO
-        aggregate_metrics = create_aggregate_metric_master_function(
-            metric_dictionary=metric_dictionary,
-            hpo_dictionary=hpo_dictionary,
-            sheet_output=sheet_output, datetimes=datetimes,
-            metric_choice=metric_choice)
-
         all_objects.extend(hpo_objects)
-        all_objects.extend(aggregate_metrics)
 
-    for hpo_object in all_objects:
+    unique_metrics = create_string_for_failing_metrics(
+        hpo_objects=all_objects)
 
-        failing_metrics = hpo_object.find_failing_metrics()
-
-        try:
-            for metric in failing_metrics:
-                metric.print_attributes()
-        except TypeError:
-            pass  # no failing metrics found
-
+    print(unique_metrics)
 
 if __name__ == "__main__":
     main()
