@@ -144,10 +144,15 @@ data_steward/analytics/tools/visualizations/plausibility/*.xlsx
 data_steward/analytics/cdr_ops/*.png
 data_steward/analytics/cdr_ops/*.jpg
 
-# csvs that result from the table_metrics scripts
+# images generated for data quality reports
+data_steward/analytics/tools/visualizations/completeness/*.png
+data_steward/analytics/tools/visualizations/conformance/*.png
+data_steward/analytics/tools/visualizations/plausibility/*.png
+
+# CSVs that result from the table_metrics scripts
 data_steward/analytics/table_metrics/other_scripts/*.csv
 data_steward/analytics/table_metrics/weekly_scripts/*.csv
-data_steward/analytics/table_metrics/*.xlsx
+data_steward/analytics/table_metrics/metrics_over_time/*.xlsx
 
 # exclude reports for use in metrics_over_time
 data_steward/analytics/table_metrics/metrics_over_time/*.xlsx
