@@ -642,7 +642,7 @@ class HPO:
                 failing_metrics.append(erroneous_date_obj)
 
         for person_id_failure_obj in self.person_id_failure:
-            if person_id_failure_obj > \
+            if person_id_failure_obj.value > \
                     thresholds['person_failure_rate_max']:
                 failing_metrics.append(person_id_failure_obj)
 

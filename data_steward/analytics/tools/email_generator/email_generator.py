@@ -104,11 +104,13 @@ def main():
 
     for hpo_object in all_hpo_objects:
 
-        hpo_object.print_attributes()
-
         failing_metrics = hpo_object.find_failing_metrics()
-        for metric in failing_metrics:
-            metric.print_attributes()
+
+        try:
+            for metric in failing_metrics:
+                metric.print_attributes()
+        except TypeError:
+            pass  # no failing metrics found
 
 
 if __name__ == "__main__":

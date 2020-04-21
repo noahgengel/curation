@@ -5,7 +5,7 @@ used to create DataQualityMetric objects.
 
 from dictionaries_and_lists import \
     metric_type_to_english_dict, data_quality_dimension_dict, \
-    columns_to_document_for_sheet, table_based_on_column_provided
+    columns_to_document_for_sheet_email, table_based_on_column_provided
 
 from functions_to_create_dqm_objects import find_hpo_row, \
     get_info
@@ -55,7 +55,7 @@ def create_dqm_objects_for_sheet(
     # to instantiate dqm objects later on
     metric_type = metric_type_to_english_dict[user_choice]
     dqm_type = data_quality_dimension_dict[user_choice]
-    columns = columns_to_document_for_sheet[user_choice]
+    columns = columns_to_document_for_sheet_email[user_choice]
 
     dqm_objects = []
 

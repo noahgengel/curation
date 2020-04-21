@@ -120,12 +120,15 @@ target_low_dict = {
     'person_id_failure_rate': True
 }
 
-columns_to_document_for_sheet = {
+
+# NOTE: This is actually different than what one would
+# find in the metrics_over_time generator. This is because
+# we want less granularity for the 'integration metrics'.
+
+columns_to_document_for_sheet_email = {
     'measurement_units': ['total_unit_success_rate'],
 
-    'sites_measurement': ['Physical_Measurement',
-                          'CMP', 'CBCwDiff', 'CBC',
-                          'Lipid', 'All_Measurements'],
+    'sites_measurement': ['All_Measurements'],
 
     'end_before_begin': [
         'visit_occurrence', 'condition_occurrence',
@@ -139,10 +142,7 @@ columns_to_document_for_sheet = {
     'drug_routes': ['total_route_success_rate'],
 
     'drug_success': [
-        'ace_inhibitors', 'painnsaids',	'msknsaids',
-        'statins', 'antibiotics', 'opioids',
-        'oralhypoglycemics', 'vaccine', 'ccb',
-        'diuretics', 'all_drugs'],
+        'all_drugs'],
 
     'data_after_death': [
         'visit_occurrence', 'condition_occurrence',
