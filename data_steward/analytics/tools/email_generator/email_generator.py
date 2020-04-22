@@ -2,10 +2,25 @@
 This program generates an e-mail from a properly-formatted Excel
 file. The e-mail should contain information regarding data quality
 for the various AoU HPO sites.
+
 Assumptions
 -----------
 1. Excel file in question is also imported into this current directory
-2. Script also stored with introduction.txt, great_job.txt, and contact_list.py
+
+Notes
+-----
+1. This code is not particularly efficient as it generates an HPO object
+for every HPO represented (even though only one HPO object is ultimately
+used to generate the message).
+
+At the moment, this is not of major concern because the additional 40+
+HPO objects only take 2-3 additional seconds to generate and would
+introduce several inconsistencies with the metrics_over_time script.
+
+It is important to note, however, that if this is to be implemented
+on a larger scale, we should consider refactoring the functions
+that make DataQualityMetric/HPO objects.
+
 Code was developed with respect to PEP8 standards
 """
 from startup_functions import startup, \
