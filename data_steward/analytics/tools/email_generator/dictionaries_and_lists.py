@@ -2,46 +2,51 @@
 This file is intended to serve as a 'storing place' for pieces of information
 that may change in the future. This also is a great means to sequester pieces
 of information that may otherwise 'bog down' the regular code.
+
 Dictionaries
 ------------
-thresholds: thresholds: the point at which a data quality metric (whether too
+thresholds: the point at which a data quality metric (whether too
     high or too low) would be flagged as 'erroneous'. not used in the
     metrics_over_time script yet but has potential future implementations.
-choice_dict: correlates the user-specified choice to the corresponding
-    page on the analytics report
+
+thresholds_full_name: shows the 'full name' of the different data quality
+    metrics and their corresponding thresholds. this allows us to access
+    the 'thesholds' from the DataQualityMetric objects.
+
 percentage_dict: correlated a particular analysis choice with whether or
     not it is intended to report out a fixed number (as in the case of
     duplicate records) or a  'percentage' (namely success or failure
     rates)
+
 target_low_dict: indicates whether the metric is intended to be
     minimized (in the case of an 'error') or maximized (in the
     case of a 'success rate')
+
 columns_to_document_for_sheet: indicates which columns contain
     information that should be stored for the particular data
     quality metric that is being analyzed
+
 table_based_on_column_provided: allows us to determine the table that
     should be associated with a particular Data Quality Dimension object
     based upon the column that was used to get the associated 'value'
     float
+
 data_quality_dimension_dict: shows which attribute of Kahn's Data Quality
     framework the particular 'data quality metric' at hand relates to
+
 metric_type_to_english_dict: allows one to translate the 'metric type'
     that is normally associated with a 'DataQualityMetric' object to
     'English'. this is useful for printing the columns on a new
     dashboard
+
 full_names: allows one to use the hpo_id (shorter) name to find
     the longer (more human-readable) name
+
+
 Lists
 -----
 row_count_col_names: shows the column names where one can find the
     total row count for a particular date for each table
-unweighted_metric_already_integrated_for_hpo: shows which
-    'unweighted metrics' do not need to be calculated for
-    each HPO. these metrics do NOT need to be calculated because
-    there already is an appropriate 'aggregate metric'
-    established in the sheet.
-aggregate_metric_class_names: contains the 'names' of the aggregate
-    metric objects that one can use
 """
 
 # ---------- Dictionaries ---------- #
@@ -60,8 +65,7 @@ thresholds = {
 
     'date_datetime_disparity_max': 0,
     'erroneous_dates_max': 0.01,
-    'person_failure_rate_max': 0.01
-}
+    'person_failure_rate_max': 0.01}
 
 thresholds_full_name = {
     # field population metrics
@@ -81,8 +85,7 @@ thresholds_full_name = {
     'Concept ID Success Rate': 90,
     'Duplicate Records': 5,
     'Erroneous Dates': 0.01,
-    'Person ID Failure Rate': 0.01
-}
+    'Person ID Failure Rate': 0.01}
 
 min_or_max = {
     # field population metrics
@@ -102,22 +105,7 @@ min_or_max = {
     'Concept ID Success Rate': 'minimum',
     'Duplicate Records': 'maximum',
     'Erroneous Dates': 'maximum',
-    'Person ID Failure Rate': 'maximum'
-}
-
-choice_dict = {
-    'a': 'duplicates',
-    'b': 'data_after_death',
-    'c': 'end_before_begin',
-    'd': 'concept',
-    'e': 'measurement_units',
-    'f': 'drug_routes',
-    'g': 'drug_success',
-    'h': 'sites_measurement',
-    'i': 'visit_date_disparity',
-    'j': 'date_datetime_disparity',
-    'k': 'erroneous_dates',
-    'l': 'person_id_failure_rate'}
+    'Person ID Failure Rate': 'maximum'}
 
 percentage_dict = {
     'duplicates': False,
@@ -131,8 +119,7 @@ percentage_dict = {
     'visit_date_disparity': True,
     'date_datetime_disparity': True,
     'erroneous_dates': True,
-    'person_id_failure_rate': True
-}
+    'person_id_failure_rate': True}
 
 target_low_dict = {
     'duplicates': True,
@@ -153,8 +140,7 @@ target_low_dict = {
     # double negative.
     'date_datetime_disparity': False,
     'erroneous_dates': False,
-    'person_id_failure_rate': False
-}
+    'person_id_failure_rate': False}
 
 
 # NOTE: This is actually different than what one would
@@ -191,8 +177,7 @@ columns_to_document_for_sheet_email = {
 
     'diabetes': [
         'diabetics_w_drugs', 'diabetics_w_glucose',
-        'diabetics_w_a1c', 'diabetics_w_insulin'
-    ],
+        'diabetics_w_a1c', 'diabetics_w_insulin'],
 
     'concept': [
         'observation_success_rate', 'drug_success_rate',
@@ -202,20 +187,17 @@ columns_to_document_for_sheet_email = {
     'date_datetime_disparity': [
         'visit_occurrence', 'condition_occurrence',
         'drug_exposure', 'measurement',
-        'procedure_occurrence', 'observation'
-    ],
+        'procedure_occurrence', 'observation'],
 
     'erroneous_dates': [
         'visit_occurrence', 'condition_occurrence',
         'drug_exposure', 'measurement',
-        'procedure_occurrence', 'observation'
-    ],
+        'procedure_occurrence', 'observation'],
 
     'person_id_failure_rate': [
         'visit_occurrence', 'condition_occurrence',
         'drug_exposure', 'measurement',
-        'procedure_occurrence', 'observation']
-}
+        'procedure_occurrence', 'observation']}
 
 
 table_based_on_column_provided = {
@@ -259,8 +241,7 @@ table_based_on_column_provided = {
     'CMP': 'Comprehensive Metabolic Panel',
     'CBCwDiff': 'CBC with Differential',
     'CBC': 'Complete Blood Count (CBC)',
-    'Lipid': 'Lipid'
-}
+    'Lipid': 'Lipid'}
 
 data_quality_dimension_dict = {
     'concept': 'Conformance',
@@ -273,8 +254,7 @@ data_quality_dimension_dict = {
     'measurement_units': 'Completeness',
     'date_datetime_disparity': 'Conformance',
     'erroneous_dates': 'Plausibility',
-    'person_id_failure_rate': 'Conformance'
-}
+    'person_id_failure_rate': 'Conformance'}
 
 metric_type_to_english_dict = {
     # field population metrics
@@ -294,15 +274,7 @@ metric_type_to_english_dict = {
     'concept': 'Concept ID Success Rate',
     'duplicates': 'Duplicate Records',
     'erroneous_dates': 'Erroneous Dates',
-    'person_id_failure_rate': 'Person ID Failure Rate'
-}
-
-metrics_to_weight = [
-    'measurement_units', 'drug_routes',
-    'end_before_begin', 'data_after_death',
-    'concept', 'duplicates',
-    'date_datetime_disparity',
-    'erroneous_dates', 'person_id_failure_rate']
+    'person_id_failure_rate': 'Person ID Failure Rate'}
 
 full_names = {
     "saou_uab_selma": "UAB Selma",
@@ -349,8 +321,10 @@ full_names = {
     "cpmc_ucd": "UC Davis",
     "ipmc_rush": "Rush University",
     "va": "United States Department of Veterans Affairs - Boston",
-    "saou_umc": "University Medical Center (UA Tuscaloosa)"
-}
+    "saou_umc": "University Medical Center (UA Tuscaloosa)"}
+
+
+# ---------- Lists ---------- #
 
 row_count_col_names = [
     'observation_total_row',
@@ -358,15 +332,4 @@ row_count_col_names = [
     'procedure_total_row',
     'condition_total_row',
     'measurement_total_row',
-    'visit_total_row'
-]
-
-# ---------- Lists ---------- #
-unweighted_metric_already_integrated_for_hpo = [
-    'drug_routes',
-    'measurement_units']
-
-no_aggregate_metric_needed_for_hpo_sheets = [
-    'drug_success', 'sites_measurement']
-
-aggregate_metric_class_names = ['All Measurements', 'All Drugs']
+    'visit_total_row']
