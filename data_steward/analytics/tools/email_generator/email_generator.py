@@ -118,8 +118,6 @@ def assemble_final_messages(unique_metrics, hpo_id):
     print(message)
 
 
-
-
 def main():
     """
     Function that executes the entirety of the program.
