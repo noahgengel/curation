@@ -40,22 +40,27 @@ def create_hpo_objects(dqm_objects, file_names, datetimes):
     """
     Function is used to create the various 'HPO' objects
     that will be used to eventually populate the sheets.
-    Parameter
+
+    Parameters
     ---------
     dqm_objects (list): list of DataQualityMetric objects.
         these will eventually be associated to their respective
         HPO objects.
+
     file_names (list): list of the strings that indicate
         the names of the files being ingested. these
         in sequential order.
+
     datetimes (list): list of datetime objects that
         represent the dates of the files that are being
         ingested
+
     Return
     ------
     hpo_objects (list): contains all of the HPO objects. the
         DataQualityMetric objects will now be associated to
         the HPO objects appropriately.
+
     NOTE
     ----
     The DQM objects that are being established would only
@@ -80,18 +85,18 @@ def create_hpo_objects(dqm_objects, file_names, datetimes):
 
 def assemble_final_messages(unique_metrics, hpo_id):
     """
-    This function is used to assemble the final
-    message displayed on the outputted email.
+    This function is used to assemble and print the
+    final message displayed on the outputted email
+
     Parameters
     ----------
     unique_metrics (str): string that contains
         all the 'erroneous' data quality metrics and
         tables/classes affected. this effectively serves
-        as the body of the paragraph.
+        as the body of the paragraph
+
     hpo_id (str): represents the HPO string that the
         user entered
-    Returns
-    -------
     """
     ehr_site = full_names[hpo_id]
     name = "Noah Engel"

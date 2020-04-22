@@ -26,21 +26,27 @@ class DataQualityMetric:
         """
         Used to establish the attributes of the DataQualityMetric
         object being instantiated.
+
         Parameters
         ----------
         hpo (string): name of the HPO being associated with the
             data quality metric in question (e.g. nyc_cu)
+
         table_or_class (string): name of the table/class whose data
             quality metric is being determined
             (e.g. Measurement or 'ACE Inhibitors')
+
         metric_type (string): name of the metric that is being
             determined (e.g. duplicates)
+
         value (float): value that represents the quantitative value
             of the data quality metric being investigated
+
         data_quality_dimension (string): represents whether the
             metric_type being investigated is related to the
             conformance, completeness, or plausibility of data
             quality with respect to the Kahn framework
+
         date (datetime): 'date' that the DQM represents (in
             other words, the corresponding analytics
             report from which it hails)
@@ -78,6 +84,7 @@ class DataQualityMetric:
         are associated with a DataQualityMetric object. This will
         ultimately be used to populate the columns of a
         pandas dataframe.
+
         Return
         ------
         attribute_names (list): list of the attribute names
@@ -97,6 +104,7 @@ class DataQualityMetric:
         the get_list_of_attribute_names function above. This
         will be used to populate the dataframe with data quality
         issues.
+
         Return
         ------
         attributes (list): list of the attributes (values, strings)

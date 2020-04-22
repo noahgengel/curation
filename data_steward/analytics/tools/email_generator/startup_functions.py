@@ -16,23 +16,29 @@ def startup(file_names, metric_choice):
     Function is used to 'startup' the script. This should in essence
     load the appropriate files and allow us
     to determine which HPO objects we will instantiate.
+
     Parameters
     -----------
     file_names (list): list of the user-specified Excel files that are
         in the current directory. Files are analytics reports to be
         scanned.
+
     metric_choice (str): the name of the sheet that is going to be
         used to ultimately generate HPO objects
+
     Returns
     -------
     sheets (list): list of pandas dataframes. each dataframe contains
         info about data quality for all of the sites for a date. each
         index of the list should represent a particular date's metrics.
+
     hpo_name_col (list): list of the strings that should go
         into an HPO ID column. for use in generating subsequent
         dataframes.
+
     target_low (bool): determines whether the number displayed should
         be considered a desirable or undesirable characteristic
+
     percent_bool (bool): determines whether the data will be seen
         as 'percentage complete' or individual instances of a
         particular error
@@ -53,17 +59,21 @@ def load_files(user_choice, file_names):
     'Relevant sheet' is defined by previous user input.
     This function is also designed so it skips over instances where
     the user's input only exists in some of the defined sheets.
+
     Parameters
     ----------
     user_choice (string): represents the sheet from the analysis reports
         whose metrics will be compared over time
+
     file_names (list): list of the user-specified Excel files that are
         in the current directory. Files are analytics reports to be
         scanned.
+
     Returns
     -------
     sheets (list): list of pandas dataframes. each dataframe contains
         info about data quality for all of the sites for a date.
+
     NOTE: I recognize that the 'skip sheet' protocol is implemented
     twice but - since it was only implemented twice - I do not believe
     it warrants its own separate function.
@@ -120,16 +130,19 @@ def generate_hpo_id_col(file_names):
     that are only in some of the data analysis outputs.
     This function ensures all of the HPOs are logged
     for all of the dates and improves consistency.
+
     Parameters
     ----------
     file_names (list): list of the user-specified Excel files that are
         in the current directory. Files are analytics reports to be
         scanned.
+
     Returns
     --------
     hpo_id_col (list): list of the strings that should go
         into an HPO ID column. for use in generating subsequent
         dataframes.
+
     NOTES
     -----
     This function's efficiency could be improved by simply
@@ -184,17 +197,20 @@ def convert_file_names_to_datetimes(file_names):
     to a list of datetime objects.
     This is useful for establishing the 'date' attribute of
     DataQualityMetric objects.
+
     Parameter
     ---------
     file_names (list): list of strings that indicate the names
         of the files being ingested. each file name should
         follow the convention month_date_year.xlsx
         (year should be 4-digit)
+
     Return
     ------
     ordered_dates_str (list): list of the strings that
         indicate the names of the files being ingested. these
         are now in sequential order.
+
     ordered_dates_dt (list): list of datetime objects that
         represent the dates of the files that are being
         ingested

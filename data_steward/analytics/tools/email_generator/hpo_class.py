@@ -47,70 +47,90 @@ class HPO:
         Parameters
         ----------
         self (HPO object): the object to be created
+
         name (str): name of the HPO ID to create (e.g. nyc_cu)
+
         full_name (str): full name of the HPO
+
         date (datetime): 'date' that the HPO represents (in
             other words, the corresponding analytics
             report from which it hails)
+
         concept_success (list): list of DataQuality metric objects
             that should all have the metric_type relating
             to concept success rate. each index should also
             represent a different table.
+
         duplicates (list): list of DataQuality metric objects
             that should all have the metric_type relating
             to the number of duplicates. each index should
             also represent a different table
+
         end_before_begin (list): list of DataQuality metric objects
             that should all have the metric_type relating
             to the number of end dates preceding start dates.
             each index should also represent a different table
+
         data_after_death (list): list of DataQuality metric objects
             that should all have the metric_type relating
             to the percentage of data points that follow a
             patient's death date. each index should also
             represent a different table
+
         date_datetime_disp (list): list of the DataQualityMetric
             objects that have the metric_type relating the
             percentage of rows where the date and datetime
             objects are not in agreement
+
         route_success (list): list of DataQuality metric objects
             that should all have the metric_type relating
             to the concept success rate for the route_concept_id
             field. should have a length of one (for the drug
             exposure table)
+
         unit_success (list): list of DataQuality metric objects
             that should all have the metric_type relating
             to the concept success rate for the route_concept_id
             field. should have a length of one (for the
             measurement table)
+
         measurement_integration (list): list of DataQuality metric
             objects that should all have the metric_type relating
             to the integration of certain measurement concepts.
             should have a length of one (for the measurement
             table).
+
         ingredient_integration (list): list of DataQuality metric
             objects that should all have the metric_type relating
             to the integration of certain drug ingredients.
             should have a length of one (for the drug exposure
             table).
+
         erroneous_dates (list): list of DataQualityMetric
             objects that should all have the metric_type
             relating to the percentage of dates that are before
             1980 (or before 1900 for the observation table)
+
         person_id_failure (list): list of DataQualityMetric
             objects that relate what percentage of rows in
             each of the tables have a 'failing' person_id
             (one that does not exist in the person table)
+
         num_measurement_rows (float): number of rows in the
             measurement table
+
         num_visit_rows (float): number of rows in the
             visit_occurrence table
+
         num_procedure_rows (float): number of rows in the
             procedure_occurrence table
+
         num_condition_rows (float): number of rows in the
             condition_occurrence table
+
         num_drug_rows (float): number of rows in the drug
             exposure table
+
         number_observation_rows (float): number of rows
             in the observation table
         """
@@ -203,10 +223,12 @@ class HPO:
         define an HPO object. This will allow us to easily
         associate an HPO object with its constituent data
         quality metrics
+
         Parameters
         ----------
         metric (string): the name of the sheet that contains the
             dimension of data quality to be investigated
+
         dq_object (DataQualityMetric): object that contains
             the information for a particular aspect of the
             site's data quality (NOTE: dq_object.hpo should
@@ -258,11 +280,13 @@ class HPO:
         define an HPO object. This will allow us to easily
         associate an HPO object with its row count for different
         tables.
+
         Parameters
         ----------
         table (string): the name of the column that was used
             to determine the number of rows there are associated
             with each table
+
         value (float): number of rows for the particular
             table
         """
@@ -291,17 +315,21 @@ class HPO:
         the 'total number of rows' associated with said
         table and the 'success rate' for said table.
         Both should which should be stored in the HPO object.
+
         Parameters
         ----------
         table_or_class (string): table (e.g. 'Measurement) or
             class (e.g. 'ACE Inhibitors') whose data quality
             metrics are to be determined
+
         metric (string): the metric (e.g. the concept
             success rate) that is being investigated
+
         Returns
         -------
         rel_rows (float): number of rows that pertain to the
             particular metric for the table
+
         total_rows (float): the total number of rows for the
             table being queried
         """
@@ -404,16 +432,20 @@ class HPO:
         metric in the HPO class. This is intended to primarily
         perform the computational work underlying the
         return_metric_row_count function.
+
         Parameters
         ----------
         metric (string): the metric (e.g. the concept
             success rate) that is being investigated
+
         table_or_class (string): table whose data quality metrics are
             to be determined
+
         relevant_objects (lst): list of DataQualityMetric
             objects that are to be iterated over. These
             DQM objects should all have the same
             'metric_type' attribute
+
         Returns
         -------
         row_count (float): total number of rows - merely
@@ -444,10 +476,12 @@ class HPO:
         Function is designed to enable someone to use a
         string to access the relevant objects pertaining
         to the desire metric.
+
         Parameters
         ----------
         metric (string): the metric (e.g. the concept
             success rate) that is being investigated
+
         Returns
         -------
         relevant_objects (list): list of DataQualityMetric
@@ -504,12 +538,15 @@ class HPO:
         the number of 'successful' rows or the number
         of 'failed' rows depending on the nature of the
         metric that is being investigated.
+
         Parameters
         ----------
         metric (string): the metric (e.g. the concept
             success rate) that is being investigated
+
         table (string): table whose data quality metrics are
             to be determined
+
         Returns
         -------
         row_count (float): total number of rows - merely
@@ -531,15 +568,18 @@ class HPO:
         Function is used to create a catalogue of the 'failing' data
         quality metrics at defined by the thresholds established by
         the appropriate dictionary from relevant_dictionaries.
+
         Parameters
         ----------
         self (HPO object): the object whose 'failing metrics' are to
             be determined
+
         Returns
         -------
         failing_metrics (list): has a list of the data quality metrics
             for the HPO that have 'failed' based on the thresholds
             provided
+
         NOTES
         -----
         1. if no data quality problems are found, however, the

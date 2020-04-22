@@ -11,16 +11,19 @@ from functions_to_create_dqm_objects import find_hpo_row, \
     get_info
 import datetime
 
+
 def establish_hpo_objects(dqm_objects):
     """
     Function is used as a 'launch pad' for all of the other functions
     that create HPO objects based on the various DataQualityMetric
     objects
+
     Parameters
     ----------
     dqm_objects (list): list of DataQualityMetric objects.
         these will eventually be associated to their respective
         HPO objects.
+
     Return
     ------
     blank_hpo_objects (list): list of the blank HPO objects. there
@@ -72,14 +75,17 @@ def add_dqm_to_hpo_objects(dqm_objects, hpo_objects):
     HPO.add_metric_with_string() function to further
     establish what data quality metrics are associated
     with each of the HPO/date combinations.
+
     Parameters
     ----------
     dqm_objects (list): list of DataQualityMetric objects.
         these will eventually be associated to their respective
         HPO objects.
+
     hpo_objects (list): list of the blank HPO objects. there
         should be a unique (and mostly empty) object for each HPO
         and date (total length should be #HPOs times #dates)
+
     Returns
     -------
     hpo_objects (list): list of the HPO objects originally
@@ -108,18 +114,22 @@ def add_number_total_rows_for_hpo_and_date(
     objects. These are the attributes pertaining to the number
     of rows in each of the tables. These row counts should be
     stored in the 'concept' sheet.
+
     Parameters
     ----------
     hpos (list): list of the HPO objects. these should
         already have the name and date established at
         the minimum.
+
     date_names (list): list of the strings that indicate
         the names of the files being ingested. these
         in sequential order.
+
     date (list): datetime object that is used to ensure
         that data quality metrics are being associated
         with the HPO object that is associated with their
         respective date
+
     Returns
     -------
     hpos (list): list of the HPO objects. now should have the
@@ -177,18 +187,23 @@ def sort_hpos_into_dicts(
     pertinent DataQualityMetric objects. The keys for the
     dictionaries can either be the HPO sites or the metric
     type that is being investigated.
+
     This can ultimately decrease the number of iterations
     needed to create 'aggregate' data quality metric objects.
+
     Parameters
     ----------
     hpo_objects (list): list of HPO objects. These HPO objects
         should have their associated DataQualityMetric objects
         and attached row counts.
+
     hpo_names (list): list of the HPO names that are to be
         put into dataframes (either as the titles of the
         dataframe or the rows of a dataframe)
+
     user_choice (str): the data quality metric the user wants to
         investigate
+
     Returns
     -------
     hpo_dictionary (dict): has the following structure

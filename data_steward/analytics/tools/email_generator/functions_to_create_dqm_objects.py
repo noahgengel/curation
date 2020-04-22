@@ -10,12 +10,17 @@ def find_hpo_row(sheet, hpo):
     """
     Finds the row index of a particular HPO site within
     a larger sheet.
-    :param
+
+    Parameters
+    ----------
     sheet (dataframe): dataframe with all of the data quality
         metrics for the sites.
+
     hpo (string): represents the HPO site whose row in
         the particular sheet needs to be determined
-    :return:
+
+    Returns
+    -------
     row_num (int): row number where the HPO site of question
         lies within the sheet. returns none if the row is not
         in the sheet in question but exists in other sheets
@@ -41,27 +46,35 @@ def get_info(
     """
     Function is used to create a dictionary that contains
     the number of flawed records for a particular site.
+
     Parameters
     ----------
     sheet (dataframe): pandas dataframe to traverse. Represents a
         sheet with numbers indicating data quality.
+
     row_num (int): row (0-index) with all of the information for
         the specified site's data quality
+
     percentage (boolean): used to determine whether or not the
         number is a simple record count (e.g. duplicates)
         versus the percentage of records (e.g. the success rate
         for each of the tables)
+
     sheet_name (str): name for the sheet for use in the error
         message
+
     columns_to_collect (lst): contains the tables that should be
         documented for every table and at every date.
+
     target_low (bool): determines whether the number displayed
         should be considered a positive or negative metric
+
     Returns
     -------
     data_dictionary (dictionary): key:value pairs represent the
         column name:number that represents the quality of the data
         for a particular HPO
+
     NOTE: This function includes 0 values if the data is wholly
     complete.
     """
