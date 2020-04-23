@@ -15,7 +15,7 @@ internal DRC drive. This will allow someone to run this script.
 
 from dictionaries_and_lists import relevant_links, full_names, \
     desired_columns_dict, data_quality_dimension_dict, \
-    table_based_on_column_provided, metric_names, \
+    table_or_class_based_on_column_provided, metric_names, \
     metric_type_to_english_dict
 
 from class_definitions import HPO, DataQualityMetric
@@ -27,10 +27,10 @@ from cross_reference_functions import cross_reference_old_metrics
 
 import pandas as pd
 
-old_dashboards = 'march_12_2020_data_quality_issues.xlsx'
+old_dashboards = 'march_26_2020_data_quality_issues.xlsx'
 
-old_excel_file_name = 'march_12_2020.xlsx'
-excel_file_name = 'march_19_2020.xlsx'
+old_excel_file_name = 'march_19_2020.xlsx'
+excel_file_name = 'april_17_2020.xlsx'
 
 metric_names = list(metric_names.keys())  # sheets to be investigated
 
@@ -59,16 +59,19 @@ def create_hpo_objects(file_name):
     hpo_objects = []
 
     for hpo_id in hpo_id_column:
+
         # keeping the lists empty - to be filled later with
         # DataQualityMetric objects
         # lists cannot be 'default values' for a class because they
         # are mutable so they all need to be manually specified
+
         hpo = HPO(
             name=hpo_id, full_name=full_names[hpo_id],
             concept_success=[], duplicates=[],
             end_before_begin=[], data_after_death=[],
             route_success=[], unit_success=[], measurement_integration=[],
-            ingredient_integration=[])
+            ingredient_integration=[], date_datetime_disparity=[],
+            erroneous_dates=[], person_id_failure_rate=[])
 
         hpo_objects.append(hpo)
 
@@ -124,7 +127,7 @@ def populate_hpo_objects_with_dq_metrics(
 
                 data_quality_dimension = DataQualityMetric(
                     hpo=hpo_name,
-                    table=table_based_on_column_provided[column_for_table],
+                    table=table_or_class_based_on_column_provided[column_for_table],
                     metric_type=metric_type_to_english_dict[metric],
                     value=err_rate,
                     first_reported=date,

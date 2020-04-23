@@ -19,7 +19,7 @@ class DataQualityMetric:
     """
 
     def __init__(
-        self, hpo='', table='', metric_type='', value=0,
+        self, hpo='', table_or_class='', metric_type='', value=0,
             data_quality_dimension='', first_reported=date.today(),
             link=''):
 
@@ -32,8 +32,9 @@ class DataQualityMetric:
         hpo (string): name of the HPO being associated with the
             data quality metric in question (e.g. nyc_cu)
 
-        table (string): name of the table whose data quality metric
-            is being determined (e.g. Measurement)
+        table_or_class (string): name of the table or class whose
+            data quality metric is being determined
+            (e.g. Measurement, ACE Inhibitor)
 
         metric_type (string): name of the metric that is being
             determined (e.g. duplicates)
@@ -55,7 +56,7 @@ class DataQualityMetric:
         """
 
         self.hpo = hpo
-        self.table = table
+        self.table_or_class = table_or_class
         self.metric_type = metric_type
         self.value = value
         self.data_quality_dimension = data_quality_dimension
@@ -71,13 +72,13 @@ class DataQualityMetric:
         """
         print(
             "HPO: {hpo}\n"
-            "Table: {table}\n"
+            "Table Or Class: {table_or_class}\n"
             "Metric Type: {metric_type}\n"
             "Value: {value}\n"
             "Data Quality Dimension: {dqd}\n"
             "First Reported: {date}\n"
             "Link: {link}".format(
-                hpo=self.hpo, table=self.table,
+                hpo=self.hpo, table_or_class=self.table_or_class,
                 metric_type=self.metric_type,
                 value=self.value, dqd=self.data_quality_dimension,
                 date=self.first_reported,
@@ -97,7 +98,7 @@ class DataQualityMetric:
         """
 
         attribute_names = [
-            "HPO", "Table", "Metric Type",
+            "HPO", "Table/Class", "Metric Type",
             "Value", "Data Quality Dimension", "First Reported",
             "Link"]
 
@@ -134,7 +135,8 @@ class HPO:
             self, name, full_name, concept_success, duplicates,
             end_before_begin, data_after_death,
             route_success, unit_success, measurement_integration,
-            ingredient_integration):
+            ingredient_integration, date_datetime_disparity,
+            erroneous_dates, person_id_failure_rate):
 
         """
         Used to establish the attributes of the HPO object being instantiated.
@@ -168,6 +170,10 @@ class HPO:
         self.unit_success = unit_success
         self.measurement_integration = measurement_integration
         self.ingredient_integration = ingredient_integration
+
+        self.date_datetime_disparity = date_datetime_disparity
+        self.erroneous_dates = erroneous_dates
+        self.person_id_failure_rate = person_id_failure_rate
 
     def add_attribute_with_string(self, metric, dq_object):
         """
@@ -211,6 +217,15 @@ class HPO:
 
         elif metric == 'Unit Concept ID Success Rate':
             self.unit_success.append(dq_object)
+
+        elif metric == 'Date/Datetime Disparity':
+            self.date_datetime_disparity.append(dq_object)
+
+        elif metric == 'Erroneous Dates':
+            self.erroneous_dates.append(dq_object)
+
+        elif metric == 'Person ID Failure Rate':
+            self.erroneous_dates.append(dq_object)
 
         else:
             print("Unrecognized metric input: {metric} for {hpo}".format(
@@ -275,6 +290,21 @@ class HPO:
             if ingredient_integration_obj.value < \
                     thresholds['route_success_min']:
                 failing_metrics.append(ingredient_integration_obj)
+
+        for date_disparity_obj in self.date_datetime_disparity:
+            if date_disparity_obj.value > \
+                    thresholds['date_datetime_disparity_max']:
+                failing_metrics.append(date_disparity_obj)
+
+        for erroneous_date_obj in self.erroneous_dates:
+            if erroneous_date_obj.value > \
+                    thresholds['erroneous_dates_max']:
+                failing_metrics.append(erroneous_date_obj)
+
+        for person_id_failure_obj in self.person_id_failure_rate:
+            if person_id_failure_obj.value > \
+                    thresholds['person_failure_rate_max']:
+                failing_metrics.append(person_id_failure_obj)
 
         if not failing_metrics:  # no errors logged
             return None

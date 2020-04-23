@@ -1,6 +1,7 @@
 """
 File is meant to contain dictionaries that can be used for the
 primary file and/or the HPO class functions.
+
 The dictionaries are as follows:
 --------------------------------
 relevant_links: the relevant links for the output file
@@ -50,6 +51,10 @@ relevant_links = {
     "https://sites.google.com/view/ehrupload/"
     "data-quality-metrics/duplicates?authuser=0",
 
+    "date_datetime_disparity":
+    "https://sites.google.com/view/ehrupload/"
+    "data-quality-metrics/datedatetime-disparity?authuser=0",
+
     "end_before_begin":
     "https://sites.google.com/view/ehrupload/"
     "data-quality-metrics/end-dates-preceding-start-dates?authuser=0",
@@ -72,7 +77,15 @@ relevant_links = {
 
     "drug_success":
     "https://sites.google.com/view/ehrupload/"
-    "data-quality-metrics/drug-ingredient-integration-rate?authuser=0"
+    "data-quality-metrics/drug-ingredient-integration-rate?authuser=0",
+    
+    "erroneous_dates":
+    "https://sites.google.com/view/ehrupload/"
+    "data-quality-metrics/erroneous-dates?authuser=0",
+
+    "person_id_failure_rate":
+    "https://sites.google.com/view/ehrupload/"
+    "data-quality-metrics/person-id-failure-rate?authuser=0"
 }
 
 
@@ -87,8 +100,11 @@ thresholds = {
     'measurement_integration_min': 90,
 
     'unit_success_min': 85,
-    'route_success_min': 85
-}
+    'route_success_min': 85,
+
+    'date_datetime_disparity_max': 0,
+    'erroneous_dates_max': 0.01,
+    'person_failure_rate_max': 0.01}
 
 
 full_names = {
@@ -155,57 +171,107 @@ metric_names = {
 
     # other metrics
     'concept': 'concept_success',
-    'duplicates': 'duplicates'}
+    'duplicates': 'duplicates',
+
+    'erroneous_dates': 'erroneous_dates',
+    'person_id_failure_rate': 'person_id_failure_rate',
+    'date_datetime_disparity': 'date_datetime_disparity'}
 
 
 desired_columns_dict = {
     # field population metrics
     'measurement_units': ['total_unit_success_rate'],
+
     'drug_routes': ['total_route_success_rate'],
 
     # integration metrics
-    'drug_success': ['all_drugs'],
-    'sites_measurement': ['All_Measurements'],
+    'drug_success': [
+        'ace_inhibitors', 'painnsaids', 'msknsaids',
+        'statins', 'antibiotics', 'opioids', 'oralhypoglycemics',
+        'vaccine', 'ccb', 'diuretics', 'all_drugs'],
+
+    'sites_measurement': [
+        'Physical_Measurement',	'CMP', ' CBCwDiff',
+        'CBC', 'Lipid',	'All_Measurements'],
 
     # ACHILLES errors
     'end_before_begin': [
         'visit_occurrence', 'condition_occurrence',
-        'drug_exposure', 'device_exposure'],
+        'drug_exposure'],
+
     'data_after_death': [
         'visit_occurrence', 'condition_occurrence',
         'drug_exposure', 'measurement',
-        'procedure_occurrence', 'observation',
-        'device_exposure'],
+        'procedure_occurrence', 'observation'],
 
     # other metrics
-    'concept': ['observation_success_rate', 'drug_success_rate',
-                'procedure_success_rate', 'condition_success_rate',
-                'measurement_success_rate', 'visit_success_rate'],
+    'concept': [
+        'observation_success_rate', 'drug_success_rate',
+        'procedure_success_rate', 'condition_success_rate',
+        'measurement_success_rate', 'visit_success_rate'],
 
     'duplicates': ['visit_occurrence', 'condition_occurrence',
                    'drug_exposure', 'measurement',
                    'procedure_occurrence', 'device_exposure',
-                   'observation']
+                   'observation'],
+
+    'date_datetime_disparity': [
+        'visit_occurrence', 'condition_occurrence',
+        'drug_exposure', 'measurement',
+        'procedure_occurrence', 'observation'],
+
+    'erroneous_dates': [
+        'visit_occurrence', 'condition_occurrence',
+        'drug_exposure', 'measurement',
+        'procedure_occurrence', 'observation'],
+
+    'person_id_failure_rate': [
+        'visit_occurrence', 'condition_occurrence',
+        'drug_exposure', 'measurement',
+        'procedure_occurrence', 'observation']
 }
 
-table_based_on_column_provided = {
+table_or_class_based_on_column_provided = {
     'total_unit_success_rate': 'Measurement',
-    'total_route_success_rate': 'Drug Exposure',
-    'all_drugs': 'Drug Exposure',
-    'All_Measurements': 'Measurement',
-    'visit_occurrence': 'Visit Occurrence',
-    'condition_occurrence': 'Condition Occurrence',
-    'drug_exposure': 'Drug Exposure',
-    'device_exposure': 'Device Exposure',
+    'measurement_success_rate': 'Measurement',
     'measurement': 'Measurement',
+
+    'total_route_success_rate': 'Drug Exposure',
+    'drug_exposure': 'Drug Exposure',
+    'drug_success_rate': 'Drug Exposure',
+
+
+    'condition_occurrence': 'Condition Occurrence',
+    'condition_success_rate': 'Condition Occurrence',
+
     'procedure_occurrence': 'Procedure Occurrence',
+
     'observation': 'Observation',
     'observation_success_rate': 'Observation',
-    'drug_success_rate': 'Drug Exposure',
+
     'procedure_success_rate': 'Procedure',
-    'condition_success_rate': 'Condition Occurrence',
-    'measurement_success_rate': 'Measurement',
-    'visit_success_rate': 'Visit Occurrence'
+
+    'visit_success_rate': 'Visit Occurrence',
+    'visit_occurrence': 'Visit Occurrence',
+
+    'ace_inhibitors': 'ACE Inhibitors',
+    'painnsaids': "Pain NSAIDs",
+    "msknsaids": "MSK NSAIDs",
+    "statins": "Statins",
+    "antibiotics": "Antibiotics",
+    "opioids": "Opioids",
+    "oralhypoglycemics": "Oral Hypoglycemics",
+    "vaccine": "Vaccines",
+    "ccb": "Calcium Channel Blockers",
+    "diuretics": "Diuretics",
+    'all_drugs': 'All Drugs',
+
+    'Physical_Measurement': "Physical Measurement",
+    'CMP': "Comprehensive Metabolic Panel (CMP)",
+    'CBCwDiff': "Complete Blood Count (CBC) with Differential",
+    'CBC': "Complete Blood Count (CBC)",
+    'Lipid': "Lipid",
+    'All_Measurements': "All Measurements"
 }
 
 data_quality_dimension_dict = {
@@ -216,7 +282,10 @@ data_quality_dimension_dict = {
     'sites_measurement': 'Completeness',
     'drug_success': 'Completeness',
     'drug_routes': 'Completeness',
-    'measurement_units': 'Completeness'
+    'measurement_units': 'Completeness',
+    'date_datetime_disparity': 'Conformance',
+    'erroneous_dates': 'Plausibility',
+    'person_id_failure_rate': 'Conformance'
 }
 
 
@@ -235,8 +304,13 @@ metric_type_to_english_dict = {
 
     # other metrics
     'concept': 'Concept ID Success Rate',
-    'duplicates': 'Duplicate Records'
+    'duplicates': 'Duplicate Records',
+
+    'erroneous_dates': 'Erroneous Dates',
+    'date_datetime_disparity': 'Date/Datetime Disparity',
+    'person_id_failure_rate': 'Person ID Failure Rate'
 }
+
 
 english_to_metric_type_dict = {
     # field population metrics
@@ -253,5 +327,9 @@ english_to_metric_type_dict = {
 
     # other metrics
     'Concept ID Success Rate': 'concept',
-    'Duplicate Records': 'duplicates'
+    'Duplicate Records': 'duplicates',
+
+    'Erroneous Dates': 'erroneous_dates',
+    'Date/Datetime Disparity': 'date_datetime_disparity',
+    'Person ID Failure Rate': 'person_id_failure_rate'
 }
