@@ -25,6 +25,7 @@ import xlrd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from math import pi
+# %matplotlib inline
 
 # +
 sheets = []
@@ -49,10 +50,11 @@ for file in file_names:
         s = pd.read_excel(file, sheet)
         table_sheets.append(s)
 
-hpo_id_cols = table_sheets[0]
-hpo_id_cols  = list(hpo_id_cols[hpo_id_cols.columns[0]])  # reset to first column
+date_cols = table_sheets[0].columns
+date_cols = (list(date_cols))
 
-date_cols = table_sheets[0].columns[1:]
+hpo_id_cols = table_sheets[0].index
+hpo_id_cols = (list(hpo_id_cols))
 # -
 
 # ### Converting the numbers as needed and putting into a dictionary
@@ -62,7 +64,7 @@ new_table_sheets = {}
 
 for name, sheet in zip(sheet_names, table_sheets):
     sheet_cols = sheet.columns
-    sheet_cols = sheet_cols[1:]
+    sheet_cols = sheet_cols[0:]
     new_df = pd.DataFrame(columns=sheet_cols)
 
     for col in sheet_cols:

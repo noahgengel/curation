@@ -75,8 +75,6 @@ for name, sheet in zip(sheet_names, table_sheets):
     new_table_sheets[name] = new_df
 # -
 
-date_cols
-
 # ### Fixing typos
 
 # +
