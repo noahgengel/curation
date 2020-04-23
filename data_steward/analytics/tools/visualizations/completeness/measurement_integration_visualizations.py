@@ -196,7 +196,7 @@ for sheet in hpo_sheets:
 fig, ax = plt.subplots(figsize=(9, 6))
 sns.heatmap(new_hpo_sheets[idx_of_interest], annot=True, annot_kws={"size": 14},
             fmt='g', linewidths=.5, ax=ax, yticklabels=table_id_cols,
-            xticklabels=date_cols, cmap="RdYlGn")
+            xticklabels=date_cols, cmap="RdYlGn", vmin=0, vmax=100)
 
 ax.set_title("Measurement Integration Rates for {}".format(name_of_interest), size=14)
 

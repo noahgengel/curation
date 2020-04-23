@@ -274,7 +274,7 @@ for sheet in hpo_sheets:
 fig, ax = plt.subplots(figsize=(9, 6))
 sns.heatmap(new_hpo_sheets[idx_of_interest], annot=True, annot_kws={"size": 14},
             fmt='g', linewidths=.5, ax=ax, yticklabels=table_id_cols,
-            xticklabels=date_cols, cmap="YlGnBu")
+            xticklabels=date_cols, cmap="YlGnBu", vmin=0, vmax=100)
 
 ax.set_title("Person ID Failure Rates for {}".format(name_of_interest), size=14)
 
