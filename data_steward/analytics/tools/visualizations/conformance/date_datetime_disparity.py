@@ -257,7 +257,7 @@ for idx, table_id in enumerate(table_id_cols):
 
 # +
 new_hpo_sheets = []
-start_idx = 1  # first does not have data
+start_idx = 0
 
 for sheet in hpo_sheets:
     sheet_cols = sheet.columns
@@ -394,4 +394,6 @@ lgd = ax.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5,-0.1))
 img_name = name_of_interest + "_date_datetime_disparity_line_graph.jpg"
 # plt.savefig(img_name, bbox_extraartist=(lgd,), bbox_inches='tight')
 # -
+
+
 
