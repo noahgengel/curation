@@ -127,7 +127,8 @@ def populate_hpo_objects_with_dq_metrics(
 
                 data_quality_dimension = DataQualityMetric(
                     hpo=hpo_name,
-                    table=table_or_class_based_on_column_provided[column_for_table],
+                    table_or_class=
+                    table_or_class_based_on_column_provided[column_for_table],
                     metric_type=metric_type_to_english_dict[metric],
                     value=err_rate,
                     first_reported=date,

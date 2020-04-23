@@ -119,7 +119,7 @@ class DataQualityMetric:
         """
 
         attributes = [
-            self.hpo, self.table, self.metric_type, self.value,
+            self.hpo, self.table_or_class, self.metric_type, self.value,
             self.data_quality_dimension, self.first_reported, self.link]
 
         return attributes

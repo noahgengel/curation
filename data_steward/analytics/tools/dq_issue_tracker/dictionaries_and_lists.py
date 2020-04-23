@@ -191,7 +191,7 @@ desired_columns_dict = {
         'vaccine', 'ccb', 'diuretics', 'all_drugs'],
 
     'sites_measurement': [
-        'Physical_Measurement',	'CMP', ' CBCwDiff',
+        'Physical_Measurement',	'CMP', 'CBCwDiff',
         'CBC', 'Lipid',	'All_Measurements'],
 
     # ACHILLES errors
@@ -212,7 +212,7 @@ desired_columns_dict = {
 
     'duplicates': ['visit_occurrence', 'condition_occurrence',
                    'drug_exposure', 'measurement',
-                   'procedure_occurrence', 'device_exposure',
+                   'procedure_occurrence',
                    'observation'],
 
     'date_datetime_disparity': [

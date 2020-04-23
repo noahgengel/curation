@@ -43,31 +43,34 @@ def cross_reference_old_metrics(failing_metrics, old_failing_metrics,
         for idx, new_metric in enumerate(failing_metrics):
             found_in_old = False
 
-            for old_metric in old_failing_metrics:
+            try:
+                for old_metric in old_failing_metrics:
 
-                # all attributes except value or first reported
-                metrics_the_same = (
-                    new_metric.hpo == old_metric.hpo and
-                    new_metric.table == old_metric.table and
-                    new_metric.metric_type == old_metric.metric_type and
-                    new_metric.data_quality_dimension ==
-                    old_metric.data_quality_dimension and
-                    new_metric.link == old_metric.link)
+                    # all attributes except value or first reported
+                    metrics_the_same = (
+                        new_metric.hpo == old_metric.hpo and
+                        new_metric.table_or_class == old_metric.table_or_class and
+                        new_metric.metric_type == old_metric.metric_type and
+                        new_metric.data_quality_dimension ==
+                        old_metric.data_quality_dimension and
+                        new_metric.link == old_metric.link)
 
-                if metrics_the_same:
-                        found_in_old = True
+                    if metrics_the_same:
+                            found_in_old = True
 
-            if found_in_old:
-                # found the metric in previous sheet - need to find the
-                # original report date and change accordingly
-                reported_date = find_report_date(
-                    new_metric=new_metric,
-                    prev_dashboards=prev_dashboard)
+                if found_in_old:
+                    # found the metric in previous sheet - need to find the
+                    # original report date and change accordingly
+                    reported_date = find_report_date(
+                        new_metric=new_metric,
+                        prev_dashboards=prev_dashboard)
 
-                new_metric.first_reported = reported_date
+                    new_metric.first_reported = reported_date
 
-                # be sure to replace appropriately
-                failing_metrics[idx] = new_metric
+                    # be sure to replace appropriately
+                    failing_metrics[idx] = new_metric
+            except TypeError:
+                pass  # means no 'old metrics' failed
 
     return failing_metrics
 
@@ -102,7 +105,7 @@ def find_report_date(prev_dashboards, new_metric):
 
         # same standards as employed by cross_reference_old_metrics
         same_hpo = (row['HPO'] == new_metric.hpo)
-        same_table = (row['Table'] == new_metric.table)
+        same_table = (row['Table/Class'] == new_metric.table_or_class)
         same_mt = (row['Metric Type'] == new_metric.metric_type)
         same_dqd = (row['Data Quality Dimension'] ==
                     new_metric.data_quality_dimension)
