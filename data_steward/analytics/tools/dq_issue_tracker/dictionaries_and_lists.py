@@ -7,27 +7,35 @@ relevant_links: the relevant links for the output file
     that is established in create_dq_issue_site_dfs.py. This will
     help maintain the overall readability of the aforementioned
     script
+
 thresholds: the point at which a data quality metric (whether too
     high or too low) would be flagged as 'erroneous'
+
 full_names: allows one to use the hpo_id (shorter) name to find
     the longer (more human-readable) name
+
 metric_names: keys for the sheet in the dataframe and values
     for the name of the corresponding attribute for the HPO
     object
+
 desired_columns_dict: determines which column(s) should be used
     for a particular data quality metric. mulitple columns indicate
     that multiple dimensions (likely different tables) are being
     investigated.
+
 data_quality_dimension_dict: shows which attribute of Kahn's Data Quality
     framework the particular 'data quality metric' at hand relates to
+
 table_based_on_column_provided: allows us to determine the table that
     should be associated with a particular Data Quality Dimension object
     based upon the column that was used to get the associated 'value'
     float
+
 metric_type_to_english_dict: allows one to translate the 'metric type'
     that is normally associated with a 'DataQualityMetric' object to
     'English'. this is useful for printing the columns on a new
     dashboard
+
 english_to_metric_type_dict: effectively reverse engineers the
     dicitonary above. useful for going from an 'old' dashboard to
     comparing to the attributes of DataQualityMetrics

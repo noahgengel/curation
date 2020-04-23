@@ -2,6 +2,7 @@
 File is intended to establish a 'HPO class' that can be used
 to store data quality metrics for each HPO in an easy and
 identifiable fashion.
+
 Class was used as a means for storing information as the ability
 to add functions could prove useful in future iterations of the
 script.
@@ -25,23 +26,30 @@ class DataQualityMetric:
         """
         Used to establish the attributes of the DataQualityMetric
         object being instantiated.
+
         Parameters
         ----------
         hpo (string): name of the HPO being associated with the
             data quality metric in question (e.g. nyc_cu)
+
         table (string): name of the table whose data quality metric
             is being determined (e.g. Measurement)
+
         metric_type (string): name of the metric that is being
             determined (e.g. duplicates)
+
         value (float): value that represents the quantitative value
             of the data quality metric being investigated
+
         data_quality_dimension (string): represents whether the
             metric_type being investigated is related to the
             conformance, completeness, or plausibility of data
             quality with respect to the Kahn framework
+
         first_reported (datetime.date): represents the time
             at which this metric (with all of the other parameters
             being exactly the same) was first reported
+
         link (string): link to the AoU EHR Operations page that
             can help the site troubleshoot its data quality
         """
@@ -81,6 +89,7 @@ class DataQualityMetric:
         are associated with a DataQualityMetric object. This will
         ultimately be used to populate the columns of a
         pandas dataframe.
+
         Return
         ------
         attribute_names (list): list of the attribute names
@@ -101,6 +110,7 @@ class DataQualityMetric:
         the get_list_of_attribute_names function above. This
         will be used to populate the dataframe with data quality
         issues.
+
         Return
         ------
         attributes (list): list of the attributes (values, strings)
@@ -131,11 +141,15 @@ class HPO:
         Parameters
         ----------
         self (HPO object): the object to be created
+
         name (str): name of the HPO ID to create (e.g. nyc_cu)
+
         full_name (str): full name of the HPO
+
         all other optional parameters are intended to be lists. These
         lists should contain DataQualityMetric objects that have all
         of the relevant pieces pertaining to said metric object.
+
         the exact descriptions of the data quality metrics can be found
         on the AoU HPO website at the following link:
             sites.google.com/view/ehrupload
@@ -162,10 +176,12 @@ class HPO:
         define an HPO object. This will allow us to easily
         associate an HPO object with its constituent data
         quality metrics
+
         Parameters
         ----------
         metric (string): the name of the sheet that contains the
             dimension of data quality to be investigated
+
         dq_object (DataQualityMetric): object that contains
             the information for a particular aspect of the
             site's data quality (NOTE: dq_object.hpo should
@@ -206,15 +222,18 @@ class HPO:
         Function is used to create a catalogue of the 'failing' data
         quality metrics at defined by the thresholds established by
         the appropriate dictionary from relevant_dictionaries.
+
         Parameters
         ----------
         self (HPO object): the object whose 'failing metrics' are to
             be determined
+
         Returns
         -------
         failing_metrics (list): has a list of the data quality metrics
             for the HPO that have 'failed' based on the thresholds
             provided
+
         NOTE: if no data quality problems are found, however, the function
         will return 'None' to signify that no issues arose
         """

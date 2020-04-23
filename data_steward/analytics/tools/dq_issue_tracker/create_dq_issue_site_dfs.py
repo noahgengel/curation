@@ -39,15 +39,18 @@ def create_hpo_objects(file_name):
     """
     Function is used to establish the HPO objects that will
     ultimately carry all of the data from the sheet.
+
     Parameters
     ----------
     file_name (str): the date of the file that is being used to generate
         the data quality issue frames
+
     Returns
     -------
     hpo_objects (lst): list of HPO objects (see class_definitions.py)
         that will be used and ultimately populated with the
         data quality metrics
+
     hpo_id_column (lst): list of the hpo_ids that will eventually
         each be associated with its own dataframe
     """
@@ -79,18 +82,23 @@ def populate_hpo_objects_with_dq_metrics(
     function (create_hpo_objects) and associate them with
     DataQualityMetric objects that contain the relevant pieces
     of information from the selected sheet.
+
     Parameters
     ----------
     hpo_objects (lst): list of HPO objects (see class_definitions.py)
         that will be used and ultimately populated with the
         data quality metrics
+
     metric_names (lst): list of the sheets that will be used to
         identify the data quality metrics for each of the HPO
         and DataQualityMetric objects
+
     file_name (str): the date of the file that is being used to generate
         the data quality issue frames
+
     date (datetime): datetime object that corresponds to the date that
         the file is named after
+
     Returns
     -------
     hpo_objects (lst): list of HPO objects (see class_definitions.py)
@@ -146,20 +154,25 @@ def create_hpo_problem_dfs(hpo_objects, old_hpo_objects, hpo_id_column,
     dataframe for each HPO object. Each row of the dataframe should
     more or less contain the information stored in a
     DataQualityMetric object.
+
     Parameters
     ----------
     hpo_objects (lst): list of HPO objects (see class_definitions.py)
         that will be used and ultimately populated with the
         data quality metrics
+
     old_hpo_objects (lst): list of HPO objects
         (see class_defintions.py) that will be used to determine
         if a particular data quality issue is 'old' or 'new'
+
     hpo_id_column (lst): list of the hpo_ids that will eventually
         each be associated with its own dataframe
+
     prev_dashboards (string): name of the 'old' dashboards that
         should reside in an Excel file in the current directory.
         these dashboards will be necessary to update the
         'first_reported' aspect of DataQualityMetric objects.
+
     Returns
     -------
     df_dictionary_by_site (dict): dictionary with structure:

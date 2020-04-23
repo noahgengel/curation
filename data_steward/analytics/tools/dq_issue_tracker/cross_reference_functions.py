@@ -17,18 +17,22 @@ def cross_reference_old_metrics(failing_metrics, old_failing_metrics,
     are 'old' (existed in the last iteration). If the metric is deemed to
     be 'old', the first_reported metric for the 'newer' version is reset
     to the former first_reported metric.
+
     Parameters
     ----------
     failing_metrics (list): contains DataQualityMetric objects that are
         known to 'fail' with respect to the thresholds established.
         these are the metrics from the newer file.
+
     old_failing_metrics (list): contains DataQualityMetric objects
         that are known to 'fail' with respect to the thresholds
         established. these are the metrics from the older file.
+
     prev_dashboard (string): name of the 'old' dashboards that
         should reside in an Excel file in the current directory.
         these dashboards will be necessary to update the
         'first_reported' aspect of DataQualityMetric objects.
+
     Returns
     -------
     failing_metrics (list): now contains the DataQuality objects
@@ -70,16 +74,19 @@ def cross_reference_old_metrics(failing_metrics, old_failing_metrics,
 
 def find_report_date(prev_dashboards, new_metric):
     """
-    Function is used to look into a previous reporrt
+    Function is used to look into a previous report
+
     Parameters
     ----------
     prev_dashboard (string): name of the 'old' dashboards that
         should reside in an Excel file in the current directory.
         these dashboards will be necessary to update the
         'first_reported' aspect of DataQualityMetric objects.
+
     new_metric (DataQualityMetric): object whose 'counterpart'
         in the 'dashboard' needs to be found in order to
         report out the date
+
     Returns
     -------
     report_date (datetime): date in the previous dashboard for the
