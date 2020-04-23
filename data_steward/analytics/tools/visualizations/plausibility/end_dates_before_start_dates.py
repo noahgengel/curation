@@ -145,7 +145,7 @@ site_name_list = ['aouw_mcri', 'aouw_mcw', 'aouw_uwh', 'chci', 'chs', 'cpmc_cede
 print(len(site_name_list))
 
 # +
-name_of_interest = 'aouw_mcri'
+name_of_interest = 'saou_ummc'
 
 if name_of_interest not in site_name_list:
     raise ValueError("Name not found in the list of HPO site names.")    
