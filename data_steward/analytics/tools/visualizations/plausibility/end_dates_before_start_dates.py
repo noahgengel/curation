@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.3.0
+#       jupytext_version: 1.4.2
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -143,7 +143,7 @@ site_name_list = ['aouw_mcri', 'aouw_mcw', 'aouw_uwh', 'chci', 'chs', 'cpmc_cede
 print(len(site_name_list))
 
 # +
-name_of_interest = 'aggregate_info'
+name_of_interest = 'aouw_mcri'
 
 if name_of_interest not in site_name_list:
     raise ValueError("Name not found in the list of HPO site names.")    

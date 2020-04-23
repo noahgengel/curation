@@ -26,7 +26,7 @@ sign_off = """
 If have questions about our metrics, please consult the AoU EHR website at this link: {link} under the 'Data Quality Metrics' tab at the top of the page. This site contains descriptions, videos, and SQL queries that can help you troubleshoot your data quality.
 Best regards,
 Noah Engel
-Data Analyst | Columbia University Medical Center
+Data Analyst | Columbia University Medical Center\n
 """
 
 link = "https://sites.google.com/view/ehrupload"
