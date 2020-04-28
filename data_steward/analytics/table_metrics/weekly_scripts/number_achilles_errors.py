@@ -52,6 +52,8 @@ cwd = str(cwd)
 print("Current working directory is: {cwd}".format(cwd=cwd))
 
 # ### Get the list of HPO IDs
+#
+# ### NOTE: This assumes that all of the relevant HPOs have a person_id with at least one successful row.
 
 hpo_id_query = """
 SELECT REPLACE(table_id, '_person', '') AS hpo_id
@@ -61,6 +63,7 @@ WHERE table_id LIKE '%person'
 AND table_id 
 NOT LIKE '%unioned_ehr_%' 
 AND table_id NOT LIKE '\\\_%'
+AND row_count > 0
 """.format(DATASET=DATASET)
 
 hpo_ids = pd.io.gbq.read_gbq(hpo_id_query, dialect='standard').hpo_id.tolist()
