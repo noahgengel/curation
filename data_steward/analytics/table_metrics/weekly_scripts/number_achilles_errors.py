@@ -47,6 +47,10 @@ def cstr(s, color='black'):
 
 # -
 
+cwd = os.getcwd()
+cwd = str(cwd)
+print("Current working directory is: {cwd}".format(cwd=cwd))
+
 # ### Get the list of HPO IDs
 
 hpo_id_query = """
@@ -104,7 +108,7 @@ subqueries = []
 subquery = """
 SELECT
 '{hpo_id}' AS hpo_id,
-COUNT(DISTINCT ahr.analysis_id) as num_distinct_id
+COUNT(DISTINCT ahr.analysis_id) as num_distinct_ids
 FROM
 `{DATASET}.{hpo_id}_achilles_heel_results` ahr
 """
@@ -115,7 +119,7 @@ for hpo_id in hpo_ids:
 final_query = '\n\nUNION ALL\n'.join(subqueries)
 # -
 
-dataframe_distinct_ahes = """
+dataframe_distinct_ids = """
 WITH num_distinct_ids AS
 ({final_query})
 
@@ -127,6 +131,49 @@ num_distinct_ids
 ORDER BY num_distinct_ids DESC
 """.format(final_query=final_query)
 
-distinct_ahe_ids = pd.io.gbq.read_gbq(dataframe_distinct_ahes, dialect='standard')
+dataframe_distinct_ids = pd.io.gbq.read_gbq(dataframe_distinct_ids, dialect='standard')
 
-distinct_ahe_ids
+dataframe_distinct_ids
+
+# ### NOTE: This next section looks at distinct achilles_heel_ids. NOTIFICATIONS are NOT included in this count. This section, however, looks at the TOTAL NUMBER OF AFFECTED ROWS.
+
+# +
+subqueries = []
+
+subquery = """
+SELECT
+'{hpo_id}' AS hpo_id,
+SUM(ahr.record_count) as rows_with_ah_failure
+FROM
+`{DATASET}.{hpo_id}_achilles_heel_results` ahr
+"""
+
+for hpo_id in hpo_ids:
+    subqueries.append(subquery.format(DATASET=DATASET, hpo_id=hpo_id))
+    
+final_query = '\n\nUNION ALL\n'.join(subqueries)
+# -
+
+dataframe_ahe_failure_count = """
+WITH num_rows_with_ah_failure AS
+({final_query})
+
+SELECT
+DISTINCT
+*
+FROM
+num_rows_with_ah_failure
+ORDER BY rows_with_ah_failure DESC
+""".format(final_query=final_query)
+
+ahe_id_failure_counts = pd.io.gbq.read_gbq(dataframe_ahe_failure_count, dialect='standard')
+
+ahe_id_failure_counts
+
+final_df = pd.merge(dataframe_distinct_ids, distinct_ahes_df, how='outer', on='hpo_id')
+
+final_df = pd.merge(final_df, ahe_id_failure_counts, how='outer', on='hpo_id')
+
+final_df
+
+final_df.to_csv("{cwd}/achilles_errors.csv".format(cwd = cwd))
