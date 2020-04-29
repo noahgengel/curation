@@ -75,7 +75,7 @@ subqueries = []
 
 subquery = """
 SELECT
-'{hpo_id}' AS hpo_id,
+'{hpo_id}' AS src_hpo_id,
 COUNT(DISTINCT ahr.achilles_heel_warning) as num_distinct_warnings
 FROM
 `{DATASET}.{hpo_id}_achilles_heel_results` ahr
@@ -110,7 +110,7 @@ subqueries = []
 
 subquery = """
 SELECT
-'{hpo_id}' AS hpo_id,
+'{hpo_id}' AS src_hpo_id,
 COUNT(DISTINCT ahr.analysis_id) as num_distinct_ids
 FROM
 `{DATASET}.{hpo_id}_achilles_heel_results` ahr
@@ -145,7 +145,7 @@ subqueries = []
 
 subquery = """
 SELECT
-'{hpo_id}' AS hpo_id,
+'{hpo_id}' AS src_hpo_id,
 SUM(ahr.record_count) as rows_with_ah_failure
 FROM
 `{DATASET}.{hpo_id}_achilles_heel_results` ahr
@@ -173,9 +173,9 @@ ahe_id_failure_counts = pd.io.gbq.read_gbq(dataframe_ahe_failure_count, dialect=
 
 ahe_id_failure_counts
 
-final_df = pd.merge(dataframe_distinct_ids, distinct_ahes_df, how='outer', on='hpo_id')
+final_df = pd.merge(dataframe_distinct_ids, distinct_ahes_df, how='outer', on='src_hpo_id')
 
-final_df = pd.merge(final_df, ahe_id_failure_counts, how='outer', on='hpo_id')
+final_df = pd.merge(final_df, ahe_id_failure_counts, how='outer', on='src_hpo_id')
 
 final_df
 
