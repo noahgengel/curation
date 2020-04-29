@@ -21,7 +21,6 @@ from populate_dfs_with_aggregate_info import \
     create_aggregate_info_df, add_aggregate_to_end_of_table_class_df, \
     add_aggregate_to_end_of_hpo_df
 
-import math
 
 def organize_dataframes_master_function(
         sheet_output, metric_dictionary, datetimes, hpo_names,
@@ -181,12 +180,8 @@ def populate_table_df_rows(
                     for dqm in relevant_dqms:
                         if dqm.date == date and \
                            dqm.table_or_class == table_class_name:
-                            value = dqm.value
 
-                            if math.isnan(value):
-                                row_to_place.append(0)
-                            else:
-                                row_to_place.append(dqm.value)
+                            row_to_place.append(dqm.value)
 
             df.loc[hpo] = row_to_place
 

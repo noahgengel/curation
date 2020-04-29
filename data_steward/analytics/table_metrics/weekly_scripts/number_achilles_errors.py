@@ -174,6 +174,8 @@ final_df = pd.merge(dataframe_distinct_ids, distinct_ahes_df, how='outer', on='s
 
 final_df = pd.merge(final_df, ahe_id_failure_counts, how='outer', on='src_hpo_id')
 
+final_df.fillna(0)
+
 final_df
 
 final_df.to_csv("{cwd}/achilles_errors.csv".format(cwd = cwd))
