@@ -90,7 +90,6 @@ final_query = '\n\nUNION ALL\n'.join(subqueries)
 dataframe_distinct_ahes = """
 WITH num_distinct_ahes AS
 ({final_query})
-
 SELECT
 DISTINCT
 *
@@ -118,14 +117,13 @@ FROM
 
 for hpo_id in hpo_ids:
     subqueries.append(subquery.format(DATASET=DATASET, hpo_id=hpo_id))
-    
+
 final_query = '\n\nUNION ALL\n'.join(subqueries)
 # -
 
 dataframe_distinct_ids = """
 WITH num_distinct_ids AS
 ({final_query})
-
 SELECT
 DISTINCT
 *
@@ -153,14 +151,13 @@ FROM
 
 for hpo_id in hpo_ids:
     subqueries.append(subquery.format(DATASET=DATASET, hpo_id=hpo_id))
-    
+
 final_query = '\n\nUNION ALL\n'.join(subqueries)
 # -
 
 dataframe_ahe_failure_count = """
 WITH num_rows_with_ah_failure AS
 ({final_query})
-
 SELECT
 DISTINCT
 *
