@@ -15,12 +15,13 @@ from setup_dataframes import create_dataframe_skeletons
 from dictionaries_and_lists import \
     metric_type_to_english_dict, \
     unweighted_metric_already_integrated_for_hpo, \
-    no_aggregate_metric_needed_for_hpo_sheets
+    no_aggregate_metric_needed_for_table_sheets
 
 from populate_dfs_with_aggregate_info import \
     create_aggregate_info_df, add_aggregate_to_end_of_table_class_df, \
     add_aggregate_to_end_of_hpo_df
 
+import math
 
 def organize_dataframes_master_function(
         sheet_output, metric_dictionary, datetimes, hpo_names,
@@ -180,7 +181,12 @@ def populate_table_df_rows(
                     for dqm in relevant_dqms:
                         if dqm.date == date and \
                            dqm.table_or_class == table_class_name:
-                            row_to_place.append(dqm.value)
+                            value = dqm.value
+
+                            if math.isnan(value):
+                                row_to_place.append(0)
+                            else:
+                                row_to_place.append(dqm.value)
 
             df.loc[hpo] = row_to_place
 
@@ -288,7 +294,7 @@ def populate_hpo_df_rows(
         if metric_choice not in \
                 unweighted_metric_already_integrated_for_hpo\
                 and metric_choice not in \
-                no_aggregate_metric_needed_for_hpo_sheets:
+                no_aggregate_metric_needed_for_table_sheets:
             df = add_aggregate_to_end_of_hpo_df(
                 datetimes=datetimes,
                 aggregate_metrics=aggregate_metrics,

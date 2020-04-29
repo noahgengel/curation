@@ -55,9 +55,8 @@ unweighted_metric_already_integrated_for_hpo: shows which
 aggregate_metric_class_names: contains the 'names' of the aggregate
     metric objects that one can use
 
-no_aggregate_metric_needed_for_hpo_sheets: indicates instances where
-    no 'aggregate' row needs to be calculated for the 'aggregate'
-    sheet whenever HPO sheets are generated
+no_aggregate_metric_needed_for_table_sheets: indicates instances where
+    no 'aggregate' row needs to be calculated for the 'table' sheets
 """
 
 # ---------- Dictionaries ---------- #
@@ -351,7 +350,7 @@ unweighted_metric_already_integrated_for_hpo = [
     'drug_routes',
     'measurement_units', 'achilles_errors']
 
-no_aggregate_metric_needed_for_hpo_sheets = [
-    'drug_success', 'sites_measurement', 'achilles_errors']
+no_aggregate_metric_needed_for_table_sheets = [
+    'drug_success', 'sites_measurement']
 
 aggregate_metric_class_names = ['All Measurements', 'All Drugs']
