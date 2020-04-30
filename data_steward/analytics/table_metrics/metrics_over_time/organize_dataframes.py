@@ -190,17 +190,12 @@ def populate_table_df_rows(
 
             df.loc[hpo] = row_to_place
 
-        # need to calculate and add the aggregate metric
-        if metric_choice not in \
-                unweighted_metric_already_integrated_for_hpo:
-            df = add_aggregate_to_end_of_table_class_df(
-                datetimes=datetimes,
-                aggregate_metrics=aggregate_metrics,
-                table_class_name=table_class_name,
-                metric_choice=metric_choice_eng, df=df)
-        else:
-            # no need - already logged
-            df = df.drop('aggregate_info')
+
+        df = add_aggregate_to_end_of_table_class_df(
+            datetimes=datetimes,
+            aggregate_metrics=aggregate_metrics,
+            table_class_name=table_class_name,
+            metric_choice=metric_choice_eng, df=df)
 
         # replace
         dataframes_dict[table_class_name] = df
