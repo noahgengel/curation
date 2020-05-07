@@ -463,6 +463,19 @@ weight_concepts_as_str = ', '.join(weight_concept_ids)
 
 weight_concepts_as_str
 
+# +
+persons_to_exclude_weight_df = pd.io.gbq.read_gbq(outlier_pts_weight_query, dialect='standard')
+
+persons_to_exclude = persons_to_exclude_weight_df['outlier_patient'].tolist()
+num_persons_excluded_by_condition = len(persons_to_exclude)
+
+persons_to_exclude = list(map(str, persons_to_exclude))
+persons_to_exclude_as_str = ', '.join(persons_to_exclude)
+
+print(f"""
+There are {num_persons_excluded_by_condition} excluded from this weight analysis based on their pre-existing conditions.""")
+# -
+
 weight_conversion_rules_str = """
 CASE WHEN
 -- kg
@@ -496,6 +509,8 @@ AND
 m.value_as_number <> 9999999  -- issue with one site that heavily skews data
 AND
 m.value_as_number <> 0.0  -- not something we expect; appears for a site
+AND
+m.person_id NOT IN {personts_to_exclude_as_str}
 ORDER BY value_as_number DESC
 """
 
@@ -568,7 +583,7 @@ bin_borders = [-200, 0, 100, 200, 300, 400, 500, 4000, 8000, 13000]
 # +
 plt.hist(within_one_stdev, bins=bin_borders, alpha= 0.5)
 plt.title('Weight Distribution Across All Sites - Within 1 Stdev')
-plt.xlabel('Weight')
+plt.xlabel('Weight (in lbs)')
 plt.ylabel('Count')
 
 plt.show()
@@ -592,13 +607,13 @@ bin_borders = [80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 3
 # +
 plt.hist(within_mid_seventy, bins=bin_borders, alpha= 0.5)
 plt.title('Weight Distribution Across All Sites - Mid 70%')
-plt.xlabel('Weight')
+plt.xlabel('Weight (in lbs)')
 plt.ylabel('Count')
 
 plt.show()
 # -
 
-# ### Let's try to use something other than stdev - those within the middle 50% to start
+# ### Make the analysis smaller - mid 50%
 
 quartile1 = round(np.percentile(weights, 25), rounding_val)
 quartile3 = round(np.percentile(weights, 75), rounding_val)
@@ -616,13 +631,13 @@ bin_borders = [80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 3
 # +
 plt.hist(within_mid_fifty, bins=bin_borders, alpha= 0.5)
 plt.title('Weight Distribution Across All Sites - Mid 50%')
-plt.xlabel('Weight')
+plt.xlabel('Weight (in lbs)')
 plt.ylabel('Count')
 
 plt.show()
 # -
 
-# ### Let's see where these crazy measurements are coming from and what units are associated
+# ### Let's see where these crazy measurements are coming from and what units/sites are associated
 
 weight_conversion_rules_str = """
 CASE WHEN
@@ -648,8 +663,10 @@ query_all_weights = f"""
 SELECT
 DISTINCT
 
--- mm.src_hpo_id, c1.concept_name as measurement_name,
-c2.concept_name as unit_name, COUNT(*) as cnt
+mm.src_hpo_id,
+-- c1.concept_name as measurement_name,
+-- c2.concept_name as unit_name, 
+COUNT(*) as cnt
 
 FROM
 `{DATASET}.unioned_ehr_measurement` m
@@ -675,11 +692,23 @@ m.value_as_number <> 9999999  -- issue with one site that heavily skews data
 AND
 m.value_as_number <> 0.0  -- not something we expect; appears for a site
 AND
+m.person_id NOT IN {personts_to_exclude_as_str}
 
+AND
+
+-- between pounds and ounces
 (m.value_as_number > 325 AND
-m.value_as_number < 1600) OR
+m.value_as_number < 1600) 
+
+OR
+
+-- between ounces and grams
 (m.value_as_number > 5200 AND
-m.value_as_number < 45350) OR
+m.value_as_number < 45350) 
+
+OR
+
+-- beyond grams
 (m.value_as_number > 147418)
 
 GROUP BY 1
@@ -708,4 +737,12 @@ weight_concepts = pd.io.gbq.read_gbq(check_the_concepts_used, dialect='standard'
 
 weight_concepts
 
-
+# # Part III: Investigating the distribution of heights
+#
+# The rules of converting units will be as follows (saying that weights between 50 (4ft 2in) and 90in (7ft 6in) are what we expect):
+# - Between 45.36 and 100: assume in kg. Therefore *2.20462
+# - Between 136.078 and 325: assume already in lbs. Therefore *1
+# - Between 1600 and 5200: assume in oz. Therefore *0.0625
+# - Between 45350 and 147418: assume in grams. Therefore *0.00220462
+#
+# - NOTE: Between 100 and 136.078 - check the unit_concept_id to determine if a multiplier should be used. Whether this is kg or lbs is somewhat ambiguous. Unit IDs can be defined by looking earlier in this script to see which ones are used by the sites.
