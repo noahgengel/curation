@@ -62,11 +62,16 @@ def cstr(s, color='black'):
 
 cwd = os.getcwd()
 cwd = str(cwd)
-print("Current working directory is: {cwd}".format(cwd=cwd))
+print(f"Current working directory is: {cwd}")
 
-# # Part I: Investigating the concepts used in the measurement table
+# # Part I: Settting up the foundations
+# - Queries that will be used to exclude
+#     - out of scope conditions
+#     - persons to not include in the analysis
+# - Seeing the distribution of units for the applicable measurements
+# - Distribution of the concepts used for height and weight
 
-# #### The strings below are the ancestor concept IDs that we will use as 'ancestors'
+# ## The strings below are the ancestor concept IDs that we will use as 'ancestors'
 
 # +
 height_concepts = "1003912, 45876161, 1003116, 1003232, 40655804, 45876162"
@@ -74,7 +79,7 @@ height_concepts = "1003912, 45876161, 1003116, 1003232, 40655804, 45876162"
 weight_concepts = "1002670, 45876171, 1003383, 1004141, 40655805, 45876172, 3042378"
 # -
 
-# #### The string below will be used to exclude certain concept_ids
+# ## The string below will be used to exclude certain concept_ids
 
 caveat_string = """
   AND LOWER(c.domain_id) LIKE '%measurement%'
@@ -91,9 +96,9 @@ caveat_string = """
   AND LOWER(c.concept_name) NOT LIKE '%difference%'
 """
 
-# ### We would also want to exclude persons with certain conditions, such as dwarfism, that would explain their height/weight that may deviate specifically from the means/medians/etc.
+# ## We would also want to exclude persons with certain conditions, such as dwarfism, that would explain their height/weight that may deviate specifically from the means/medians/etc.
 
-outlier_pts_query = f"""
+outlier_pts_height_query = f"""
 SELECT
 DISTINCT
 co.person_id as outlier_patient
@@ -161,20 +166,171 @@ co.condition_concept_id IN (80502, 77079, 4078547, 4165513,
       2767170, 2767404, 2767198, 2767151, 2767137, 2767180, 2767203, 2767187)
 """
 
-persons_to_exclude_df = pd.io.gbq.read_gbq(outlier_pts_query, dialect='standard')
+outlier_pts_weight_query = f"""
+SELECT
+DISTINCT
+co.person_id as outlier_patient
+FROM
+`{DATASET}.unioned_ehr_condition_occurrence` co
+WHERE
+co.condition_concept_id IN (440076, 436675, 4204347, 4229881, 36714252, 37116399, 36676691,
+      37395978, 35622248, 36714182, 4033951, 44784528, 36716141, 4214302, 37111630, 44783252, 36674971,
+      36675008, 36716779, 37016351, 36713802, 36717597, 36713801, 4330231, 4052869, 4111319, 4082503,
+      4238810, 36714112, 4006979, 4287262, 36713764, 37396322, 4096098, 4269485, 36674974, 37117816,
+      36716442, 37110064, 4025818, 4216214, 4331598, 36715406, 37396271, 36674412, 4300305, 36713653,
+      36674995, 37396500, 36717398, 36714025, 506557, 4204347, 4325860, 36676625, 35608003, 36675641,
+      4282075, 4314386, 36715303, 36674411, 4028945, 4134010, 37116379, 37116374, 4192645, 37116394,
+      36717098, 4058570, 4045573, 4007583, 36675180, 35622957, 36714634, 36716390, 35622371, 4143827,
+      36715092, 35624153, 37117186, 37116377, 4243014, 35622011, 35623139, 25780, 35622777, 35622394,
+      36715123, 37396246, 36715404, 36714301, 36714238, 37396250, 36717531, 36676516, 435928, 37398922,
+      37109890, 36713543, 37118645, 36676673, 36715405, 36714074, 35622761, 4245014, 37111590, 4164551,
+      37115760, 36675025, 35622802, 36713991, 4208782, 36712855, 36714113, 36713523, 37111668, 37110071,
+      4326901, 506558, 35624205, 37110104, 4059420, 4119133, 36714111, 35622250, 36675640, 4223757,
+      35622390, 36716445, 42536694, 36716030, 35621870, 35622774, 36676860, 36675005, 35622260, 36716032,
+      4102312, 4060981, 36716110, 36717441)
+"""
+
+# ## Want to see what the unit distribution is for the measurements that we are looking at
+
+# ### Weight
 
 # +
-persons_to_exclude = persons_to_exclude_df['outlier_patient'].tolist()
+persons_to_exclude_weight_df = pd.io.gbq.read_gbq(outlier_pts_weight_query, dialect='standard')
+
+persons_to_exclude = persons_to_exclude_weight_df['outlier_patient'].tolist()
 num_persons_excluded_by_condition = len(persons_to_exclude)
 
 persons_to_exclude = list(map(str, persons_to_exclude))
 persons_to_exclude_as_str = ', '.join(persons_to_exclude)
-# -
 
 print(f"""
-There are {num_persons_excluded_by_condition} excluded from this analysis based on their pre-existing conditions.""")
+There are {num_persons_excluded_by_condition} excluded from this weight analysis based on their pre-existing conditions.""")
+# -
 
-# ### See the concept usage for weight
+CONCEPT_ID_STRINGS = weight_concepts
+
+get_all_descendant_concepts_as_table = f"""
+WITH
+height_and_weight_concepts AS
+(SELECT
+  DISTINCT ca.descendant_concept_id,
+  c.concept_name AS descendant_name,
+  c.domain_id AS domain
+FROM
+  `{DATASET}.concept_ancestor` ca
+JOIN
+  `{DATASET}.concept` c
+ON
+  ca.descendant_concept_id = c.concept_id
+WHERE
+  ca.ancestor_concept_id IN 
+  ({CONCEPT_ID_STRINGS})
+  {caveat_string})
+"""
+
+see_weight_unit_distrib = f"""
+SELECT
+m.unit_concept_id, c.concept_name, COUNT(*) as num_measurements
+FROM
+`{DATASET}.unioned_ehr_measurement` m
+JOIN
+`{DATASET}.concept` c
+ON
+m.unit_concept_id = c.concept_id
+WHERE
+m.measurement_concept_id IN
+  (SELECT DISTINCT
+  h_w.descendant_concept_id
+  FROM
+  height_and_weight_concepts AS h_w)
+AND
+m.value_as_number IS NOT NULL
+AND
+m.value_as_number <> 9999999  -- issue with one site that heavily skews data
+AND
+m.value_as_number <> 0.0  -- not something we expect; appears for a site
+AND
+m.person_id NOT IN ({persons_to_exclude_as_str})
+GROUP BY 1, 2
+ORDER BY num_measurements DESC
+"""
+
+see_weight_unit_distrib = get_all_descendant_concepts_as_table + see_weight_unit_distrib
+
+unit_df_for_weights = pd.io.gbq.read_gbq(see_weight_unit_distrib, dialect='standard')
+
+unit_df_for_weights
+
+# ### Height
+
+# +
+persons_to_exclude_height_df = pd.io.gbq.read_gbq(outlier_pts_height_query, dialect='standard')
+
+persons_to_exclude = persons_to_exclude_height_df['outlier_patient'].tolist()
+num_persons_excluded_by_condition = len(persons_to_exclude)
+
+persons_to_exclude = list(map(str, persons_to_exclude))
+persons_to_exclude_as_str = ', '.join(persons_to_exclude)
+
+print(f"""
+There are {num_persons_excluded_by_condition} excluded from this height analysis based on their pre-existing conditions.""")
+# -
+
+CONCEPT_ID_STRINGS = height_concepts
+
+get_all_descendant_concepts_as_table = f"""
+WITH
+height_and_weight_concepts AS
+(SELECT
+  DISTINCT ca.descendant_concept_id,
+  c.concept_name AS descendant_name,
+  c.domain_id AS domain
+FROM
+  `{DATASET}.concept_ancestor` ca
+JOIN
+  `{DATASET}.concept` c
+ON
+  ca.descendant_concept_id = c.concept_id
+WHERE
+  ca.ancestor_concept_id IN 
+  ({CONCEPT_ID_STRINGS})
+  {caveat_string})
+"""
+
+see_height_unit_distrib = f"""
+SELECT
+m.unit_concept_id, c.concept_name, COUNT(*) as num_measurements
+FROM
+`{DATASET}.unioned_ehr_measurement` m
+JOIN
+`{DATASET}.concept` c
+ON
+m.unit_concept_id = c.concept_id
+WHERE
+m.measurement_concept_id IN
+  (SELECT DISTINCT
+  h_w.descendant_concept_id
+  FROM
+  height_and_weight_concepts AS h_w)
+AND
+m.value_as_number IS NOT NULL
+AND
+m.value_as_number <> 9999999  -- issue with one site that heavily skews data
+AND
+m.value_as_number <> 0.0  -- not something we expect; appears for a site
+AND
+m.person_id NOT IN ({persons_to_exclude_as_str})
+GROUP BY 1, 2
+ORDER BY num_measurements DESC
+"""
+
+see_height_unit_distrib = get_all_descendant_concepts_as_table + see_height_unit_distrib
+
+unit_df_for_heights = pd.io.gbq.read_gbq(see_height_unit_distrib, dialect='standard')
+
+unit_df_for_heights
+
+# ## See the concept usage for weight
 
 CONCEPT_ID_STRINGS = weight_concepts
 
@@ -228,13 +384,26 @@ GROUP BY 1, 2
 ORDER BY num_rows DESC
 """
 
+# +
+persons_to_exclude_weight_df = pd.io.gbq.read_gbq(outlier_pts_weight_query, dialect='standard')
+
+persons_to_exclude = persons_to_exclude_weight_df['outlier_patient'].tolist()
+num_persons_excluded_by_condition = len(persons_to_exclude)
+
+persons_to_exclude = list(map(str, persons_to_exclude))
+persons_to_exclude_as_str = ', '.join(persons_to_exclude)
+
+print(f"""
+There are {num_persons_excluded_by_condition} excluded from this weight analysis based on their pre-existing conditions.""")
+# -
+
 full_weight_query = get_all_descendant_concepts_as_table + bulk_of_query
 
 weight_concept_usage = pd.io.gbq.read_gbq(full_weight_query, dialect='standard')
 
 weight_concept_usage
 
-# ### See the concept usage for height
+# ## See the concept usage for height
 
 CONCEPT_ID_STRINGS = height_concepts
 
@@ -257,13 +426,34 @@ WHERE
   {caveat_string})
 """
 
+# +
+persons_to_exclude_height_df = pd.io.gbq.read_gbq(outlier_pts_height_query, dialect='standard')
+
+persons_to_exclude = persons_to_exclude_height_df['outlier_patient'].tolist()
+num_persons_excluded_by_condition = len(persons_to_exclude)
+
+persons_to_exclude = list(map(str, persons_to_exclude))
+persons_to_exclude_as_str = ', '.join(persons_to_exclude)
+
+print(f"""
+There are {num_persons_excluded_by_condition} excluded from this height analysis based on their pre-existing conditions.""")
+# -
+
 full_height_query = get_all_descendant_concepts_as_table + bulk_of_query
 
-height_concept_usage = pd.io.gbq.read_gbq(full_weight_query, dialect='standard')
+height_concept_usage = pd.io.gbq.read_gbq(full_height_query, dialect='standard')
 
 height_concept_usage
 
-# # Part II: Investigating the distribution of weights for the selected concept_ids
+# # Part II: Investigating the distribution of weights
+#
+# The rules of converting units will be as follows (saying that weights between 100 and 325lbs are what we expect):
+# - Between 45.36 and 100: assume in kg. Therefore *2.20462
+# - Between 136.078 and 325: assume already in lbs. Therefore *1
+# - Between 1600 and 5200: assume in oz. Therefore *0.0625
+# - Between 45350 and 147418: assume in grams. Therefore *0.00220462
+#
+# - NOTE: Between 100 and 136.078 - check the unit_concept_id to determine if a multiplier should be used. Whether this is kg or lbs is somewhat ambiguous. Unit IDs can be defined by looking earlier in this script to see which ones are used by the sites.
 
 weight_concept_ids = weight_concept_usage['measurement_concept_id'].tolist()
 
@@ -273,9 +463,29 @@ weight_concepts_as_str = ', '.join(weight_concept_ids)
 
 weight_concepts_as_str
 
+weight_conversion_rules_str = """
+CASE WHEN
+-- kg
+(m.value_as_number BETWEEN 45.36 AND 100) THEN m.value_as_number * 2.20462 WHEN
+(m.value_as_number BETWEEN 100 AND 136.078 AND m.unit_concept_id IN (9529)) THEN m.value_as_number * 2.20462 WHEN
+
+-- lb
+(m.value_as_number BETWEEN 100 AND 136.078 AND m.unit_concept_id IN (4124425, 8739)) THEN m.value_as_number * 1 WHEN
+(m.value_as_number BETWEEN 136.078 AND 325) THEN m.value_as_number * 1 WHEN
+
+-- oz
+(m.value_as_number BETWEEN 1600 AND 5200) THEN m.value_as_number * 0.0625 WHEN
+
+-- grams
+(m.value_as_number BETWEEN 45350 and 147418) THEN m.value_as_number * 0.00220462
+
+ELSE value_as_number  -- outliers. leave as-is.
+END
+"""
+
 query_all_weights = f"""
 SELECT
-m.value_as_number
+m.value_as_number, {weight_conversion_rules_str}
 FROM
 `{DATASET}.unioned_ehr_measurement` m
 WHERE
@@ -289,36 +499,11 @@ m.value_as_number <> 0.0  -- not something we expect; appears for a site
 ORDER BY value_as_number DESC
 """
 
+print(query_all_weights)
+
 weight_df = pd.io.gbq.read_gbq(query_all_weights, dialect='standard')
 
-# ### Want to see what the unit distribution is for the measurements that we are looking at
-
-see_weight_unit_distrib = f"""
-SELECT
-m.unit_concept_id, c.concept_name, COUNT(*) as num_measurements
-FROM
-`{DATASET}.unioned_ehr_measurement` m
-JOIN
-`{DATASET}.concept` c
-ON
-m.unit_concept_id = c.concept_id
-WHERE
-m.measurement_concept_id IN ({weight_concepts_as_str})
-AND
-m.value_as_number IS NOT NULL
-AND
-m.value_as_number <> 9999999  -- issue with one site that heavily skews data
-AND
-m.value_as_number <> 0.0  -- not something we expect; appears for a site
-GROUP BY 1, 2
-ORDER BY num_measurements DESC
-"""
-
-unit_df_for_weights = pd.io.gbq.read_gbq(see_weight_unit_distrib, dialect='standard')
-
-unit_df_for_weights
-
-# ## Now want to convert to the appropriate (standard) units
+# # Now for the true analysis 
 
 # +
 weights = weight_df['value_as_number'].tolist()
@@ -338,7 +523,6 @@ stdev = str(round(np.std(np.asarray(weights)), rounding_val))
 
 min_weight = min(weights)
 max_weight = max(weights)
-
 # -
 
 general_weight_attributes = f"""
@@ -360,7 +544,6 @@ Median: {median}
 print(general_weight_attributes)
 
 # +
-
 plt.xlim([min_weight - 5, 400])
 
 plt.hist(weights, bins=50, alpha= 0.5)
@@ -370,5 +553,7 @@ plt.ylabel('Count')
 
 plt.show()
 # -
+
+
 
 
