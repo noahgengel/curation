@@ -473,7 +473,7 @@ persons_to_exclude = list(map(str, persons_to_exclude))
 persons_to_exclude_as_str = ', '.join(persons_to_exclude)
 
 print(f"""
-There are {num_persons_excluded_by_condition} excluded from this weight analysis based on their pre-existing conditions.""")
+There are {num_persons_excluded_by_condition} persons excluded from this weight analysis based on their pre-existing conditions.""")
 # -
 
 weight_conversion_rules_str = """
@@ -510,7 +510,7 @@ m.value_as_number <> 9999999  -- issue with one site that heavily skews data
 AND
 m.value_as_number <> 0.0  -- not something we expect; appears for a site
 AND
-m.person_id NOT IN {personts_to_exclude_as_str}
+m.person_id NOT IN ({persons_to_exclude_as_str})
 ORDER BY value_as_number DESC
 """
 
@@ -556,7 +556,7 @@ Median: {median}
 
 print(general_weight_attributes)
 
-# ### Interesting distribution below; shows the bin borders so that each bucket gets 1% of data
+# ### Interesting distribution below; shows the bin borders so that each bucket gets 10% of data
 
 # +
 n_bins = 10
@@ -622,8 +622,8 @@ quartile3 = round(np.percentile(weights, 75), rounding_val)
 within_mid_fifty = [x for x in weights if x > quartile1 and x < quartile3]
 within_mid_fifty.sort()
 
-print(max(within_mid_seventy))
-print(min(within_mid_seventy))
+print(max(within_mid_fifty))
+print(min(within_mid_fifty))
 # -
 
 bin_borders = [80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 400, 3000]
@@ -692,7 +692,7 @@ m.value_as_number <> 9999999  -- issue with one site that heavily skews data
 AND
 m.value_as_number <> 0.0  -- not something we expect; appears for a site
 AND
-m.person_id NOT IN {personts_to_exclude_as_str}
+m.person_id NOT IN ({persons_to_exclude_as_str})
 
 AND
 
@@ -719,6 +719,8 @@ weight_df = pd.io.gbq.read_gbq(query_all_weights, dialect='standard')
 
 weight_df
 
+# #### Sanity check - what weight concepts are we using again?
+
 check_the_concepts_used = f"""
 SELECT
 DISTINCT
@@ -739,10 +741,225 @@ weight_concepts
 
 # # Part III: Investigating the distribution of heights
 #
-# The rules of converting units will be as follows (saying that weights between 50 (4ft 2in) and 90in (7ft 6in) are what we expect):
-# - Between 45.36 and 100: assume in kg. Therefore *2.20462
-# - Between 136.078 and 325: assume already in lbs. Therefore *1
-# - Between 1600 and 5200: assume in oz. Therefore *0.0625
-# - Between 45350 and 147418: assume in grams. Therefore *0.00220462
-#
-# - NOTE: Between 100 and 136.078 - check the unit_concept_id to determine if a multiplier should be used. Whether this is kg or lbs is somewhat ambiguous. Unit IDs can be defined by looking earlier in this script to see which ones are used by the sites.
+# The rules of converting units will be as follows (saying that heights between 36 (3ft) and 90in (7ft 6in) are what we expect):
+# - Between 36 and 90: assume already in inches. Therefore *1
+# - Between 91.44 and 228.6: assume in cm. Therefore *0.393701
+
+# +
+height_concept_ids = height_concept_usage['measurement_concept_id'].tolist()
+
+height_concept_ids = list(map(str, height_concept_ids))
+
+height_concepts_as_str = ', '.join(height_concept_ids)
+
+height_concepts_as_str
+
+# +
+persons_to_exclude_height_df = pd.io.gbq.read_gbq(outlier_pts_height_query, dialect='standard')
+
+persons_to_exclude = persons_to_exclude_height_df['outlier_patient'].tolist()
+num_persons_excluded_by_condition = len(persons_to_exclude)
+
+persons_to_exclude = list(map(str, persons_to_exclude))
+persons_to_exclude_as_str = ', '.join(persons_to_exclude)
+
+print(f"""
+There are {num_persons_excluded_by_condition} persons excluded from this weight analysis based on their pre-existing conditions.""")
+# -
+
+height_conversion_rules_str = """
+CASE WHEN
+-- cm
+(m.value_as_number BETWEEN 91.44 AND 228.6) THEN m.value_as_number * 0.0393701 
+ELSE value_as_number  -- outliers. leave as-is. inches (or something that we do not know about)
+END
+"""
+
+query_all_heights = f"""
+SELECT
+m.value_as_number, {height_conversion_rules_str}
+FROM
+`{DATASET}.unioned_ehr_measurement` m
+WHERE
+m.measurement_concept_id IN ({height_concepts_as_str})
+AND
+m.value_as_number IS NOT NULL
+AND
+m.value_as_number <> 9999999  -- issue with one site that heavily skews data
+AND
+m.value_as_number <> 0.0  -- not something we expect; appears for a site
+AND
+m.person_id NOT IN ({persons_to_exclude_as_str})
+ORDER BY value_as_number DESC
+"""
+
+height_df = pd.io.gbq.read_gbq(query_all_heights, dialect='standard')
+
+# # Now for the true analysis 
+
+# +
+heights = height_df['value_as_number'].tolist()
+
+number_records = str(len(heights))
+mean = str(round(np.mean(heights), rounding_val))
+
+decile1 = str(round(np.percentile(heights, 10), rounding_val))
+
+quartile1 = str(round(np.percentile(heights, 25), rounding_val))
+median = str(round(np.percentile(heights, 50), rounding_val))
+quartile3 = str(round(np.percentile(heights, 75), rounding_val))
+
+decile9 = str(round(np.percentile(heights, 90), rounding_val))
+
+stdev = str(round(np.std(np.asarray(heights)), rounding_val))
+
+min_weight = min(heights)
+max_weight = max(heights)
+
+# +
+general_height_attributes = f"""
+Number of heights: {number_records}
+
+Minimum: {min_weight}
+maximum: {max_weight}
+
+Mean Height: {mean}
+Standard Devidation: {stdev}
+
+10th Percentile: {decile1}
+25th Percentile: {quartile1}
+Median: {median}
+75th Percentile: {quartile3}
+90th Percentile: {decile9}
+"""
+
+print(general_height_attributes)
+# -
+
+# ### Interesting distribution below; shows the bin borders so that each bucket gets 10% of data
+
+# +
+n_bins = 10
+bin_borders = [np.amin(heights)] + [heights[(len(heights) // n_bins) * i] for i in range(1, n_bins)] + [np.amax(heights)]
+
+bin_borders.sort()
+print(bin_borders)
+# -
+
+# ### Let's try to see what the distribution would look like with excluding those outside the stdev
+
+# +
+stdev_val = round(np.std(np.asarray(heights)), rounding_val)
+mean_val = round(np.mean(heights), rounding_val)
+
+within_one_stdev = [x for x in heights if x > (mean_val - stdev_val) and x < (stdev_val + mean_val)]
+within_one_stdev.sort()
+
+print(max(within_one_stdev))
+
+# +
+bin_borders = [36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 100]
+
+plt.hist(within_one_stdev, bins=bin_borders, alpha= 0.5)
+plt.title('Height Distribution Across All Sites - Within 1 Stdev')
+plt.xlabel('Height (in inches)')
+plt.ylabel('Count')
+
+plt.show()
+# -
+
+# ### Let's try to use something other than stdev - those within the middle 70% to start
+
+# +
+fifteenth_perc = round(np.percentile(heights, 15), rounding_val)
+eighy_fifth_perc = round(np.percentile(heights, 85), rounding_val)
+
+within_mid_seventy = [x for x in heights if x > fifteenth_perc and x < eighy_fifth_perc]
+within_mid_seventy.sort()
+
+print(max(within_mid_seventy))
+print(min(within_mid_seventy))
+
+bin_borders = [36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 100]
+
+plt.hist(within_mid_seventy, bins=bin_borders, alpha= 0.5)
+plt.title('Height Distribution Across All Sites - Mid 70%')
+plt.xlabel('Height (in inches)')
+plt.ylabel('Count')
+
+plt.show()
+# -
+
+# ### Make the analysis larger - mid 90%
+
+# +
+fifth_perc = round(np.percentile(heights, 5), rounding_val)
+ninety_fifth_perc = round(np.percentile(heights, 95), rounding_val)
+
+within_mid_ninety = [x for x in heights if x > fifth_perc and x < ninety_fifth_perc]
+within_mid_ninety.sort()
+
+print(max(within_mid_ninety))
+print(min(within_mid_ninety))
+
+bin_borders = [36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 100]
+
+plt.hist(within_mid_ninety, bins=bin_borders, alpha= 0.5)
+plt.title('Height Distribution Across All Sites - Mid 90%')
+plt.xlabel('Height (in inches)')
+plt.ylabel('Count')
+
+plt.show()
+# -
+
+query_all_heights = f"""
+SELECT
+DISTINCT
+
+mm.src_hpo_id,
+-- c1.concept_name as measurement_name,
+-- c2.concept_name as unit_name, 
+COUNT(*) as cnt
+
+FROM
+`{DATASET}.unioned_ehr_measurement` m
+JOIN
+`{DATASET}.concept` c1
+ON
+m.measurement_concept_id = c1.concept_id
+JOIN
+`{DATASET}.concept` c2
+ON
+m.unit_concept_id = c2.concept_id
+JOIN
+`{DATASET}._mapping_measurement` mm
+ON
+m.measurement_id = mm.measurement_id
+
+WHERE
+m.measurement_concept_id IN ({height_concepts_as_str})
+AND
+m.value_as_number IS NOT NULL
+AND
+m.value_as_number <> 9999999  -- issue with one site that heavily skews data
+AND
+m.value_as_number <> 0.0  -- not something we expect; appears for a site
+AND
+m.person_id NOT IN ({persons_to_exclude_as_str})
+
+AND
+
+-- too small to be inches
+-- too large to be cm
+(m.value_as_number < 36 OR
+m.value_as_number > 228.6) 
+
+GROUP BY 1
+ORDER BY cnt DESC
+"""
+
+height_df = pd.io.gbq.read_gbq(query_all_heights, dialect='standard')
+
+height_df
+
+
