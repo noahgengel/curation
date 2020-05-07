@@ -30,10 +30,13 @@ from google.cloud import bigquery
 # %reload_ext google.cloud.bigquery
 client = bigquery.Client()
 # %load_ext google.cloud.bigquery
+import numpy as np
+from matplotlib import pyplot as plt
 
 # +
 from notebooks import parameters
 DATASET = parameters.LATEST_DATASET
+rounding_val = 2
 
 print(f"Dataset to use: {DATASET}")
 
@@ -172,3 +175,114 @@ full_height_query = get_all_descendant_concepts_as_table + bulk_of_query
 height_concept_usage = pd.io.gbq.read_gbq(full_weight_query, dialect='standard')
 
 height_concept_usage
+
+# # Part II: Investigating the distribution of weights for the selected concept_ids
+
+weight_concept_ids = weight_concept_usage['measurement_concept_id'].tolist()
+
+weight_concept_ids = list(map(str, weight_concept_ids))
+
+weight_concepts_as_str = ', '.join(weight_concept_ids)
+
+weight_concepts_as_str
+
+query_all_weights = f"""
+SELECT
+m.value_as_number
+FROM
+`{DATASET}.unioned_ehr_measurement` m
+WHERE
+m.measurement_concept_id IN ({weight_concepts_as_str})
+AND
+m.value_as_number IS NOT NULL
+AND
+m.value_as_number <> 9999999  -- issue with one site that heavily skews data
+AND
+m.value_as_number <> 0.0  -- not something we expect; appears for a site
+ORDER BY value_as_number DESC
+"""
+
+weight_df = pd.io.gbq.read_gbq(query_all_weights, dialect='standard')
+
+# ### Want to see what the unit distribution is for the measurements that we are looking at
+
+see_weight_unit_distrib = f"""
+SELECT
+m.unit_as_concept_id, c.concept_name, COUNT(*) as num_measurements
+FROM
+`{DATASET}.unioned_ehr_measurement` m
+JOIN
+`{DATASET}.concept` c
+ON
+m.unit_concept_id = c.concept_id
+WHERE
+m.measurement_concept_id IN ({weight_concepts_as_str})
+AND
+m.value_as_number IS NOT NULL
+AND
+m.value_as_number <> 9999999  -- issue with one site that heavily skews data
+AND
+m.value_as_number <> 0.0  -- not something we expect; appears for a site
+GROUP BY 1, 2
+ORDER BY value_as_number DESC
+"""
+
+unit_df_for_weights = pd.io.gbq.read_gbq(see_weight_unit_distrib, dialect='standard')
+
+unit_df_for_weights
+
+# +
+## 
+
+# +
+weights = weight_df['value_as_number'].tolist()
+
+number_records = str(len(weights))
+mean = str(round(np.mean(weights), rounding_val))
+
+decile1 = str(round(np.percentile(weights, 10), rounding_val))
+
+quartile1 = str(round(np.percentile(weights, 25), rounding_val))
+median = str(round(np.percentile(weights, 50), rounding_val))
+quartile3 = str(round(np.percentile(weights, 75), rounding_val))
+
+decile9 = str(round(np.percentile(weights, 90), rounding_val))
+
+stdev = str(round(np.std(np.asarray(weights)), rounding_val))
+
+min_weight = min(weights)
+max_weight = max(weights)
+
+# -
+
+general_weight_attributes = f"""
+Number of weights: {number_records}
+
+Minimum: {min_weight}
+maximum: {max_weight}
+
+Mean Weight: {mean}
+Standard Devidation: {stdev}
+
+10th Percentile: {decile1}
+25th Percentile: {quartile1}
+Median: {median}
+75th Percentile: {quartile3}
+90th Percentile: {decile9}
+"""
+
+print(general_weight_attributes)
+
+# +
+
+plt.xlim([min_weight - 5, 400])
+
+plt.hist(weights, bins=50, alpha= 0.5)
+plt.title('Weight Distribution Across All Sites')
+plt.xlabel('Weight')
+plt.ylabel('Count')
+
+plt.show()
+# -
+
+
