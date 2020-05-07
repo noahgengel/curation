@@ -499,8 +499,6 @@ m.value_as_number <> 0.0  -- not something we expect; appears for a site
 ORDER BY value_as_number DESC
 """
 
-print(query_all_weights)
-
 weight_df = pd.io.gbq.read_gbq(query_all_weights, dialect='standard')
 
 # # Now for the true analysis 
@@ -543,17 +541,171 @@ Median: {median}
 
 print(general_weight_attributes)
 
-# +
-plt.xlim([min_weight - 5, 400])
+# ### Interesting distribution below; shows the bin borders so that each bucket gets 1% of data
 
-plt.hist(weights, bins=50, alpha= 0.5)
-plt.title('Weight Distribution Across All Sites')
+# +
+n_bins = 10
+bin_borders = [np.amin(weights)] + [weights[(len(weights) // n_bins) * i] for i in range(1, n_bins)] + [np.amax(weights)]
+
+bin_borders.sort()
+print(bin_borders)
+# -
+
+# ### Let's try to see what the distribution would look like with excluding those outside the stdev
+
+# +
+stdev_val = round(np.std(np.asarray(weights)), rounding_val)
+mean_val = round(np.mean(weights), rounding_val)
+
+within_one_stdev = [x for x in weights if x > (mean_val - stdev_val) and x < (stdev_val + mean_val)]
+within_one_stdev.sort()
+
+print(max(within_one_stdev))
+# -
+
+bin_borders = [-200, 0, 100, 200, 300, 400, 500, 4000, 8000, 13000]
+
+# +
+plt.hist(within_one_stdev, bins=bin_borders, alpha= 0.5)
+plt.title('Weight Distribution Across All Sites - Within 1 Stdev')
+plt.xlabel('Weight')
+plt.ylabel('Count')
+
+plt.show()
+# -
+# ### Let's try to use something other than stdev - those within the middle 70% to start
+
+fifteenth_perc = round(np.percentile(weights, 15), rounding_val)
+eighy_fifth_perc = round(np.percentile(weights, 85), rounding_val)
+
+
+# +
+within_mid_seventy = [x for x in weights if x > fifteenth_perc and x < eighy_fifth_perc]
+within_mid_seventy.sort()
+
+print(max(within_mid_seventy))
+print(min(within_mid_seventy))
+# -
+
+bin_borders = [80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 400, 3000]
+
+# +
+plt.hist(within_mid_seventy, bins=bin_borders, alpha= 0.5)
+plt.title('Weight Distribution Across All Sites - Mid 70%')
 plt.xlabel('Weight')
 plt.ylabel('Count')
 
 plt.show()
 # -
 
+# ### Let's try to use something other than stdev - those within the middle 50% to start
 
+quartile1 = round(np.percentile(weights, 25), rounding_val)
+quartile3 = round(np.percentile(weights, 75), rounding_val)
+
+# +
+within_mid_fifty = [x for x in weights if x > quartile1 and x < quartile3]
+within_mid_fifty.sort()
+
+print(max(within_mid_seventy))
+print(min(within_mid_seventy))
+# -
+
+bin_borders = [80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 400, 3000]
+
+# +
+plt.hist(within_mid_fifty, bins=bin_borders, alpha= 0.5)
+plt.title('Weight Distribution Across All Sites - Mid 50%')
+plt.xlabel('Weight')
+plt.ylabel('Count')
+
+plt.show()
+# -
+
+# ### Let's see where these crazy measurements are coming from and what units are associated
+
+weight_conversion_rules_str = """
+CASE WHEN
+-- kg
+(m.value_as_number BETWEEN 45.36 AND 100) THEN m.value_as_number * 2.20462 WHEN
+(m.value_as_number BETWEEN 100 AND 136.078 AND m.unit_concept_id IN (9529)) THEN m.value_as_number * 2.20462 WHEN
+
+-- lb
+(m.value_as_number BETWEEN 100 AND 136.078 AND m.unit_concept_id IN (4124425, 8739)) THEN m.value_as_number * 1 WHEN
+(m.value_as_number BETWEEN 136.078 AND 325) THEN m.value_as_number * 1 WHEN
+
+-- oz
+(m.value_as_number BETWEEN 1600 AND 5200) THEN m.value_as_number * 0.0625 WHEN
+
+-- grams
+(m.value_as_number BETWEEN 45350 and 147418) THEN m.value_as_number * 0.00220462
+
+ELSE value_as_number  -- outliers. leave as-is.
+END
+"""
+
+query_all_weights = f"""
+SELECT
+DISTINCT
+
+-- mm.src_hpo_id, c1.concept_name as measurement_name,
+c2.concept_name as unit_name, COUNT(*) as cnt
+
+FROM
+`{DATASET}.unioned_ehr_measurement` m
+JOIN
+`{DATASET}.concept` c1
+ON
+m.measurement_concept_id = c1.concept_id
+JOIN
+`{DATASET}.concept` c2
+ON
+m.unit_concept_id = c2.concept_id
+JOIN
+`{DATASET}._mapping_measurement` mm
+ON
+m.measurement_id = mm.measurement_id
+
+WHERE
+m.measurement_concept_id IN ({weight_concepts_as_str})
+AND
+m.value_as_number IS NOT NULL
+AND
+m.value_as_number <> 9999999  -- issue with one site that heavily skews data
+AND
+m.value_as_number <> 0.0  -- not something we expect; appears for a site
+AND
+
+(m.value_as_number > 325 AND
+m.value_as_number < 1600) OR
+(m.value_as_number > 5200 AND
+m.value_as_number < 45350) OR
+(m.value_as_number > 147418)
+
+GROUP BY 1
+ORDER BY cnt DESC
+"""
+
+weight_df = pd.io.gbq.read_gbq(query_all_weights, dialect='standard')
+
+weight_df
+
+check_the_concepts_used = f"""
+SELECT
+DISTINCT
+c.concept_id, c.concept_name
+FROM
+`{DATASET}.unioned_ehr_measurement` m
+JOIN
+`{DATASET}.concept` c
+ON
+m.measurement_concept_id = c.concept_id
+WHERE
+m.measurement_concept_id IN ({weight_concepts_as_str})
+"""
+
+weight_concepts = pd.io.gbq.read_gbq(check_the_concepts_used, dialect='standard')
+
+weight_concepts
 
 
