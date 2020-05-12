@@ -192,7 +192,7 @@ table_based_on_column_provided = {
 
     # general concept success rate columns
     constants.observation_success: constants.observation_full,
-    constants.drug_success: constants.drug_exposure_full,
+    constants.drug_success_col: constants.drug_exposure_full,
     constants.procedure_success: constants.procedure_full,
     constants.condition_success: constants.condition_occurrence_full,
     constants.measurement_success: constants.measurement_full,
