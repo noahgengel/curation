@@ -316,6 +316,9 @@ def main():
         sheet_output=sheet_output, datetimes=datetimes,
         metric_choice=user_choice)
 
+    for am in aggregate_metrics:
+        am.print_attributes()
+
     dataframes_dict = organize_dataframes_master_function(
         sheet_output=sheet_output,
         metric_dictionary=metric_dictionary,
