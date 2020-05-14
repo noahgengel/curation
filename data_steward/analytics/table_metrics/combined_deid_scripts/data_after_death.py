@@ -52,18 +52,6 @@ print("Current working directory is: {cwd}".format(cwd=cwd))
 
 # ### Get the list of HPO IDs
 
-hpo_id_query = f"""
-SELECT REPLACE(table_id, '_person', '') AS src_hpo_id
-FROM
-`{DATASET}.__TABLES__`
-WHERE table_id LIKE '%person' 
-AND table_id 
-NOT LIKE '%unioned_ehr_%' 
-AND table_id NOT LIKE '\\\_%'
-"""
-
-site_df = pd.io.gbq.read_gbq(hpo_id_query, dialect='standard')
-
 get_full_names = f"""
 select * from {LOOKUP_TABLES}
 """
