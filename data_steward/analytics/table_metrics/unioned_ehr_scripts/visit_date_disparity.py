@@ -826,7 +826,7 @@ short_drug_df
 final_success_df = 0
 
 final_success_df = pd.merge(short_drug_df, site_df, how='outer', on='src_hpo_id') 
-final_success_df = final_success_df[['src_hpo_id', 'drug_date_adherence']]  #rearrang columnds
+final_success_df = final_success_df[['src_hpo_id', 'drug_date_failure']]  #rearrang columnds
 
 # +
 final_success_df = pd.merge(final_success_df, short_observation_df, how='outer', on='src_hpo_id') 
