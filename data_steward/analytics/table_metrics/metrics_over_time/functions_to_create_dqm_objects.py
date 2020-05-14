@@ -109,11 +109,11 @@ def get_info(
                     # actual info to be logged if sensible data
                     elif percentage and target_low:  # proportion w/ errors
                         data_dictionary[col_label] = round(
-                            100 - number, constants.rounding_val)
+                            number, constants.rounding_val)
 
                     elif percentage and not target_low:  # effective
                         data_dictionary[col_label] = round(
-                            number, constants.rounding_val)
+                            100 - number, constants.rounding_val)
 
                     elif not percentage and number > -1:
                         data_dictionary[col_label] = int(number)
