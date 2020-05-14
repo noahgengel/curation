@@ -129,7 +129,6 @@ target_low_dict = {
     constants.drug_success: constants.false,
     constants.sites_measurement: constants.false,
 
-    # the three notebooks that need to be flipped
     constants.data_after_death: constants.true,
     constants.end_before_begin: constants.true,
     constants.visit_date_disparity: constants.false,
