@@ -114,9 +114,6 @@ percentage_dict = {
     constants.achilles_errors: constants.false
 }
 
-
-# FIXME: for errors, we want target_low value to be true
-
 target_low_dict = {
     # non-percentage values
     constants.duplicates: constants.true,
