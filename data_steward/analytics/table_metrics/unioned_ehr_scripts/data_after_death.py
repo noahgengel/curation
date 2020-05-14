@@ -370,3 +370,5 @@ success_rate = success_rate.fillna(0)
 success_rate
 
 success_rate.to_csv("{cwd}/data_after_death.csv".format(cwd = cwd))
+
+
