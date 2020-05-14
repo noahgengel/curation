@@ -121,14 +121,14 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['success_rate'] = 100 - round(
+temporal_df['failure_rate'] = round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
 # - main reason death date entered as default value ("1890")
 
 visit_occurrence = temporal_df.rename(
-    columns={"success_rate": "visit_occurrence"})
+    columns={"failure_rate": "visit_occurrence"})
 visit_occurrence = visit_occurrence[["src_hpo_id", "visit_occurrence"]]
 visit_occurrence = visit_occurrence.fillna(100)
 visit_occurrence
@@ -168,12 +168,12 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['success_rate'] = 100 - round(
+temporal_df['failure_rate'] = round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
 condition_occurrence = temporal_df.rename(
-    columns={"success_rate": "condition_occurrence"})
+    columns={"failure_rate": "condition_occurrence"})
 condition_occurrence = condition_occurrence[[
     "src_hpo_id", "condition_occurrence"
 ]]
@@ -214,11 +214,11 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['success_rate'] = 100 - round(
+temporal_df['failure_rate'] = round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
-drug_exposure = temporal_df.rename(columns={"success_rate": "drug_exposure"})
+drug_exposure = temporal_df.rename(columns={"failure_rate": "drug_exposure"})
 drug_exposure = drug_exposure[["src_hpo_id", "drug_exposure"]]
 drug_exposure = drug_exposure.fillna(100)
 drug_exposure
@@ -257,11 +257,11 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['success_rate'] = 100 - round(
+temporal_df['failure_rate'] = round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
-measurement = temporal_df.rename(columns={"success_rate": "measurement"})
+measurement = temporal_df.rename(columns={"failure_rate": "measurement"})
 measurement = measurement[["src_hpo_id", "measurement"]]
 measurement = measurement.fillna(100)
 measurement
@@ -300,12 +300,12 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['success_rate'] = 100 - round(
+temporal_df['failure_rate'] = round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
 procedure_occurrence = temporal_df.rename(
-    columns={"success_rate": "procedure_occurrence"})
+    columns={"failure_rate": "procedure_occurrence"})
 procedure_occurrence = procedure_occurrence[[
     "src_hpo_id", "procedure_occurrence"
 ]]
@@ -347,11 +347,11 @@ temporal_df.shape
 print(temporal_df.shape[0], 'records received.')
 # -
 
-temporal_df['success_rate'] = 100 - round(
+temporal_df['failure_rate'] = round(
     100 * temporal_df['wrong_death_date'] / temporal_df['total'], 1)
 temporal_df
 
-observation = temporal_df.rename(columns={"success_rate": "observation"})
+observation = temporal_df.rename(columns={"failure_rate": "observation"})
 observation = observation[["src_hpo_id", "observation"]]
 observation = observation.fillna(100)
 observation
